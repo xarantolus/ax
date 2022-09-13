@@ -10,13 +10,27 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  Test:
+    
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+
+    - name: Install wasm-pack
+      run:  curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh 
+
+    - name: Check out repository
+      uses: actions/checkout@v3
+
     - name: Build
       run: make build
+      
     - name: Run tests
       run: make test
