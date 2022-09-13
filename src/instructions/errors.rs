@@ -1,7 +1,20 @@
-use std::{fmt, io::Error};
+use std::fmt;
 
 pub struct AxError {
-	pub message: String,
+    pub message: String,
+}
+
+impl From<&str> for AxError {
+    fn from(message: &str) -> Self {
+        Self {
+            message: message.to_string(),
+        }
+    }
+}
+impl From<String> for AxError {
+    fn from(message: String) -> Self {
+        Self { message: message }
+    }
 }
 
 // Implement std::fmt::Display for AxError

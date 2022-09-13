@@ -1,37 +1,11 @@
-use iced_x86::{Decoder, DecoderOptions, Formatter, Instruction, NasmFormatter};
+use std::collections::HashMap;
+
+use iced_x86::Register;
 use wasm_bindgen::prelude::*;
-use iced_x86::Mnemonic::*;
 
+use super::memory::MemoryArea;
+use super::*;
 
-pub(crate) fn run_program(assembled_program: &[u8], rip: u64)  {
-    let mut decoder = Decoder::with_ip(
-        64,
-        assembled_program,
-        rip,
-        DecoderOptions::NONE,
-    );
-
-    // Initialize this outside the loop because decode_out() writes to every field
-    let mut decoded_instruction = Instruction::default();
-
-    while decoder.can_decode() {
-        // decode_out overwrites all fields, we can reuse decoded_instruction without problems
-        decoder.decode_out(&mut decoded_instruction);
-
-        // TODO: If instruction matches criteria for hooks, call hooks before or after or both (this should be configurable)
-
-        // Match the instruction mnemonic, e.g. "mov" or "add"
-        match decoded_instruction.mnemonic() {
-            Push => {
-
-            }
-            _ => {}
-        }
-    }
-}
-
-const HEXBYTES_COLUMN_BYTE_LENGTH: usize = 10;
-const EXAMPLE_CODE_BITNESS: u32 = 64;
 const EXAMPLE_CODE_RIP: u64 = 0x0000_7FFA_C46A_CDA4;
 static EXAMPLE_CODE: &[u8] = &[
     0x48, 0x89, 0x5C, 0x24, 0x10, 0x48, 0x89, 0x74, 0x24, 0x18, 0x55, 0x57, 0x41, 0x56, 0x48, 0x8D,
@@ -41,19 +15,31 @@ static EXAMPLE_CODE: &[u8] = &[
 ];
 
 #[wasm_bindgen]
-#[derive(Clone)]
 pub struct Axecutor {
     pub(crate) ran: bool,
+
+    // TODO: memory could better be modeled with some kind of interval tree that allows storing additional data with each interval
+    pub(crate) memory: Vec<MemoryArea>,
+
+    pub(crate) registers: HashMap<Register, u64>,
+    pub(crate) rflags: u64,
 }
 
 #[wasm_bindgen]
 impl Axecutor {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
-        Self { ran: false }
+        Self {
+            ran: false,
+            registers: registers::empty_register_set(),
+            // TODO: Figure out correct default value for rflags
+            // TODO: Think about how to handle flags
+            rflags: 0,
+            memory: Vec::new(),
+        }
     }
 
-    pub fn disassemble(&self) {
-        run_program(EXAMPLE_CODE, EXAMPLE_CODE_RIP);
+    fn next_instruction() {
+        // Read 15 bytes of Memory from current RIP, then decode & execute
     }
 }
