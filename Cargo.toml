@@ -30,7 +30,7 @@ wasm-bindgen-futures = "0.4.33"
 version = "1.17.0"
 default-features = false
 # See below for all features
-features = ["std", "decoder", "gas"]
+features = ["std", "decoder", "nasm"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.13"
