@@ -1,9 +1,6 @@
-use std::vec;
-
-use js_sys::{self, Array, Function, Promise};
+use js_sys::{self, Array, Function};
 use wasm_bindgen::{prelude::*, JsCast};
 use wasm_bindgen_futures::JsFuture;
-
 
 async fn run_promise(promise_arg: JsValue) -> Result<JsValue, JsValue> {
     let promise = js_sys::Promise::from(promise_arg);

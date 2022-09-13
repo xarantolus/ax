@@ -14,6 +14,7 @@
 		let module = await ax.default();
 		console.log("Initialized module!")
 
+
 		async function execute() {
 			try {
 				function sleep(time) {
@@ -38,7 +39,9 @@
 					return "ok";
 				}
 
-				let result = await ax.execute_sync_or_async(arg)
+				let result = await ax.execute_sync_or_async(arg);
+				console.log("result:", result);
+
 			} catch (e) {
 				console.error("Caught:", e);
 			}
