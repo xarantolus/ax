@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>AX Test Site</title>
+</head>
+
+<body>
+	<script type="module">
+		import * as ax from './pkg/ax.js';
+		let module = await ax.default();
+		console.log("Initialized module!")
+
+		async function execute() {
+			try {
+				function sleep(time) {
+					return new Promise((resolve) => setTimeout(resolve, time));
+				}
+				// let arg = async function(arg0, arg1, arg2) {
+				// 	console.log("arg0:", arg0);
+				// 	await sleep(1000);
+				// 	console.log("arg1:", arg1);
+				// 	await sleep(1000);
+				// 	console.log("arg2:", arg2);
+				// 	await sleep(1000);
+				// 	console.log("Called async function:", this);
+				// 	await sleep(1000);
+				// 	return "ok";
+				// }
+				let arg = function (arg0, arg1, arg2) {
+					console.log("arg0:", arg0);
+					console.log("arg1:", arg1);
+					console.log("arg2:", arg2);
+					console.log("Called normal function:", this);
+					return "ok";
+				}
+
+				let result = await ax.execute_sync_or_async(arg)
+			} catch (e) {
+				console.error("Caught:", e);
+			}
+		}
+
+		execute();
+	</script>
+</body>
+
+</html>
