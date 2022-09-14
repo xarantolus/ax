@@ -46,6 +46,8 @@ impl Axecutor {
         // Fetch the next instruction
         let instr = self.advance_next_instruction()?;
 
+        self.switch_instruction_mnemonic(instr)?;
+
         // TODO: Actually execute the instruction
         // TODO: Figure out what to do with flags, when to reset e.g. carry etc.
         // Maybe create a bitmask that is xored after the next instruction is executed
@@ -58,5 +60,10 @@ impl Axecutor {
         }
 
         Ok(!self.finished)
+    }
+
+    pub fn execute(&mut self) -> Result<(), AxError> {
+        while self.step()? {}
+        Ok(())
     }
 }

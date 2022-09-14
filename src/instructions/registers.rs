@@ -222,7 +222,7 @@ impl Axecutor {
     }
 
     pub fn reg_read_64(&self, reg: RegisterWrapper) -> u64 {
-        assert!(reg.0.is_gpr64());
+        assert!(reg.0.is_gpr64() || reg.0.is_ip());
 
         let reg_value = self.state.registers.get(&reg).unwrap().clone();
         return reg_value;

@@ -27,7 +27,7 @@ impl Axecutor {
     fn instr_push_r16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Push_r16);
 
-        todo!("unimplemented")
+        todo!("instr_push_r16 for Push")
     }
 
     /// PUSH r32
@@ -36,7 +36,7 @@ impl Axecutor {
     fn instr_push_r32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Push_r32);
 
-        todo!("unimplemented")
+        todo!("instr_push_r32 for Push")
     }
 
     /// PUSH r64
@@ -45,7 +45,7 @@ impl Axecutor {
     fn instr_push_r64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Push_r64);
 
-        todo!("unimplemented")
+        todo!("instr_push_r64 for Push")
     }
 
     /// PUSH imm16
@@ -54,7 +54,7 @@ impl Axecutor {
     fn instr_push_imm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Push_imm16);
 
-        todo!("unimplemented")
+        todo!("instr_push_imm16 for Push")
     }
 
     /// PUSH r/m16
@@ -63,7 +63,7 @@ impl Axecutor {
     fn instr_push_rm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Push_rm16);
 
-        todo!("unimplemented")
+        todo!("instr_push_rm16 for Push")
     }
 
     /// PUSH r/m32
@@ -72,7 +72,7 @@ impl Axecutor {
     fn instr_push_rm32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Push_rm32);
 
-        todo!("unimplemented")
+        todo!("instr_push_rm32 for Push")
     }
 
     /// PUSH r/m64
@@ -81,6 +81,6 @@ impl Axecutor {
     fn instr_push_rm64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Push_rm64);
 
-        todo!("unimplemented")
+        todo!("instr_push_rm64 for Push")
     }
 }

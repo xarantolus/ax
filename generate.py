@@ -142,9 +142,11 @@ def generate_mnemonic_text(instruction_codes: List[Instruction], mnemonic: str):
     code = f"""use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::{mnemonic};
+use iced_x86::OpKind;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+use crate::instructions::registers::RegisterWrapper;
 
 impl Axecutor {{
     pub fn mnemonic_{mnemonic.lower()}(&mut self, i: Instruction) -> Result<(), AxError> {{
@@ -170,11 +172,21 @@ impl Axecutor {{
     fn instr_{instr.enum_name.lower()}(&mut self, i: Instruction) -> Result<(), AxError> {{
         debug_assert_eq!(i.code(), iced_x86::Code::{instr.enum_name});
 
-        todo!("unimplemented")
+        todo!("instr_{instr.enum_name.lower()} for {mnemonic}")
     }}
 """
 
-    code += """}"""
+    code += """}
+
+    #[cfg(test)]
+mod tests {
+    use iced_x86::Register;
+
+    use super::super::axecutor::{Axecutor, MachineState};
+    use crate::{assert_reg_value, ax_test, instructions::registers::RegisterWrapper};
+
+}
+"""
 
     return code
 
@@ -213,13 +225,51 @@ def generate_mnemonic_file(mnemonic: str):
 	# run rustfmt on files
 	subprocess.run(["rustfmt", mnemonic_path, mod_path])
 
+def generate_all_switch():
+    # Read list of files ending with ".rs" in src/instructions
+    instructions_dir = os.path.join("src", "instructions")
+    files = os.listdir(instructions_dir)
+    files = list(filter(lambda f: f.endswith(".rs"), files))
+
+    # Generate match statement
+    code = f"""use iced_x86::{{Instruction, Mnemonic::*}};
+
+use super::{{axecutor::Axecutor, errors::AxError}};
+use crate::instructions::registers::RegisterWrapper;
+use crate::ax_test;
+
+impl Axecutor {{
+    pub fn switch_instruction_mnemonic(&mut self, i: Instruction) -> Result<(), AxError> {{
+        match i.mnemonic() {{"""
+
+    for mnemonic in filter(lambda m: m.lower()+".rs" in files, mnemonics):
+        code += f"""            {mnemonic} => self.mnemonic_{mnemonic.lower()}(i),"""
+
+    code += f"""            _ => Err(AxError::from(format!(
+                "unimplemented mnemonic {{:?}}",
+                i.mnemonic()
+            ))),
+        }}
+    }}
+}}
+"""
+
+
+    # Write to file switch.rs
+    with open("src/instructions/switch.rs", "w", encoding='utf8') as f:
+        f.write(code)
+    subprocess.run(["rustfmt", "src/instructions/switch.rs"])
+
 
 if __name__ == '__main__':
-    # TODO: add switch option that allows to generate a switch statement of all mnemonics that were already generated
     mnemonics_to_generate = "all"
     # set to first argument and handle invalid inputs
     if len(sys.argv) > 1:
         mnemonics_to_generate = sys.argv[1]
+
+    if mnemonics_to_generate == "switch":
+        generate_all_switch()
+        exit(0)
 
     if mnemonics_to_generate == "all":
         for mnemonic in filter(lambda m: m != "INVALID", mnemonics):
