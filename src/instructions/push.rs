@@ -6,7 +6,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 
 impl Axecutor {
-    fn mnemonic_push(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub fn mnemonic_push(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Push);
 
         match i.code() {

@@ -2,6 +2,7 @@ use super::{axecutor::Axecutor, errors::AxError};
 
 use std::convert::TryInto;
 
+#[derive(Debug, Clone)]
 pub(crate) struct MemoryArea {
     start: u64,
     length: u64,
@@ -13,7 +14,7 @@ impl Axecutor {
     pub fn mem_read_bytes(&self, address: u64, length: u64) -> Result<Vec<u8>, AxError> {
         let mut result = Vec::new();
 
-        for area in &self.memory {
+        for area in &self.state.memory {
             if address >= area.start && address + length <= area.start + area.length {
                 let offset = (address - area.start) as usize;
                 result.extend_from_slice(&area.data[offset..offset + length as usize]);
@@ -55,7 +56,7 @@ impl Axecutor {
     // TODO: Currently cannot write consecutive sections of memory
     // It would also make sense to give better error messages, e.g. if the write start address is within an area, but the data is too long
     pub fn mem_write_bytes(&mut self, address: u64, data: &[u8]) -> Result<(), AxError> {
-        for area in &mut self.memory {
+        for area in &mut self.state.memory {
             if address >= area.start && address + data.len() as u64 <= area.start + area.length {
                 let offset = (address - area.start) as usize;
                 area.data[offset..offset + data.len()].copy_from_slice(data);
@@ -88,7 +89,7 @@ impl Axecutor {
 
     pub fn mem_add_area(&mut self, start: u64, length: u64, data: Vec<u8>) -> Result<(), AxError> {
         // Make sure there's no overlapping area already defined
-        for area in &self.memory {
+        for area in &self.state.memory {
             if start >= area.start && start < area.start + area.length {
                 return Err(AxError::from(format!(
                     "cannot create memory area with start={:#x}, length={:#x}: overlaps with area with start={:#x}, length={:#x}",
@@ -97,7 +98,7 @@ impl Axecutor {
             }
         }
 
-        self.memory.push(MemoryArea {
+        self.state.memory.push(MemoryArea {
             start,
             length,
             data,

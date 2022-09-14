@@ -147,7 +147,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 
 impl Axecutor {{
-    fn mnemonic_{mnemonic.lower()}(&mut self, i: Instruction) -> Result<(), AxError> {{
+    pub fn mnemonic_{mnemonic.lower()}(&mut self, i: Instruction) -> Result<(), AxError> {{
         debug_assert_eq!(i.mnemonic(), {mnemonic});
 
         match i.code() {{""" + "\n"
@@ -215,6 +215,7 @@ def generate_mnemonic_file(mnemonic: str):
 
 
 if __name__ == '__main__':
+    # TODO: add switch option that allows to generate a switch statement of all mnemonics that were already generated
     mnemonics_to_generate = "all"
     # set to first argument and handle invalid inputs
     if len(sys.argv) > 1:

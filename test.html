@@ -47,8 +47,16 @@
 			}
 		}
 
-		let ex = new ax.Axecutor();
-		console.log(ex.disassemble());
+		let code = new Uint8Array([0xc6, 0x4, 0x25, 0, 16, 0, 0, 66])
+
+		let ex = new ax.Axecutor(code, 0x1n);
+		console.log(ex);
+		console.log(ex.toString());
+
+		while (ex.step()) {
+			console.log(ex);
+			console.log(ex.toString());
+		}
 
 		// execute();
 	</script>
