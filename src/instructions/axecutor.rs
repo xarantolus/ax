@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::*;
 
 use super::errors::AxError;
 use super::memory::MemoryArea;
-use super::registers::{empty_register_set, RegisterWrapper};
+use super::registers::{randomized_register_set, RegisterWrapper};
 
 const EXAMPLE_CODE_RIP: u64 = 0x0000_7FFA_C46A_CDA4;
 static EXAMPLE_CODE: &[u8] = &[
@@ -52,7 +52,7 @@ impl Axecutor {
             rip_to_index: rti,
             state: MachineState {
                 memory: Vec::new(),
-                registers: empty_register_set(initial_rip),
+                registers: randomized_register_set(initial_rip),
                 // TODO: Think about how to handle flags
                 // TODO: Figure out correct default value for rflags
                 rflags: 0,

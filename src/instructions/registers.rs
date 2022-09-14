@@ -1,7 +1,9 @@
 extern crate lazy_static;
 
 use iced_x86::{Register, Register::*};
+
 use lazy_static::lazy_static;
+use rand::Rng;
 use std::collections::{HashMap, HashSet};
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -89,25 +91,20 @@ lazy_static! {
     ].iter().map(|a| RegisterWrapper::from(a)).collect();
 }
 
-pub(crate) fn empty_register_set(rip_value: u64) -> HashMap<RegisterWrapper, u64> {
+pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<RegisterWrapper, u64> {
     let mut map = HashMap::new();
 
-    map.insert(RegisterWrapper::from(Register::RAX), 0);
-    map.insert(RegisterWrapper::from(Register::RBX), 0);
-    map.insert(RegisterWrapper::from(Register::RCX), 0);
-    map.insert(RegisterWrapper::from(Register::RDX), 0);
-    map.insert(RegisterWrapper::from(Register::RSI), 0);
-    map.insert(RegisterWrapper::from(Register::RDI), 0);
-    map.insert(RegisterWrapper::from(Register::RBP), 0);
-    map.insert(RegisterWrapper::from(Register::RSP), 0);
-    map.insert(RegisterWrapper::from(Register::R8), 0);
-    map.insert(RegisterWrapper::from(Register::R9), 0);
-    map.insert(RegisterWrapper::from(Register::R10), 0);
-    map.insert(RegisterWrapper::from(Register::R11), 0);
-    map.insert(RegisterWrapper::from(Register::R12), 0);
-    map.insert(RegisterWrapper::from(Register::R13), 0);
-    map.insert(RegisterWrapper::from(Register::R14), 0);
-    map.insert(RegisterWrapper::from(Register::R15), 0);
+    let mut rng = rand::thread_rng();
+
+    let registers = vec![
+        RAX, RBX, RCX, RDX, RSI, RDI, RSP, RBP, R8, R9, R10, R11, R12, R13, R14, R15,
+    ];
+
+    for register in registers {
+        let value = rng.gen::<u64>();
+        map.insert(RegisterWrapper::from(register), value);
+    }
+
     map.insert(RegisterWrapper::from(Register::RIP), rip_value);
 
     return map;

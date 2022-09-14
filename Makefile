@@ -15,5 +15,8 @@ test:
 switch:
 	python3 generate.py switch
 
+dependencies:
+	python3 -m pip install pyperclip
+
 clean:
 	rm -rf pkg

@@ -42,21 +42,20 @@ impl Axecutor {
     fn instr_xor_rm8_r8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_rm8_r8);
 
-        // Get register for i
-        let src_val = self.reg_read_8(RegisterWrapper::from(i.op1_register()));
-
         let dest_val = match i.op1_kind() {
-            OpKind::Memory => self.mem_read_8(i.memory_displacement64() as u64)?,
-            OpKind::Register => self.reg_read_8(RegisterWrapper::from(i.op1_register())),
+            OpKind::Memory => todo!("instr_xor_rm8_r8: Memory operands not implemented"),
+            OpKind::Register => self.reg_read_8(RegisterWrapper::from(i.op0_register())),
             _ => panic!("Invalid op1_kind for XOR r/m8, r8"),
         };
+
+        let src_val = self.reg_read_8(RegisterWrapper::from(i.op1_register()));
 
         let result = src_val ^ dest_val;
 
         match i.op1_kind() {
-            OpKind::Memory => self.mem_write_8(i.memory_displacement64() as u64, result),
+            OpKind::Memory => todo!("instr_xor_rm8_r8: Memory operands not implemented"),
             OpKind::Register => {
-                self.reg_write_8(RegisterWrapper::from(i.op1_register()), result);
+                self.reg_write_8(RegisterWrapper::from(i.op0_register()), result);
                 Ok(())
             }
             _ => panic!("Invalid op1_kind for XOR r/m8, r8"),
@@ -237,13 +236,36 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use iced_x86::Register;
-
-    use super::super::axecutor::{Axecutor, MachineState};
-    use crate::{assert_reg_value, ax_test, instructions::registers::RegisterWrapper};
+    use super::super::axecutor::Axecutor;
+    use crate::{
+        assert_reg_value, ax_test, instructions::registers::RegisterWrapper, write_reg_value,
+    };
+    use iced_x86::Register::*;
 
     // xor al, al
-    ax_test![test_xor_al_al; 0x30, 0xc0; |s: MachineState| {
-        assert_reg_value!(s; Register::RAX; 0x10);
+    ax_test![xor_zero; 0x30, 0xc0; |a: Axecutor| {
+        assert_reg_value!(a; AL; 0);
     }];
+
+    // xor al, bl
+    ax_test![xor_same_value; 0x30, 0xd8;
+        |a: &mut Axecutor| {
+            write_reg_value!(a; AL; 0xf);
+            write_reg_value!(a; BL; 0xf);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(a; AL; 0);
+        }
+    ];
+
+    // xor al, cl
+    ax_test![xor_different_value; 0x30, 0xc8;
+        |a: &mut Axecutor| {
+            write_reg_value!(a; AL; 0b1010);
+            write_reg_value!(a; CL; 0b0101);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(a; AL; 0b1111);
+        }
+    ];
 }

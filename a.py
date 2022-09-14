@@ -59,11 +59,32 @@ if __name__ == '__main__':
                           or c == " ", assembly_code.replace(";", " ")))
         test_id = " ".join(test_id.split()).replace(" ", "_")
 
-        code = f"""// {assembly_code}
-ax_test![test_{test_id}; {", ".join(hex_arr)}; |s: MachineState| {{
-	assert_reg_value!(s; RBX; 0x10);
-	todo!("write test cases for \\\"{assembly_code}\\\"");
-}}];"""
+        # ask if setup should be included y/n
+        setup = input("Include setup? (y/n): ")
+        if setup == "y":
+            code = f"""// {assembly_code}
+    ax_test![{test_id}; {", ".join(hex_arr)};
+        |a: &mut Axecutor| {{
+            write_reg_value!(a; AL; 0x0f);
+            todo!("write setup code for \\\"{assembly_code}\\\"");
+        }};
+        |a: Axecutor| {{
+            assert_reg_value!(a; RBX; 0x10);
+            todo!("write test cases for \\\"{assembly_code}\\\"");
+        }}
+    ];"""
+        elif setup == "n":
+            code = f"""// {assembly_code}
+    ax_test![{test_id}; {", ".join(hex_arr)}; |a: Axecutor| {{
+        assert_reg_value!(a; RBX; 0x10);
+        todo!("write test cases for \\\"{assembly_code}\\\"");
+    }}];"""
+        else:
+            print("Invalid input")
+            sys.exit(1)
+
+
+
 
         pyperclip.copy(code)
-        print("Copied to clipboard!")
+        print(f"Copied test case for \"{assembly_code}\" to clipboard!")

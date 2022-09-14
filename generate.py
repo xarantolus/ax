@@ -180,10 +180,11 @@ impl Axecutor {{
 
     #[cfg(test)]
 mod tests {
-    use iced_x86::Register;
-
-    use super::super::axecutor::{Axecutor, MachineState};
-    use crate::{assert_reg_value, ax_test, instructions::registers::RegisterWrapper};
+    use iced_x86::Register::*;
+    use super::super::axecutor::Axecutor;
+    use crate::{
+        assert_reg_value, ax_test, instructions::registers::RegisterWrapper, write_reg_value,
+    };
 
 }
 """

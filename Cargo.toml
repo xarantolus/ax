@@ -26,6 +26,7 @@ wee_alloc = { version = "0.4.5", optional = true }
 js-sys = "0.3.60"
 wasm-bindgen-futures = "0.4.33"
 lazy_static = "1.4.0"
+rand = { version = "0.7.3", features = ["wasm-bindgen"] }
 
 [dependencies.iced-x86]
 version = "1.17.0"
