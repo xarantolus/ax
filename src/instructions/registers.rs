@@ -170,7 +170,7 @@ impl Axecutor {
     }
 
     pub fn reg_write_64(&mut self, reg: RegisterWrapper, value: u64) {
-        assert!(reg.0.is_gpr64());
+        assert!(reg.0.is_gpr64() || reg.0.is_ip());
 
         self.state.registers.insert(reg, value);
     }

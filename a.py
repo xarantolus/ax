@@ -86,7 +86,7 @@ if __name__ == '__main__':
         vec![
             // TODO: Adjust memory operands
             Operand(Memory {{
-                base: None,
+                base: Some(Register::RSP.into()),
                 index: None,
                 scale: 1,
                 displacement: 0,
@@ -101,7 +101,7 @@ if __name__ == '__main__':
         vec![
             // TODO: Adjust memory operands
             Operand(Memory {{
-                base: None,
+                base: Some(Register::RSP.into()),
                 index: None,
                 scale: 1,
                 displacement: 0,
@@ -110,7 +110,7 @@ if __name__ == '__main__':
         ];
         |a: &mut Axecutor| {{
 			use iced_x86::Register::*;
-			a.reg_write_64(RSP, 0x1000)
+			a.reg_write_64(RSP.into(), 0x1000)
 		}};
 		vec![
             // TODO: Adjust memory addresses
