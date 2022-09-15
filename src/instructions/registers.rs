@@ -125,9 +125,9 @@ impl From<&Register> for RegisterWrapper {
     }
 }
 
+#[wasm_bindgen]
 impl Axecutor {
-    pub fn reg_write_8<T: Into<RegisterWrapper>>(&mut self, reg: T, value: u8) {
-        let reg = reg.into();
+    pub fn reg_write_8(&mut self, reg: RegisterWrapper, value: u8) {
         assert!(reg.0.is_gpr8());
 
         // Map 8-bit register to 64-bit register that it is part of
@@ -146,8 +146,7 @@ impl Axecutor {
         self.state.registers.insert(*qword_register, result_value);
     }
 
-    pub fn reg_write_16<T: Into<RegisterWrapper>>(&mut self, reg: T, value: u16) {
-        let reg = reg.into();
+    pub fn reg_write_16(&mut self, reg: RegisterWrapper, value: u16) {
         assert!(reg.0.is_gpr16());
 
         // Map 16-bit register to 64-bit register that it is part of
@@ -159,8 +158,7 @@ impl Axecutor {
         self.state.registers.insert(*qword_register, result_value);
     }
 
-    pub fn reg_write_32<T: Into<RegisterWrapper>>(&mut self, reg: T, value: u32) {
-        let reg = reg.into();
+    pub fn reg_write_32(&mut self, reg: RegisterWrapper, value: u32) {
         assert!(reg.0.is_gpr32());
 
         // Map 32-bit register to 64-bit register that it is part of
@@ -171,15 +169,13 @@ impl Axecutor {
         self.state.registers.insert(*qword_register, result_value);
     }
 
-    pub fn reg_write_64<T: Into<RegisterWrapper>>(&mut self, reg: T, value: u64) {
-        let reg = reg.into();
+    pub fn reg_write_64(&mut self, reg: RegisterWrapper, value: u64) {
         assert!(reg.0.is_gpr64());
 
         self.state.registers.insert(reg, value);
     }
 
-    pub fn reg_read_8<T: Into<RegisterWrapper>>(&self, reg: T) -> u8 {
-        let reg = reg.into();
+    pub fn reg_read_8(&self, reg: RegisterWrapper) -> u8 {
         assert!(reg.0.is_gpr8());
 
         // Map 8-bit register to 64-bit register that it is part of
@@ -198,8 +194,7 @@ impl Axecutor {
         return result_value;
     }
 
-    pub fn reg_read_16<T: Into<RegisterWrapper>>(&self, reg: T) -> u16 {
-        let reg = reg.into();
+    pub fn reg_read_16(&self, reg: RegisterWrapper) -> u16 {
         assert!(reg.0.is_gpr16());
 
         // Map 16-bit register to 64-bit register that it is part of
@@ -211,8 +206,7 @@ impl Axecutor {
         return result_value;
     }
 
-    pub fn reg_read_32<T: Into<RegisterWrapper>>(&self, reg: T) -> u32 {
-        let reg = reg.into();
+    pub fn reg_read_32(&self, reg: RegisterWrapper) -> u32 {
         assert!(reg.0.is_gpr32());
 
         // Map 32-bit register to 64-bit register that it is part of
@@ -224,24 +218,10 @@ impl Axecutor {
         return result_value;
     }
 
-    pub fn reg_read_64<T: Into<RegisterWrapper>>(&self, reg: T) -> u64 {
-        let reg = reg.into();
+    pub fn reg_read_64(&self, reg: RegisterWrapper) -> u64 {
         assert!(reg.0.is_gpr64() || reg.0.is_ip());
 
         let reg_value = self.state.registers.get(&reg).unwrap().clone();
         return reg_value;
     }
-}
-
-fn some_func<T: Into<Option<u32>>>(num: T){
-    let num: Option<u32> = num.into();
-    match num {
-        Some(val) => {},
-        Option::None => {},
-    }
-}
-
-fn main() {
-    some_func(1);
-    some_func(Some(2));
 }

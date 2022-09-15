@@ -1,8 +1,4 @@
-use std::fmt::format;
-
 use iced_x86::Instruction;
-
-use crate::write_reg_value;
 
 use super::{axecutor::Axecutor, errors::AxError, registers::RegisterWrapper};
 
@@ -121,11 +117,7 @@ impl Axecutor {
 mod tests {
     use iced_x86::Register;
 
-    use crate::write_reg_value;
-
-
-	use super::{Axecutor, Operand, OperandKind::*, RegisterWrapper};
-
+    use super::{Axecutor, Operand, OperandKind::*};
 
     macro_rules! operand_test {
 		[$test_name:ident; $($bytes:expr),*; $expected:expr] => {
@@ -188,7 +180,7 @@ mod tests {
         ]
     ];
 
-	// mov byte ptr [rsp], 1
+    // mov byte ptr [rsp], 1
     operand_test![mov_byte_ptr_rsp_1;
         0xc6, 0x4, 0x24, 0x1;
         vec![
@@ -201,15 +193,15 @@ mod tests {
             Operand(Immediate { data: 1, size: 1 }),
         ];
         |a: &mut Axecutor| {
-			use iced_x86::Register::*;
-			a.reg_write_64(RSP, 0x1000)
-		};
-		vec![
-			0x1000
+            use iced_x86::Register::*;
+            a.reg_write_64(RSP.into(), 0x1000)
+        };
+        vec![
+            0x1000
         ]
     ];
 
-	// mov dword ptr [rsp], 1
+    // mov dword ptr [rsp], 1
     operand_test![mov_dword_ptr_rsp_1;
         0xc7, 0x4, 0x24, 0x1, 0x0, 0x0, 0x0;
         vec![
@@ -223,11 +215,11 @@ mod tests {
             Operand(Immediate { data: 1, size: 4 }),
         ];
         |a: &mut Axecutor| {
-			use iced_x86::Register::*;
-			a.reg_write_64(RSP, 0x1000)
-		};
-		vec![
-			0x1000
+            use iced_x86::Register::*;
+            a.reg_write_64(RSP.into(), 0x1000)
+        };
+        vec![
+            0x1000
         ]
     ];
 }
