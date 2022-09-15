@@ -53,7 +53,7 @@ impl Axecutor {
         // Maybe create a bitmask that is xored after the next instruction is executed
 
         // If we reached the last instruction (and no jump has been performed etc.), we're done
-        if self.reg_read_64(RegisterWrapper::from(Register::RIP))
+        if self.reg_read_64(Register::RIP)
             == self.instructions.last().unwrap().next_ip()
         {
             self.finished = true;

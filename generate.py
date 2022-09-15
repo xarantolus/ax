@@ -170,7 +170,7 @@ impl Axecutor {{
     ///
     /// {instr.code}
     fn instr_{instr.enum_name.lower()}(&mut self, i: Instruction) -> Result<(), AxError> {{
-        debug_assert_eq!(i.code(), iced_x86::Code::{instr.enum_name});
+        debug_assert_eq!(i.code(), {instr.enum_name});
 
         todo!("instr_{instr.enum_name.lower()} for {mnemonic}")
     }}

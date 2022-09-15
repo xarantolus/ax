@@ -44,18 +44,18 @@ impl Axecutor {
 
         let dest_val = match i.op1_kind() {
             OpKind::Memory => todo!("instr_xor_rm8_r8: Memory operands not implemented"),
-            OpKind::Register => self.reg_read_8(RegisterWrapper::from(i.op0_register())),
+            OpKind::Register => self.reg_read_8(i.op0_register()),
             _ => panic!("Invalid op1_kind for XOR r/m8, r8"),
         };
 
-        let src_val = self.reg_read_8(RegisterWrapper::from(i.op1_register()));
+        let src_val = self.reg_read_8(i.op1_register());
 
         let result = src_val ^ dest_val;
 
         match i.op1_kind() {
             OpKind::Memory => todo!("instr_xor_rm8_r8: Memory operands not implemented"),
             OpKind::Register => {
-                self.reg_write_8(RegisterWrapper::from(i.op0_register()), result);
+                self.reg_write_8(i.op0_register(), result);
                 Ok(())
             }
             _ => panic!("Invalid op1_kind for XOR r/m8, r8"),

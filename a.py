@@ -60,8 +60,8 @@ if __name__ == '__main__':
         test_id = " ".join(test_id.split()).replace(" ", "_")
 
         # ask if setup should be included y/n
-        setup = input("Include setup? (y/n): ")
-        if setup == "y":
+        setup = input("Test type? (t: ax_test normal; ts: ax_test with setup; o: operand_test; os: operand_test with setup): ")
+        if setup == "t":
             code = f"""// {assembly_code}
     ax_test![{test_id}; {", ".join(hex_arr)};
         |a: &mut Axecutor| {{
@@ -73,12 +73,49 @@ if __name__ == '__main__':
             todo!("write test cases for \\\"{assembly_code}\\\"");
         }}
     ];"""
-        elif setup == "n":
+        elif setup == "ts":
             code = f"""// {assembly_code}
     ax_test![{test_id}; {", ".join(hex_arr)}; |a: Axecutor| {{
         assert_reg_value!(a; RBX; 0x10);
         todo!("write test cases for \\\"{assembly_code}\\\"");
     }}];"""
+        elif setup == "o":
+            code = f"""// {assembly_code}
+    operand_test![{test_id};
+        {", ".join(hex_arr)};
+        vec![
+            // TODO: Adjust memory operands
+            Operand(Memory {{
+                base: None,
+                index: None,
+                scale: 1,
+                displacement: 0,
+            }}),
+            Operand(Immediate {{ data: 1, size: 1 }}),
+        ]
+    ];"""
+        elif setup == "os":
+            code = f"""// {assembly_code}
+    operand_test![{test_id};
+        {", ".join(hex_arr)};
+        vec![
+            // TODO: Adjust memory operands
+            Operand(Memory {{
+                base: None,
+                index: None,
+                scale: 1,
+                displacement: 0,
+            }}),
+            Operand(Immediate {{ data: 1, size: 1 }}),
+        ];
+        |a: &mut Axecutor| {{
+			use iced_x86::Register::*;
+			a.reg_write_64(RSP, 0x1000)
+		}};
+		vec![
+            // TODO: Adjust memory addresses
+        ]
+    ];"""
         else:
             print("Invalid input")
             sys.exit(1)
