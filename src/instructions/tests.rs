@@ -14,11 +14,11 @@ macro_rules! ax_test {
             // Always use a random rip
             let random_rip = rand::thread_rng().gen::<u64>() & 0x0000_ffff_ffff_ffff;
 
-            let mut ax = Axecutor::new(bytes, random_rip).unwrap();
+            let mut ax = Axecutor::new(bytes, random_rip).expect("Failed to create axecutor");
 
             $setup(&mut ax);
 
-            ax.execute().unwrap();
+            ax.execute().expect("Error during code execution");
             let flags = ax.state.rflags;
 
             $asserts(ax);
@@ -81,7 +81,7 @@ macro_rules! assert_reg_value {
     };
     [q; $axecutor:expr; $reg:expr; $value:expr] => {
         let wrap = RegisterWrapper::from($reg);
-        assert!($reg.is_gpr64());
+        assert!($reg.is_gpr64() || $reg.is_ip());
         let val = $axecutor.reg_read_64(wrap);
         assert_eq!(
             &val, &$value,
