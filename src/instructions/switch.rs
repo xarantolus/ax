@@ -5,6 +5,7 @@ use super::{axecutor::Axecutor, errors::AxError};
 impl Axecutor {
     pub fn switch_instruction_mnemonic(&mut self, i: Instruction) -> Result<(), AxError> {
         match i.mnemonic() {
+            Mov => self.mnemonic_mov(i),
             Xor => self.mnemonic_xor(i),
             _ => Err(AxError::from(format!(
                 "unimplemented mnemonic {:?}",

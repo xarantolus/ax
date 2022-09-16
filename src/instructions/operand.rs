@@ -150,11 +150,6 @@ impl Axecutor {
                 let scale = i.memory_index_scale();
                 let displacement = i.memory_displacement64();
 
-                println!(
-                    "Memory operand: base: {:?}, index: {:?}, scale: {}, displacement: {}",
-                    base, index, scale, displacement
-                );
-
                 Ok(Operand::Memory(MemOperand {
                     base,
                     index,

@@ -37,6 +37,14 @@ macro_rules! ax_test {
             }
 		}
     };
+    [$test_name:ident; $($bytes:expr),*; $asserts:expr] => {
+        // Call the other macro with empty setup code
+        ax_test!($test_name; $($bytes),*; |_: &mut Axecutor| {}; $asserts; (0; 0));
+    };
+    [$test_name:ident; $($bytes:expr),*; $setup:expr; $asserts:expr] => {
+        // Call the other macro with empty flags
+        ax_test!($test_name; $($bytes),*; $setup; $asserts; (0; 0));
+    };
 }
 
 #[macro_export]

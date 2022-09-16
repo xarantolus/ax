@@ -168,19 +168,43 @@ macro_rules! set_flags {
 
 #[wasm_bindgen]
 impl Axecutor {
-    pub fn set_flags_u8(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u8, carry: bool) {
+    pub fn set_flags_u8(
+        &mut self,
+        flags_to_set: u64,
+        flags_to_clear: u64,
+        result: u8,
+        carry: bool,
+    ) {
         set_flags!(u8; 8)(self, flags_to_set, flags_to_clear, result, carry);
     }
 
-	pub fn set_flags_u16(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u16, carry: bool) {
-		set_flags!(u16; 16)(self, flags_to_set, flags_to_clear, result, carry);
-	}
+    pub fn set_flags_u16(
+        &mut self,
+        flags_to_set: u64,
+        flags_to_clear: u64,
+        result: u16,
+        carry: bool,
+    ) {
+        set_flags!(u16; 16)(self, flags_to_set, flags_to_clear, result, carry);
+    }
 
-	pub fn set_flags_u32(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u32, carry: bool) {
-		set_flags!(u32; 32)(self, flags_to_set, flags_to_clear, result, carry);
-	}
+    pub fn set_flags_u32(
+        &mut self,
+        flags_to_set: u64,
+        flags_to_clear: u64,
+        result: u32,
+        carry: bool,
+    ) {
+        set_flags!(u32; 32)(self, flags_to_set, flags_to_clear, result, carry);
+    }
 
-	pub fn set_flags_u64(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u64, carry: bool) {
-		set_flags!(u64; 64)(self, flags_to_set, flags_to_clear, result, carry);
-	}
+    pub fn set_flags_u64(
+        &mut self,
+        flags_to_set: u64,
+        flags_to_clear: u64,
+        result: u64,
+        carry: bool,
+    ) {
+        set_flags!(u64; 64)(self, flags_to_set, flags_to_clear, result, carry);
+    }
 }

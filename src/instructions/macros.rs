@@ -101,6 +101,18 @@ macro_rules! calculate_rm_r {
             }
         }
     };
+    [u8; $self:expr; $i:expr; $op:expr] => {
+        calculate_rm_r![u8; $self; $i; $op; (set: 0; clear: 0)]
+    };
+    [u16; $self:expr; $i:expr; $op:expr] => {
+        calculate_rm_r![u16; $self; $i; $op; (set: 0; clear: 0)]
+    };
+    [u32; $self:expr; $i:expr; $op:expr] => {
+        calculate_rm_r![u32; $self; $i; $op; (set: 0; clear: 0)]
+    };
+    [u64; $self:expr; $i:expr; $op:expr] => {
+        calculate_rm_r![u64; $self; $i; $op; (set: 0; clear: 0)]
+    };
 }
 
 #[macro_export]
@@ -122,7 +134,7 @@ macro_rules! calculate_r_rm {
 
             let dest = dest.into();
             let dest_val = $self.reg_read_8(dest);
-            let result = $op(src_val, dest_val);
+            let result = $op(dest_val, src_val);
             $self.set_flags_u8($flags_to_set, $flags_to_clear, result, false);
             $self.reg_write_8(dest, result);
             Ok(())
@@ -145,7 +157,7 @@ macro_rules! calculate_r_rm {
 
             let dest = dest.into();
             let dest_val = $self.reg_read_16(dest);
-            let result = $op(src_val, dest_val);
+            let result = $op(dest_val, src_val);
             $self.set_flags_u16($flags_to_set, $flags_to_clear, result, false);
             $self.reg_write_16(dest, result);
             Ok(())
@@ -168,7 +180,7 @@ macro_rules! calculate_r_rm {
 
             let dest = dest.into();
             let dest_val = $self.reg_read_32(dest);
-            let result = $op(src_val, dest_val);
+            let result = $op(dest_val, src_val);
             $self.set_flags_u32($flags_to_set, $flags_to_clear, result, false);
             $self.reg_write_32(dest, result);
             Ok(())
@@ -191,11 +203,23 @@ macro_rules! calculate_r_rm {
 
             let dest = dest.into();
             let dest_val = $self.reg_read_64(dest);
-            let result = $op(src_val, dest_val);
+            let result = $op(dest_val, src_val);
             $self.set_flags_u64($flags_to_set, $flags_to_clear, result, false);
             $self.reg_write_64(dest, result);
             Ok(())
         }
+    };
+    [u8; $self:expr; $i:expr; $op:expr] => {
+        calculate_r_rm![u8; $self; $i; $op; (set: 0; clear: 0)]
+    };
+    [u16; $self:expr; $i:expr; $op:expr] => {
+        calculate_r_rm![u16; $self; $i; $op; (set: 0; clear: 0)]
+    };
+    [u32; $self:expr; $i:expr; $op:expr] => {
+        calculate_r_rm![u32; $self; $i; $op; (set: 0; clear: 0)]
+    };
+    [u64; $self:expr; $i:expr; $op:expr] => {
+        calculate_r_rm![u64; $self; $i; $op; (set: 0; clear: 0)]
     };
 }
 
@@ -355,5 +379,17 @@ macro_rules! calculate_rm_imm {
                 _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
+    };
+    [u8; $self:expr; $i:expr; $op:expr] => {
+        calculate_rm_imm![u8; $self; $i; $op; (set: 0; clear: 0)]
+    };
+    [u16; $self:expr; $i:expr; $op:expr] => {
+        calculate_rm_imm![u16; $self; $i; $op; (set: 0; clear: 0)]
+    };
+    [u32; $self:expr; $i:expr; $op:expr] => {
+        calculate_rm_imm![u32; $self; $i; $op; (set: 0; clear: 0)]
+    };
+    [u64; $self:expr; $i:expr; $op:expr] => {
+        calculate_rm_imm![u64; $self; $i; $op; (set: 0; clear: 0)]
     };
 }
