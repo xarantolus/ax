@@ -198,3 +198,162 @@ macro_rules! calculate_r_rm {
         }
     };
 }
+
+#[macro_export]
+macro_rules! calculate_rm_imm {
+    [u8; $self:expr; $i:expr; $op:expr; $flags_to_set:expr] => {
+        {
+            use crate::instructions::operand::Operand;
+
+            let (dest, src) = $self.instruction_operands_2($i)?;
+            let src_val = match src {
+                Operand::Immediate{ size, data } => {
+                    debug_assert_eq!(size, 1, "Invalid immediate size for {:?} instruction", $i.mnemonic());
+                    data as u8
+                }
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            };
+
+            match dest {
+                Operand::Memory(m) => {
+                    let dest_val = $self.mem_read_8($self.mem_addr(m))?;
+                    let result = $op(dest_val, src_val);
+                    $self.set_flags_u8($flags_to_set, result, false);
+                    $self.mem_write_8($self.mem_addr(m), result)
+                }
+                Operand::Register(r) => {
+                    let dest_val = $self.reg_read_8(r);
+                    let result = $op(dest_val, src_val);
+                    $self.set_flags_u8($flags_to_set, result, false);
+                    $self.reg_write_8(r, result);
+                    Ok(())
+                }
+                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            }
+        }
+    };
+    [u16; $self:expr; $i:expr; $op:expr; $flags_to_set:expr] => {
+        {
+            use crate::instructions::operand::Operand;
+
+            let (dest, src) = $self.instruction_operands_2($i)?;
+            let src_val = match src {
+                Operand::Immediate{ size, data } => {
+                    debug_assert_eq!(size, 2, "Invalid immediate size for {:?} instruction", $i.mnemonic());
+                    data as u16
+                }
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            };
+
+            match dest {
+                Operand::Memory(m) => {
+                    let dest_val = $self.mem_read_16($self.mem_addr(m))?;
+                    let result = $op(dest_val, src_val);
+                    $self.set_flags_u16($flags_to_set, result, false);
+                    $self.mem_write_16($self.mem_addr(m), result)
+                }
+                Operand::Register(r) => {
+                    let dest_val = $self.reg_read_16(r);
+                    let result = $op(dest_val, src_val);
+                    $self.set_flags_u16($flags_to_set, result, false);
+                    $self.reg_write_16(r, result);
+                    Ok(())
+                }
+                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            }
+        }
+    };
+    [u32; $self:expr; $i:expr; $op:expr; $flags_to_set:expr] => {
+        {
+            use crate::instructions::operand::Operand;
+
+            let (dest, src) = $self.instruction_operands_2($i)?;
+            let src_val = match src {
+                Operand::Immediate{ size, data } => {
+                    debug_assert_eq!(size, 4, "Invalid immediate size for {:?} instruction", $i.mnemonic());
+                    data as u32
+                }
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            };
+
+            match dest {
+                Operand::Memory(m) => {
+                    let dest_val = $self.mem_read_32($self.mem_addr(m))?;
+                    let result = $op(dest_val, src_val);
+                    $self.set_flags_u32($flags_to_set, result, false);
+                    $self.mem_write_32($self.mem_addr(m), result)
+                }
+                Operand::Register(r) => {
+                    let dest_val = $self.reg_read_32(r);
+                    let result = $op(dest_val, src_val);
+                    $self.set_flags_u32($flags_to_set, result, false);
+                    $self.reg_write_32(r, result);
+                    Ok(())
+                }
+                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            }
+        }
+    };
+    [u64; $self:expr; $i:expr; $op:expr; $flags_to_set:expr] => {
+        {
+            use crate::instructions::operand::Operand;
+
+            let (dest, src) = $self.instruction_operands_2($i)?;
+            let src_val = match src {
+                Operand::Immediate{ size, data } => {
+                    debug_assert_eq!(size, 8, "Invalid immediate size for {:?} instruction", $i.mnemonic());
+                    data as u64
+                }
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            };
+
+            match dest {
+                Operand::Memory(m) => {
+                    let dest_val = $self.mem_read_64($self.mem_addr(m))?;
+                    let result = $op(dest_val, src_val);
+                    $self.set_flags_u64($flags_to_set, result, false);
+                    $self.mem_write_64($self.mem_addr(m), result)
+                }
+                Operand::Register(r) => {
+                    let dest_val = $self.reg_read_64(r);
+                    let result = $op(dest_val, src_val);
+                    $self.set_flags_u64($flags_to_set, result, false);
+                    $self.reg_write_64(r, result);
+                    Ok(())
+                }
+                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            }
+        }
+    };
+    [u64; u32; $self:expr; $i:expr; $op:expr; $flags_to_set:expr] => {
+        {
+            use crate::instructions::operand::Operand;
+
+            let (dest, src) = $self.instruction_operands_2($i)?;
+            let src_val = match src {
+                Operand::Immediate{ size: _, data } => {
+                    debug_assert_eq!(data, data);
+                    data as u32
+                }
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            };
+
+            match dest {
+                Operand::Memory(m) => {
+                    let dest_val = $self.mem_read_64($self.mem_addr(m))?;
+                    let result = $op(dest_val, src_val);
+                    $self.set_flags_u64($flags_to_set, result, false);
+                    $self.mem_write_64($self.mem_addr(m), result)
+                }
+                Operand::Register(r) => {
+                    let dest_val = $self.reg_read_64(r);
+                    let result = $op(dest_val, src_val as u64);
+                    $self.set_flags_u64($flags_to_set, result, false);
+                    $self.reg_write_64(r, result);
+                    Ok(())
+                }
+                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            }
+        }
+    };
+}

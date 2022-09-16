@@ -17,6 +17,79 @@ pub enum Operand {
     Immediate { data: u64, size: i8 },
 }
 
+impl From<Operand> for RegisterWrapper {
+    fn from(operand: Operand) -> Self {
+        match operand {
+            Operand::Register(register) => register,
+            _ => panic!("Cannot convert operand to register"),
+        }
+    }
+}
+
+impl From<Operand> for u8 {
+    fn from(operand: Operand) -> Self {
+        match operand {
+            Operand::Immediate { data, size } => {
+                debug_assert_eq!(
+                    size, 1,
+                    "Expected immediate operand of size 1, got size {}",
+                    size
+                );
+                data as u8
+            }
+            _ => panic!("Cannot convert operand to u8"),
+        }
+    }
+}
+
+impl From<Operand> for u16 {
+    fn from(operand: Operand) -> Self {
+        match operand {
+            Operand::Immediate { data, size } => {
+                debug_assert_eq!(
+                    size, 2,
+                    "Expected immediate operand of size 2, got size {}",
+                    size
+                );
+                data as u16
+            }
+            _ => panic!("Cannot convert operand to u16"),
+        }
+    }
+}
+
+impl From<Operand> for u32 {
+    fn from(operand: Operand) -> Self {
+        match operand {
+            Operand::Immediate { data, size } => {
+                debug_assert_eq!(
+                    size, 4,
+                    "Expected immediate operand of size 4, got size {}",
+                    size
+                );
+                data as u32
+            }
+            _ => panic!("Cannot convert operand to u32"),
+        }
+    }
+}
+
+impl From<Operand> for u64 {
+    fn from(operand: Operand) -> Self {
+        match operand {
+            Operand::Immediate { data, size } => {
+                debug_assert_eq!(
+                    size, 8,
+                    "Expected immediate operand of size 8, got size {}",
+                    size
+                );
+                data
+            }
+            _ => panic!("Cannot convert operand to u64"),
+        }
+    }
+}
+
 impl Axecutor {
     pub(crate) fn mem_addr(&self, o: MemOperand) -> u64 {
         let MemOperand {
@@ -153,14 +226,14 @@ mod tests {
 			fn $test_name () {
 				let expected : Vec<Operand> = $expected;
 				let axecutor = Axecutor::new(&[$($bytes),*], TEST_RIP_VALUE).expect("Failed to create axecutor");
-				assert_eq!(axecutor.instructions.len(), 1);
+				assert_eq!(axecutor.instructions.len(), 1, "Expected 1 instruction, got {}", axecutor.instructions.len());
 				let instruction = axecutor.instructions[0];
 
-				assert_eq!(instruction.op_count(), expected.len() as u32);
+				assert_eq!(instruction.op_count(), expected.len() as u32, "Expected {} operands, got {}", expected.len(), instruction.op_count());
 				for i in 0..expected.len() {
 					let operand = axecutor.instruction_operand(instruction, i as u32).expect("Failed to get operand");
 
-					assert_eq!(operand, expected[i]);
+					assert_eq!(operand, expected[i], "Operand {} mismatch", i);
 				}
 			}
 		};
@@ -169,27 +242,27 @@ mod tests {
 			fn $test_name () {
 				let expected : Vec<Operand> = $expected;
 				let mut axecutor = Axecutor::new(&[$($bytes),*], 0x1000).expect("Failed to create axecutor");
-				assert_eq!(axecutor.instructions.len(), 1);
+				assert_eq!(axecutor.instructions.len(), 1, "Expected 1 instruction, got {}", axecutor.instructions.len());
 				let instruction = axecutor.instructions[0];
 
 				let mut mem_addr_counter: usize = 0;
 
-				assert_eq!(instruction.op_count(), expected.len() as u32);
+				assert_eq!(instruction.op_count(), expected.len() as u32, "Expected {} operands, got {}", expected.len(), instruction.op_count());
 
 				$setup(&mut axecutor);
 
 				for i in 0..expected.len() {
 					let operand = axecutor.instruction_operand(instruction, i as u32).expect("Failed to get operand");
-                    assert_eq!(operand, expected[i]);
+                    assert_eq!(operand, expected[i], "Operand {} does not match", i);
 					if let Memory(m) = operand {
 						let mem_addr = axecutor.mem_addr(m);
-						assert_eq!(mem_addr, $memaddrs[mem_addr_counter]);
+						assert_eq!(mem_addr, $memaddrs[mem_addr_counter], "Memory address mismatch for operand {:?}", m);
 						mem_addr_counter += 1;
 					}
 
 				}
 
-				assert_eq!(mem_addr_counter, $memaddrs.len());
+				assert_eq!(mem_addr_counter, $memaddrs.len(), "Provided memory addresses do not match the number of memory operands");
 			}
 		};
 	}

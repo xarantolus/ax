@@ -5,10 +5,12 @@ use iced_x86::Mnemonic::Xor;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
+use super::sext::SignExtended;
 use crate::instructions::flags::*;
-use crate::{calculate_r_rm, calculate_rm_r};
+use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
 
-// TODO: Flags
+// cargo watch -x 'tarpaulin --out Lcov' -i lcov.info -w src
+
 impl Axecutor {
     pub fn mnemonic_xor(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Xor);
@@ -132,7 +134,7 @@ impl Axecutor {
     fn instr_xor_al_imm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_AL_imm8);
 
-        todo!("instr_xor_al_imm8 for Xor")
+        self.instr_xor_rm8_imm8(i)
     }
 
     /// XOR AX, imm16
@@ -141,7 +143,7 @@ impl Axecutor {
     fn instr_xor_ax_imm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_AX_imm16);
 
-        todo!("instr_xor_ax_imm16 for Xor")
+        self.instr_xor_rm16_imm16(i)
     }
 
     /// XOR EAX, imm32
@@ -150,7 +152,7 @@ impl Axecutor {
     fn instr_xor_eax_imm32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_EAX_imm32);
 
-        todo!("instr_xor_eax_imm32 for Xor")
+        self.instr_xor_rm32_imm32(i)
     }
 
     /// XOR RAX, imm32
@@ -159,43 +161,43 @@ impl Axecutor {
     fn instr_xor_rax_imm32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_RAX_imm32);
 
-        todo!("instr_xor_rax_imm32 for Xor")
+        self.instr_xor_rm64_imm32(i)
     }
 
     /// XOR r/m8, imm8
     ///
     /// 80 /6 ib
     fn instr_xor_rm8_imm8(&mut self, i: Instruction) -> Result<(), AxError> {
-        debug_assert_eq!(i.code(), iced_x86::Code::Xor_rm8_imm8);
-
-        todo!("instr_xor_rm8_imm8 for Xor")
+        calculate_rm_imm![u8; self; i; |d,s| {
+            d^s
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR r/m16, imm16
     ///
     /// o16 81 /6 iw
     fn instr_xor_rm16_imm16(&mut self, i: Instruction) -> Result<(), AxError> {
-        debug_assert_eq!(i.code(), iced_x86::Code::Xor_rm16_imm16);
-
-        todo!("instr_xor_rm16_imm16 for Xor")
+        calculate_rm_imm![u16; self; i; |d,s| {
+            d^s
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR r/m32, imm32
     ///
     /// o32 81 /6 id
     fn instr_xor_rm32_imm32(&mut self, i: Instruction) -> Result<(), AxError> {
-        debug_assert_eq!(i.code(), iced_x86::Code::Xor_rm32_imm32);
-
-        todo!("instr_xor_rm32_imm32 for Xor")
+        calculate_rm_imm![u32; self; i; |d,s| {
+            d^s
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR r/m64, imm32
     ///
     /// o64 81 /6 id
     fn instr_xor_rm64_imm32(&mut self, i: Instruction) -> Result<(), AxError> {
-        debug_assert_eq!(i.code(), iced_x86::Code::Xor_rm64_imm32);
-
-        todo!("instr_xor_rm64_imm32 for Xor")
+        calculate_rm_imm![u64; u32; self; i; |d,s| {
+            d^u64::sign_extend(s as u32)
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR r/m8, imm8
@@ -231,6 +233,33 @@ impl Axecutor {
     fn instr_xor_rm64_imm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_rm64_imm8);
 
+        // {
+        //     use crate::instructions::operand::Operand;
+
+        //     let (dest, src) = self.instruction_operands_2(i)?;
+        //     let src_val = src.into();
+
+        //     let op = |d, s| d ^ s;
+
+        //     match dest {
+        //         Operand::Memory(m) => {
+        //             let dest_val = self.mem_read_8(self.mem_addr(m))?;
+        //             let result = op(dest_val, src_val);
+        //             self.set_flags_u8(flags_to_set, result, false);
+        //             self.mem_write_8(self.mem_addr(m), result)
+        //         }
+        //         Operand::Register(r) => {
+        //             let dest_val = self.reg_read_8(r);
+        //             let result = op(dest_val, src_val);
+        //             self.set_flags_u8(flags_to_set, result, false);
+        //             self.reg_write_8(r, result);
+        //             Ok(())
+        //         }
+        //         _ => {
+        //             panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic())
+        //         }
+        //     }
+        // }
         todo!("instr_xor_rm64_imm8 for Xor")
     }
 }
@@ -434,5 +463,82 @@ mod tests {
             assert_eq!(a.mem_read_64(0x1008).unwrap(), 0x12345678);
         };
         (0; FLAG_PF | FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
+    ];
+
+    // xor al, 8
+    ax_test![xor_al_8; 0x34, 0x8;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0f);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x7);
+        };
+        (0; FLAG_PF | FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
+    ];
+
+    // xor bl, 15
+    ax_test![xor_bl_15; 0x80, 0xf3, 0xf;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; BL; 15);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; BL; 0);
+        };
+        (FLAG_ZF | FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF)
+    ];
+
+    // xor ax, 155
+    ax_test![xor_ax_155; 0x66, 0x35, 0x9b, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0x1355u16);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 5070);
+        };
+        (0; FLAG_PF | FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
+    ];
+
+    // xor r11w, 0x1358
+    ax_test![xor_r11w_0x1358; 0x66, 0x41, 0x81, 0xf3, 0x58, 0x13;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; R11W; 0x1358);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; R11W; 0);
+        };
+        (FLAG_ZF | FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF)
+    ];
+
+    // xor edx, 0x1358
+    ax_test![xor_edx_0x1358; 0x81, 0xf2, 0x58, 0x13, 0x0, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EDX; 0x1358);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EDX; 0);
+        };
+        (FLAG_ZF | FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF)
+    ];
+
+    // xor eax, 0x1358
+    ax_test![xor_eax_0x1358; 0x35, 0x58, 0x13, 0x0, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EAX; 0x1358);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EAX; 0);
+        };
+        (FLAG_ZF | FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF)
+    ];
+
+    // xor rax, 0x35183958
+    ax_test![xor_rax_0x35183958; 0x48, 0x35, 0x58, 0x39, 0x18, 0x35;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x35183957);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 15);
+        };
+        (FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
     ];
 }

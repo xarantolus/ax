@@ -39,7 +39,6 @@ macro_rules! ax_test {
     };
 }
 
-// TODO: Flags
 #[macro_export]
 macro_rules! assert_reg_value {
     [b; $axecutor:expr; $reg:expr; $value:expr] => {

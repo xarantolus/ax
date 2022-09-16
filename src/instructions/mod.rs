@@ -6,6 +6,7 @@ mod macros;
 pub mod memory;
 pub mod operand;
 pub mod registers;
+mod sext;
 pub mod switch;
 mod tests;
 pub mod xor;
