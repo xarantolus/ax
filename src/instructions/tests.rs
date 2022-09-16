@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! ax_test {
-    [$test_name:ident; $($bytes:expr),*; $asserts:expr;($flags_to_set:expr; $flags_not_to_set:expr)] => {
+    [$test_name:ident; $($bytes:expr),*; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
         // Call the other macro with empty setup code
         ax_test!($test_name; $($bytes),*; |_: &mut Axecutor| {}; $asserts; ($flags_to_set; $flags_not_to_set));
     };

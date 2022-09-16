@@ -147,6 +147,8 @@ use iced_x86::OpKind;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::registers::RegisterWrapper;
+use crate::{{calculate_r_rm, calculate_rm_imm, calculate_rm_r}};
+
 
 impl Axecutor {{
     pub fn mnemonic_{mnemonic.lower()}(&mut self, i: Instruction) -> Result<(), AxError> {{

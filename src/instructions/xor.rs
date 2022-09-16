@@ -45,7 +45,7 @@ impl Axecutor {
 
         calculate_rm_r![u8; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r/m16, r16
@@ -56,7 +56,7 @@ impl Axecutor {
 
         calculate_rm_r![u16; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r/m32, r32
@@ -67,7 +67,7 @@ impl Axecutor {
 
         calculate_rm_r![u32; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r/m64, r64
@@ -78,7 +78,7 @@ impl Axecutor {
 
         calculate_rm_r![u64; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r8, r/m8
@@ -89,7 +89,7 @@ impl Axecutor {
 
         calculate_r_rm![u8; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r16, r/m16
@@ -100,7 +100,7 @@ impl Axecutor {
 
         calculate_r_rm![u16; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r32, r/m32
@@ -111,7 +111,7 @@ impl Axecutor {
 
         calculate_r_rm![u32; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r64, r/m64
@@ -122,7 +122,7 @@ impl Axecutor {
 
         calculate_r_rm![u64; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR AL, imm8
@@ -167,7 +167,7 @@ impl Axecutor {
     fn instr_xor_rm8_imm8(&mut self, i: Instruction) -> Result<(), AxError> {
         calculate_rm_imm![u8; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r/m16, imm16
@@ -176,7 +176,7 @@ impl Axecutor {
     fn instr_xor_rm16_imm16(&mut self, i: Instruction) -> Result<(), AxError> {
         calculate_rm_imm![u16; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r/m32, imm32
@@ -185,7 +185,7 @@ impl Axecutor {
     fn instr_xor_rm32_imm32(&mut self, i: Instruction) -> Result<(), AxError> {
         calculate_rm_imm![u32; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r/m64, imm32
@@ -194,7 +194,7 @@ impl Axecutor {
     fn instr_xor_rm64_imm32(&mut self, i: Instruction) -> Result<(), AxError> {
         calculate_rm_imm![u64; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r/m8, imm8
@@ -214,7 +214,7 @@ impl Axecutor {
 
         calculate_rm_imm![u16; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r/m32, imm8
@@ -225,7 +225,7 @@ impl Axecutor {
 
         calculate_rm_imm![u32; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// XOR r/m64, imm8
@@ -236,7 +236,7 @@ impl Axecutor {
 
         calculate_rm_imm![u64; self; i; |d,s| {
             d^s
-        }; FLAG_ZF | FLAG_SF | FLAG_PF]
+        }; (set: FLAG_ZF | FLAG_SF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 }
 
