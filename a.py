@@ -66,7 +66,7 @@ if __name__ == '__main__':
     ax_test![{test_id}; {", ".join(hex_arr)}; |a: Axecutor| {{
         assert_reg_value!(b; a; RBX; 0x10);
         todo!("write test cases for \\\"{assembly_code}\\\"");
-    }}];"""
+    }}; (0; 0)];"""
         elif setup == "ts":
             code = f"""// {assembly_code}
     ax_test![{test_id}; {", ".join(hex_arr)};
@@ -77,7 +77,8 @@ if __name__ == '__main__':
         |a: Axecutor| {{
             assert_reg_value!(b; a; RBX; 0x10);
             todo!("write test cases for \\\"{assembly_code}\\\"");
-        }}
+        }};
+        (0; 0)
     ];"""
         elif setup == "o":
             code = f"""// {assembly_code}

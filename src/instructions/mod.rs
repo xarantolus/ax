@@ -1,6 +1,7 @@
 pub mod axecutor;
 pub mod errors;
 pub mod execute;
+pub mod flags;
 mod macros;
 pub mod memory;
 pub mod operand;

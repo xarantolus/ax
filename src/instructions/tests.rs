@@ -1,10 +1,10 @@
 #[macro_export]
 macro_rules! ax_test {
-    [$test_name:ident; $($bytes:expr),*; $asserts:expr] => {
+    [$test_name:ident; $($bytes:expr),*; $asserts:expr;($flags_to_set:expr; $flags_not_to_set:expr)] => {
         // Call the other macro with empty setup code
-        ax_test!($test_name; $($bytes),*; |_: &mut Axecutor| {}; $asserts);
+        ax_test!($test_name; $($bytes),*; |_: &mut Axecutor| {}; $asserts; ($flags_to_set; $flags_not_to_set));
     };
-    [$test_name:ident; $($bytes:expr),*; $setup:expr; $asserts:expr] => {
+    [$test_name:ident; $($bytes:expr),*; $setup:expr; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
 		#[test]
 		fn $test_name () {
             use rand::Rng;
@@ -19,8 +19,22 @@ macro_rules! ax_test {
             $setup(&mut ax);
 
             ax.execute().unwrap();
+            let flags = ax.state.rflags;
 
             $asserts(ax);
+
+            // Check flags
+            use crate::instructions::flags::*;
+            for flag in FLAG_LIST {
+                // If the flag should be set, it must be != 0
+                if $flags_to_set & flag != 0 {
+                    assert!(flags & flag != 0, "FLAG_{} should be set, but wasn't", FLAG_TO_NAMES.get(&flag).unwrap());
+                }
+
+                if $flags_not_to_set & flag != 0 {
+                    assert!(flags & flag == 0, "FLAG_{} should not be set, but was", FLAG_TO_NAMES.get(&flag).unwrap());
+                }
+            }
 		}
     };
 }

@@ -46,8 +46,8 @@ impl Axecutor {
                 memory: Vec::new(),
                 registers: randomized_register_set(initial_rip),
                 // TODO: Think about how to handle flags
-                // TODO: Figure out correct default value for rflags
-                rflags: 0,
+                // Intel SDM 3.4.3 EFLAGS Register mentions this default value:
+                rflags: 0x00000002,
             },
         })
     }

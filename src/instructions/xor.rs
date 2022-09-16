@@ -4,6 +4,8 @@ use iced_x86::Mnemonic::Xor;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+
+use crate::instructions::flags::*;
 use crate::{calculate_r_rm, calculate_rm_r};
 
 // TODO: Flags
@@ -44,7 +46,7 @@ impl Axecutor {
 
         calculate_rm_r![u8; self; i; |d,s| {
             d^s
-        }]
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR r/m16, r16
@@ -55,7 +57,7 @@ impl Axecutor {
 
         calculate_rm_r![u16; self; i; |d,s| {
             d^s
-        }]
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR r/m32, r32
@@ -66,7 +68,7 @@ impl Axecutor {
 
         calculate_rm_r![u32; self; i; |d,s| {
             d^s
-        }]
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR r/m64, r64
@@ -77,7 +79,7 @@ impl Axecutor {
 
         calculate_rm_r![u64; self; i; |d,s| {
             d^s
-        }]
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR r8, r/m8
@@ -88,7 +90,7 @@ impl Axecutor {
 
         calculate_r_rm![u8; self; i; |d,s| {
             d^s
-        }]
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR r16, r/m16
@@ -99,7 +101,7 @@ impl Axecutor {
 
         calculate_r_rm![u16; self; i; |d,s| {
             d^s
-        }]
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR r32, r/m32
@@ -110,7 +112,7 @@ impl Axecutor {
 
         calculate_r_rm![u32; self; i; |d,s| {
             d^s
-        }]
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR r64, r/m64
@@ -121,7 +123,7 @@ impl Axecutor {
 
         calculate_r_rm![u64; self; i; |d,s| {
             d^s
-        }]
+        }; FLAG_ZF | FLAG_SF | FLAG_PF]
     }
 
     /// XOR AL, imm8
@@ -244,8 +246,7 @@ mod tests {
     // xor al, al
     ax_test![xor_zero; 0x30, 0xc0; |a: Axecutor| {
         assert_reg_value!(b; a; AL; 0);
-    }];
-
+    }; (FLAG_ZF | FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF)];
     // xor al, bl
     ax_test![xor_same_value; 0x30, 0xd8;
         |a: &mut Axecutor| {
@@ -255,9 +256,9 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0);
             assert_reg_value!(b; a; BL; 0xf);
-        }
+        };
+        (FLAG_ZF | FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF)
     ];
-
     // xor al, cl
     ax_test![xor_different_value; 0x30, 0xc8;
         |a: &mut Axecutor| {
@@ -267,7 +268,20 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0b1111);
             assert_reg_value!(b; a; CL; 0b0101);
-        }
+        };
+        (FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
+    ];
+    // xor al, cl
+    ax_test![xor_sign_flag; 0x30, 0xc8;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0b10000000);
+            write_reg_value!(b; a; CL; 0b00000000);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0b10000000);
+            assert_reg_value!(b; a; CL; 0b00000000);
+        };
+        (FLAG_SF; FLAG_PF | FLAG_OF | FLAG_CF | FLAG_ZF)
     ];
     // xor ax, cx
     ax_test![xor_ax_cx; 0x66, 0x31, 0xc8;
@@ -278,7 +292,8 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x0f0f);
             assert_reg_value!(w; a; CX; 0xf0f0);
-        }
+        };
+        (FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
     ];
     // xor [rsp+8], eax
     ax_test![xor_rsp8_eax; 0x31, 0x44, 0x24, 0x8;
@@ -296,7 +311,8 @@ mod tests {
                 a.mem_read_32(0x1008).unwrap(),
                 0x12345678 ^ 0x87654321
             );
-        }
+        };
+        (FLAG_PF | FLAG_SF; FLAG_OF | FLAG_CF | FLAG_ZF)
     ];
     // xor [rsp-8], r11
     ax_test![xor_rsp8_r11; 0x4c, 0x31, 0x5c, 0x24, 0xf8;
@@ -314,8 +330,10 @@ mod tests {
                 a.mem_read_64(0xff8).unwrap(),
                 0x33312345678 ^ 0x87654321
             );
-        }
+        };
+        (FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
     ];
+
     // xor rax, r11
     ax_test![xor_rax_r11; 0x4c, 0x31, 0xd8;
         |a: &mut Axecutor| {
@@ -325,7 +343,8 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x33312345678u64 ^ 0x33387654321u64);
             assert_reg_value!(q; a; R11; 0x33387654321u64);
-        }
+        };
+        (FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
     ];
 
     // xor al, [rsp]
@@ -341,7 +360,8 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x10^0xf);
             assert_reg_value!(q; a; RSP; 0x1000);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x10);
-        }
+        };
+        (0; FLAG_PF | FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
     ];
 
     // xor r11w, [rsp+0x20]
@@ -357,7 +377,8 @@ mod tests {
             assert_reg_value!(w; a; R11W; 0x20^0x10);
             assert_reg_value!(q; a; RSP; 0x1000);
             assert_eq!(a.mem_read_16(0x1020).unwrap(), 0x20);
-        }
+        };
+        (FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
     ];
 
     // xor edx, [rip+0x35353]
@@ -375,7 +396,8 @@ mod tests {
             // Note that rip has advanced by instruction length 6
             let rip = a.reg_read_64(RIP.into());
             assert_eq!(a.mem_read_32(rip+0x35353).unwrap(), 0x12345678);
-        }
+        };
+        (0; FLAG_PF | FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
     ];
 
     // xor rax, [rip+0x35353]
@@ -393,6 +415,24 @@ mod tests {
             // Note that rip has advanced by instruction length 7
             let rip = a.reg_read_64(RIP.into());
             assert_eq!(a.mem_read_64(rip+0x35353).unwrap(), 0x12345678);
-        }
+        };
+        (0; FLAG_PF | FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
+    ];
+
+    // xor rax, [rsp+8]
+    ax_test![xor_rax_rsp8; 0x48, 0x33, 0x44, 0x24, 0x8;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x10);
+
+            a.mem_init_zero(0x1000, 256).unwrap();
+            a.mem_write_64(0x1008, 0x12345678).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x12345678^0x10);
+            assert_reg_value!(q; a; RSP; 0x1000);
+            assert_eq!(a.mem_read_64(0x1008).unwrap(), 0x12345678);
+        };
+        (0; FLAG_PF | FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
     ];
 }
