@@ -1,11 +1,12 @@
 use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Xor;
-use iced_x86::OpKind;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+use crate::{calculate_r_rm, calculate_rm_r};
 
+// TODO: Flags
 impl Axecutor {
     pub fn mnemonic_xor(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Xor);
@@ -41,24 +42,9 @@ impl Axecutor {
     fn instr_xor_rm8_r8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_rm8_r8);
 
-        let dest_val = match i.op1_kind() {
-            OpKind::Memory => todo!("instr_xor_rm8_r8: Memory operands not implemented"),
-            OpKind::Register => self.reg_read_8(i.op0_register().into()),
-            _ => panic!("Invalid op1_kind for XOR r/m8, r8"),
-        };
-
-        let src_val = self.reg_read_8(i.op1_register().into());
-
-        let result = src_val ^ dest_val;
-
-        match i.op1_kind() {
-            OpKind::Memory => todo!("instr_xor_rm8_r8: Memory operands not implemented"),
-            OpKind::Register => {
-                self.reg_write_8(i.op0_register().into(), result);
-                Ok(())
-            }
-            _ => panic!("Invalid op1_kind for XOR r/m8, r8"),
-        }
+        calculate_rm_r![u8; self; i; |d,s| {
+            d^s
+        }]
     }
 
     /// XOR r/m16, r16
@@ -67,7 +53,9 @@ impl Axecutor {
     fn instr_xor_rm16_r16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_rm16_r16);
 
-        todo!("instr_xor_rm16_r16 for Xor")
+        calculate_rm_r![u16; self; i; |d,s| {
+            d^s
+        }]
     }
 
     /// XOR r/m32, r32
@@ -76,7 +64,9 @@ impl Axecutor {
     fn instr_xor_rm32_r32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_rm32_r32);
 
-        todo!("instr_xor_rm32_r32 for Xor")
+        calculate_rm_r![u32; self; i; |d,s| {
+            d^s
+        }]
     }
 
     /// XOR r/m64, r64
@@ -85,7 +75,9 @@ impl Axecutor {
     fn instr_xor_rm64_r64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_rm64_r64);
 
-        todo!("instr_xor_rm64_r64 for Xor")
+        calculate_rm_r![u64; self; i; |d,s| {
+            d^s
+        }]
     }
 
     /// XOR r8, r/m8
@@ -94,7 +86,9 @@ impl Axecutor {
     fn instr_xor_r8_rm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_r8_rm8);
 
-        todo!("instr_xor_r8_rm8 for Xor")
+        calculate_r_rm![u8; self; i; |d,s| {
+            d^s
+        }]
     }
 
     /// XOR r16, r/m16
@@ -103,7 +97,9 @@ impl Axecutor {
     fn instr_xor_r16_rm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_r16_rm16);
 
-        todo!("instr_xor_r16_rm16 for Xor")
+        calculate_r_rm![u16; self; i; |d,s| {
+            d^s
+        }]
     }
 
     /// XOR r32, r/m32
@@ -112,7 +108,9 @@ impl Axecutor {
     fn instr_xor_r32_rm32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_r32_rm32);
 
-        todo!("instr_xor_r32_rm32 for Xor")
+        calculate_r_rm![u32; self; i; |d,s| {
+            d^s
+        }]
     }
 
     /// XOR r64, r/m64
@@ -121,7 +119,9 @@ impl Axecutor {
     fn instr_xor_r64_rm64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Xor_r64_rm64);
 
-        todo!("instr_xor_r64_rm64 for Xor")
+        calculate_r_rm![u64; self; i; |d,s| {
+            d^s
+        }]
     }
 
     /// XOR AL, imm8
@@ -243,28 +243,156 @@ mod tests {
 
     // xor al, al
     ax_test![xor_zero; 0x30, 0xc0; |a: Axecutor| {
-        assert_reg_value!(a; AL; 0);
+        assert_reg_value!(b; a; AL; 0);
     }];
 
     // xor al, bl
     ax_test![xor_same_value; 0x30, 0xd8;
         |a: &mut Axecutor| {
-            write_reg_value!(a; AL; 0xf);
-            write_reg_value!(a; BL; 0xf);
+            write_reg_value!(b; a; AL; 0xf);
+            write_reg_value!(b; a; BL; 0xf);
         };
         |a: Axecutor| {
-            assert_reg_value!(a; AL; 0);
+            assert_reg_value!(b; a; AL; 0);
+            assert_reg_value!(b; a; BL; 0xf);
         }
     ];
 
     // xor al, cl
     ax_test![xor_different_value; 0x30, 0xc8;
         |a: &mut Axecutor| {
-            write_reg_value!(a; AL; 0b1010);
-            write_reg_value!(a; CL; 0b0101);
+            write_reg_value!(b; a; AL; 0b1010);
+            write_reg_value!(b; a; CL; 0b0101);
         };
         |a: Axecutor| {
-            assert_reg_value!(a; AL; 0b1111);
+            assert_reg_value!(b; a; AL; 0b1111);
+            assert_reg_value!(b; a; CL; 0b0101);
+        }
+    ];
+    // xor ax, cx
+    ax_test![xor_ax_cx; 0x66, 0x31, 0xc8;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0xffff);
+            write_reg_value!(w; a; CX; 0xf0f0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 0x0f0f);
+            assert_reg_value!(w; a; CX; 0xf0f0);
+        }
+    ];
+    // xor [rsp+8], eax
+    ax_test![xor_rsp8_eax; 0x31, 0x44, 0x24, 0x8;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EAX; 0x12345678);
+            // Create a small stack
+            write_reg_value!(q; a; RSP; 0x1000);
+            a.mem_init_zero(0x1000, 256).unwrap();
+            a.mem_write_32(0x1008, 0x87654321).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RSP; 0x1000);
+            assert_reg_value!(d; a; EAX; 0x12345678);
+            assert_eq!(
+                a.mem_read_32(0x1008).unwrap(),
+                0x12345678 ^ 0x87654321
+            );
+        }
+    ];
+    // xor [rsp-8], r11
+    ax_test![xor_rsp8_r11; 0x4c, 0x31, 0x5c, 0x24, 0xf8;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x33312345678u64);
+            // Create a small stack
+            write_reg_value!(q; a; RSP; 0x1000);
+            a.mem_init_zero(0x800, 0x1000).unwrap();
+            a.mem_write_64(0xff8, 0x87654321).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RSP; 0x1000);
+            assert_reg_value!(q; a; R11; 0x33312345678u64);
+            assert_eq!(
+                a.mem_read_64(0xff8).unwrap(),
+                0x33312345678 ^ 0x87654321
+            );
+        }
+    ];
+    // xor rax, r11
+    ax_test![xor_rax_r11; 0x4c, 0x31, 0xd8;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x33312345678u64);
+            write_reg_value!(q; a; R11; 0x33387654321u64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x33312345678u64 ^ 0x33387654321u64);
+            assert_reg_value!(q; a; R11; 0x33387654321u64);
+        }
+    ];
+
+    // xor al, [rsp]
+    ax_test![xor_al_rsp; 0x32, 0x4, 0x24;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0xf);
+
+            a.mem_init_zero(0x1000, 256).unwrap();
+            a.mem_write_8(0x1000, 0x10).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x10^0xf);
+            assert_reg_value!(q; a; RSP; 0x1000);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x10);
+        }
+    ];
+
+    // xor r11w, [rsp+0x20]
+    ax_test![xor_r11w_rsp_0x20; 0x66, 0x44, 0x33, 0x5c, 0x24, 0x20;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; R11W; 0x10);
+
+            a.mem_init_zero(0x1000, 256).unwrap();
+            a.mem_write_16(0x1020, 0x20).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; R11W; 0x20^0x10);
+            assert_reg_value!(q; a; RSP; 0x1000);
+            assert_eq!(a.mem_read_16(0x1020).unwrap(), 0x20);
+        }
+    ];
+
+    // xor edx, [rip+0x35353]
+    ax_test![xor_edx_rip0x35353; 0x33, 0x15, 0x53, 0x53, 0x3, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EDX; 0x10);
+
+            let rip = a.reg_read_64(RIP.into());
+            a.mem_init_zero(rip+0x35353 + 6, 4).unwrap();
+            a.mem_write_32(rip+0x35353 +6, 0x12345678).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EDX; 0x12345678^0x10);
+
+            // Note that rip has advanced by instruction length 6
+            let rip = a.reg_read_64(RIP.into());
+            assert_eq!(a.mem_read_32(rip+0x35353).unwrap(), 0x12345678);
+        }
+    ];
+
+    // xor rax, [rip+0x35353]
+    ax_test![xor_rax_rip0x35353; 0x48, 0x33, 0x5, 0x53, 0x53, 0x3, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x10);
+
+            let rip = a.reg_read_64(RIP.into());
+            a.mem_init_zero(rip+0x35353 + 7, 8).unwrap();
+            a.mem_write_64(rip+0x35353 +7, 0x12345678).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x12345678^0x10);
+
+            // Note that rip has advanced by instruction length 7
+            let rip = a.reg_read_64(RIP.into());
+            assert_eq!(a.mem_read_64(rip+0x35353).unwrap(), 0x12345678);
         }
     ];
 }

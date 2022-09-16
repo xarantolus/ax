@@ -2,54 +2,52 @@ use iced_x86::Instruction;
 
 use super::{axecutor::Axecutor, errors::AxError, registers::RegisterWrapper};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Operand(OperandKind);
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct MemOperand {
+    base: Option<RegisterWrapper>,
+    index: Option<RegisterWrapper>,
+    scale: u32,
+    displacement: u64,
+}
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum OperandKind {
-    Memory {
-        base: Option<RegisterWrapper>,
-        index: Option<RegisterWrapper>,
-        scale: u32,
-        displacement: u64,
-    },
+#[derive(Debug, Clone, PartialEq)]
+pub enum Operand {
+    Memory(MemOperand),
     Register(RegisterWrapper),
-    Immediate {
-        data: u64,
-        size: i8,
-    },
+    Immediate { data: u64, size: i8 },
 }
 
 impl Axecutor {
-    pub(crate) fn mem_addr(&self, o: Operand) -> Result<u64, AxError> {
-        match o.0 {
-            OperandKind::Memory {
-                base,
-                index,
-                scale,
-                displacement,
-            } => {
-                let mut addr: u64 = 0;
-                if let Some(base) = base {
-                    addr += self.reg_read_64(base) as u64;
-                }
-                if let Some(index) = index {
-                    addr += self.reg_read_64(index) * (scale as u64);
-                }
-
-                // This overflow is explicitly allowed, as x86-64 encodes negative values as signed integers
-                // TODO: Does this work correctly on platforms that don't use two's complement? (there's a test for it, so it should fail if this assumption is false)
-                addr = addr.wrapping_add(displacement);
-
-                Ok(addr)
-            }
-            _ => {
-                return Err(AxError::from(format!(
-                    "Expected memory operand, got {:?}",
-                    o.0
-                )))
-            }
+    pub(crate) fn mem_addr(&self, o: MemOperand) -> u64 {
+        let MemOperand {
+            base,
+            index,
+            scale,
+            displacement,
+        } = o;
+        let mut addr: u64 = 0;
+        if let Some(base) = base {
+            addr += self.reg_read_64(base) as u64;
         }
+        if let Some(index) = index {
+            addr += self.reg_read_64(index) * (scale as u64);
+        }
+
+        // This overflow is explicitly allowed, as x86-64 encodes negative values as signed integers
+        // TODO: Does this work correctly on platforms that don't use two's complement? (there's a test for it, so it should fail if this assumption is false)
+        addr = addr.wrapping_add(displacement);
+
+        addr
+    }
+
+    pub(crate) fn instruction_operands_2(
+        &self,
+        i: Instruction,
+    ) -> Result<(Operand, Operand), AxError> {
+        let dest = self.instruction_operand(i, 0)?;
+        let src = self.instruction_operand(i, 1)?;
+
+        Ok((dest, src))
     }
 
     pub(crate) fn instruction_operand(
@@ -79,52 +77,57 @@ impl Axecutor {
                 let scale = i.memory_index_scale();
                 let displacement = i.memory_displacement64();
 
-                Ok(Operand(OperandKind::Memory {
+                println!(
+                    "Memory operand: base: {:?}, index: {:?}, scale: {}, displacement: {}",
+                    base, index, scale, displacement
+                );
+
+                Ok(Operand::Memory(MemOperand {
                     base,
                     index,
                     scale,
                     displacement,
                 }))
             }
-            iced_x86::OpKind::Register => Ok(Operand(OperandKind::Register(
-                RegisterWrapper::from(i.op_register(operand_idx)),
+            iced_x86::OpKind::Register => Ok(Operand::Register(RegisterWrapper::from(
+                i.op_register(operand_idx),
             ))),
-            iced_x86::OpKind::Immediate8 => Ok(Operand(OperandKind::Immediate {
+            iced_x86::OpKind::Immediate8 => Ok(Operand::Immediate {
                 data: i.immediate8() as u64,
                 size: 1,
-            })),
-            iced_x86::OpKind::Immediate8_2nd => Ok(Operand(OperandKind::Immediate {
+            }),
+            iced_x86::OpKind::Immediate8_2nd => Ok(Operand::Immediate {
                 data: i.immediate8_2nd() as u64,
                 size: 1,
-            })),
-            iced_x86::OpKind::Immediate16 => Ok(Operand(OperandKind::Immediate {
+            }),
+            iced_x86::OpKind::Immediate16 => Ok(Operand::Immediate {
                 data: i.immediate16() as u64,
                 size: 2,
-            })),
-            iced_x86::OpKind::Immediate32 => Ok(Operand(OperandKind::Immediate {
+            }),
+            iced_x86::OpKind::Immediate32 => Ok(Operand::Immediate {
                 data: i.immediate32() as u64,
                 size: 4,
-            })),
-            iced_x86::OpKind::Immediate64 => Ok(Operand(OperandKind::Immediate {
+            }),
+            iced_x86::OpKind::Immediate64 => Ok(Operand::Immediate {
                 data: i.immediate64(),
                 size: 8,
-            })),
-            iced_x86::OpKind::Immediate8to16 => Ok(Operand(OperandKind::Immediate {
+            }),
+            iced_x86::OpKind::Immediate8to16 => Ok(Operand::Immediate {
                 data: i.immediate8to16() as u64,
                 size: 2,
-            })),
-            iced_x86::OpKind::Immediate8to32 => Ok(Operand(OperandKind::Immediate {
+            }),
+            iced_x86::OpKind::Immediate8to32 => Ok(Operand::Immediate {
                 data: i.immediate8to32() as u64,
                 size: 4,
-            })),
-            iced_x86::OpKind::Immediate8to64 => Ok(Operand(OperandKind::Immediate {
+            }),
+            iced_x86::OpKind::Immediate8to64 => Ok(Operand::Immediate {
                 data: i.immediate8to64() as u64,
                 size: 8,
-            })),
-            iced_x86::OpKind::Immediate32to64 => Ok(Operand(OperandKind::Immediate {
+            }),
+            iced_x86::OpKind::Immediate32to64 => Ok(Operand::Immediate {
                 data: i.immediate32to64() as u64,
                 size: 8,
-            })),
+            }),
             _ => Err(AxError::from(format!(
                 "instruction_operand {}: unimplemented operand kind {:?}",
                 operand_idx,
@@ -138,7 +141,9 @@ impl Axecutor {
 mod tests {
     use iced_x86::Register;
 
-    use super::{Axecutor, Operand, OperandKind::*};
+    use crate::instructions::operand::MemOperand;
+
+    use super::{Axecutor, Operand, Operand::*};
 
     const TEST_RIP_VALUE: u64 = 0x1000;
 
@@ -175,13 +180,13 @@ mod tests {
 
 				for i in 0..expected.len() {
 					let operand = axecutor.instruction_operand(instruction, i as u32).expect("Failed to get operand");
-					if let Memory { .. } = operand.0 {
-						let mem_addr = axecutor.mem_addr(operand).expect("Failed to get memory address");
+                    assert_eq!(operand, expected[i]);
+					if let Memory(m) = operand {
+						let mem_addr = axecutor.mem_addr(m);
 						assert_eq!(mem_addr, $memaddrs[mem_addr_counter]);
 						mem_addr_counter += 1;
 					}
 
-					assert_eq!(operand, expected[i]);
 				}
 
 				assert_eq!(mem_addr_counter, $memaddrs.len());
@@ -193,13 +198,13 @@ mod tests {
     operand_test![mov_byte_ptr_0_1;
         0xc6, 0x4, 0x25, 0x0, 0x0, 0x0, 0x0, 0x1;
         vec![
-            Operand(Memory {
+            Memory (MemOperand {
                 base: None,
                 index: None,
                 scale: 1,
                 displacement: 0,
             }),
-            Operand(Immediate { data: 1, size: 1 }),
+            Immediate { data: 1, size: 1 },
         ]
     ];
 
@@ -207,13 +212,13 @@ mod tests {
     operand_test![mov_byte_ptr_rsp_1;
         0xc6, 0x4, 0x24, 0x1;
         vec![
-            Operand(Memory {
+            (Memory (MemOperand{
                 base: Some(Register::RSP.into()),
                 index: None,
                 scale: 1,
                 displacement: 0,
-            }),
-            Operand(Immediate { data: 1, size: 1 }),
+            })),
+            Immediate { data: 1, size: 1 },
         ];
         |a: &mut Axecutor| {
             use iced_x86::Register::*;
@@ -228,13 +233,13 @@ mod tests {
     operand_test![mov_dword_ptr_rsp_1;
         0xc7, 0x4, 0x24, 0x1, 0x0, 0x0, 0x0;
         vec![
-            Operand(Memory {
+            Memory (MemOperand{
                 base: Some(Register::RSP.into()),
                 index: None,
                 scale: 1,
                 displacement: 0,
             }),
-            Operand(Immediate { data: 1, size: 4 }),
+            Immediate { data: 1, size: 4 },
         ];
         |a: &mut Axecutor| {
             use iced_x86::Register::*;
@@ -249,13 +254,13 @@ mod tests {
     operand_test![mov_rsp1_r15d;
         0x44, 0x89, 0x7c, 0x24, 0x1;
         vec![
-            Operand(Memory {
+            Memory(MemOperand {
                 base: Some(Register::RSP.into()),
                 index: None,
                 scale: 1,
                 displacement: 1,
             }),
-            Operand(Register(Register::R15D.into())),
+            Register(Register::R15D.into()),
         ];
         |a: &mut Axecutor| {
             use iced_x86::Register::*;
@@ -271,13 +276,13 @@ mod tests {
     operand_test![twos_complement_wraparound_negative_displacement;
         0x44, 0x89, 0x7c, 0x24, 0xff;
         vec![
-            Operand(Memory {
+            Memory(MemOperand{
                 base: Some(Register::RSP.into()),
                 index: None,
                 scale: 1,
                 displacement: u64::MAX,
             }),
-            Operand(Register(Register::R15D.into())),
+            Register(Register::R15D.into()),
         ];
         |a: &mut Axecutor| {
             use iced_x86::Register::*;
@@ -292,13 +297,13 @@ mod tests {
     operand_test![xor_qword_ptr_r11_4_rcx_1;
         0x49, 0x83, 0x34, 0x8b, 0x1;
         vec![
-            Operand(Memory {
+            Memory (MemOperand{
                 base: Some(Register::R11.into()),
                 index: Some(Register::RCX.into()),
                 scale: 4,
                 displacement: 0,
             }),
-            Operand(Immediate { data: 1, size: 8 }),
+            Immediate { data: 1, size: 8 },
         ];
         |a: &mut Axecutor| {
             use iced_x86::Register::*;
@@ -314,14 +319,14 @@ mod tests {
     operand_test![rip_relative_constant;
         0x48, 0x31, 0x1d, 0x5, 0x0, 0x0, 0x0;
         vec![
-            Operand(Memory {
+            Memory(MemOperand {
                 base: None, // RIP is ignored
                 index: None,
                 scale: 1,
                 // RIP + Instruction size + Displacement
                 displacement: TEST_RIP_VALUE + 0x7 + 0x5,
             }),
-            Operand(Register(Register::RBX.into())),
+            Register(Register::RBX.into()),
         ];
         |_: &mut Axecutor| {
             // RIP has a default value defined above
@@ -335,13 +340,13 @@ mod tests {
     operand_test![xor_byte_ptr_rip0x20_5;
         0x80, 0x35, 0xe0, 0xff, 0xff, 0xff, 0x5;
         vec![
-            Operand(Memory {
+            Memory(MemOperand{
                 base: None,
                 index: None,
                 scale: 1,
                 displacement: TEST_RIP_VALUE + 0x7 - 0x20,
             }),
-            Operand(Immediate { data: 5, size: 1 }),
+            Immediate { data: 5, size: 1 },
         ];
         |_: &mut Axecutor| { };
         vec![

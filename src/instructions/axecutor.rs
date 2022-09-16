@@ -93,3 +93,20 @@ fn decode_all(code: &[u8], initial_rip: u64) -> Result<Vec<Instruction>, AxError
 
     Ok(instructions)
 }
+
+#[cfg(test)]
+mod tests {
+    use iced_x86::Register;
+
+    use super::*;
+
+    #[test]
+    fn test_rip() {
+        let code = [0x48, 0xc7, 0xc0, 0x3, 0x0, 0x0, 0x0];
+        let ax = Axecutor::new(&code, 0x1000).unwrap();
+        assert_eq!(ax.instructions.len(), 1);
+        assert_eq!(ax.instructions[0].ip(), 0x1000);
+        assert_eq!(ax.instructions[0].next_ip(), 0x1000 + code.len() as u64);
+        assert_eq!(ax.reg_read_64(Register::RIP.into()), 0x1000);
+    }
+}

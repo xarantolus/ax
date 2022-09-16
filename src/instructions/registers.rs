@@ -7,7 +7,7 @@ use rand::Rng;
 use std::collections::{HashMap, HashSet};
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use super::axecutor::Axecutor;
+use super::{axecutor::Axecutor, operand::Operand};
 
 lazy_static! {
     pub(crate) static ref REGISTER_TO_QWORD: HashMap<RegisterWrapper, RegisterWrapper> =
@@ -122,6 +122,15 @@ impl From<Register> for RegisterWrapper {
 impl From<&Register> for RegisterWrapper {
     fn from(register: &Register) -> Self {
         RegisterWrapper(*register)
+    }
+}
+
+impl From<Operand> for RegisterWrapper {
+    fn from(operand: Operand) -> Self {
+        match operand {
+            Operand::Register(register) => register,
+            _ => panic!("Cannot convert operand to register"),
+        }
     }
 }
 

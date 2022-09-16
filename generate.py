@@ -236,8 +236,6 @@ def generate_all_switch():
     code = f"""use iced_x86::{{Instruction, Mnemonic::*}};
 
 use super::{{axecutor::Axecutor, errors::AxError}};
-use crate::instructions::registers::RegisterWrapper;
-use crate::ax_test;
 
 impl Axecutor {{
     pub fn switch_instruction_mnemonic(&mut self, i: Instruction) -> Result<(), AxError> {{

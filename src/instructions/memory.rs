@@ -56,6 +56,7 @@ impl Axecutor {
     // TODO: Currently cannot write consecutive sections of memory
     // It would also make sense to give better error messages, e.g. if the write start address is within an area, but the data is too long
     pub fn mem_write_bytes(&mut self, address: u64, data: &[u8]) -> Result<(), AxError> {
+        // TODO: Make sure writing to code sections (that don't exist, but should check initial_rip + code length) fails
         for area in &mut self.state.memory {
             if address >= area.start && address + data.len() as u64 <= area.start + area.length {
                 let offset = (address - area.start) as usize;
@@ -87,7 +88,7 @@ impl Axecutor {
         self.mem_write_bytes(address, &[data])
     }
 
-    pub fn mem_add_area(&mut self, start: u64, length: u64, data: Vec<u8>) -> Result<(), AxError> {
+    pub fn mem_init_area(&mut self, start: u64, length: u64, data: Vec<u8>) -> Result<(), AxError> {
         // Make sure there's no overlapping area already defined
         for area in &self.state.memory {
             if start >= area.start && start < area.start + area.length {
@@ -105,5 +106,9 @@ impl Axecutor {
         });
 
         Ok(())
+    }
+
+    pub fn mem_init_zero(&mut self, start: u64, length: u64) -> Result<(), AxError> {
+        self.mem_init_area(start, length, vec![0; length as usize])
     }
 }

@@ -25,58 +25,71 @@ macro_rules! ax_test {
     };
 }
 
+// TODO: Flags
 #[macro_export]
 macro_rules! assert_reg_value {
-    [$axecutor:expr; $reg:expr; $value:expr] => {
+    [b; $axecutor:expr; $reg:expr; $value:expr] => {
         let wrap = RegisterWrapper::from($reg);
-        if ($reg.is_gpr8()) {
-            let val = $axecutor.reg_read_8(wrap);
-            assert_eq!(
-                &val, &$value,
-                "expected register {:?} to have value {:?}, but got {}",
-                $reg, $value, &val
-            );
-        } else if ($reg.is_gpr16()) {
-            let val = $axecutor.reg_read_16(wrap);
-            assert_eq!(
-                &val, &$value,
-                "expected register {:?} to have value {:?}, but got {}",
-                $reg, $value, &val
-            );
-        } else if ($reg.is_gpr32()) {
-            let val = $axecutor.reg_read_32(wrap);
-            assert_eq!(
-                &val, &$value,
-                "expected register {:?} to have value {:?}, but got {}",
-                $reg, $value, &val
-            );
-        } else if ($reg.is_gpr64()|| $reg.is_ip()) {
-            let val = $axecutor.reg_read_64(wrap);
-            assert_eq!(
-                &val, &$value,
-                "expected register {:?} to have value {:?}, but got {}",
-                $reg, $value, &val
-            );
-        } else {
-            panic!("unimplemented register type {:?}", $reg);
-        }
+        assert!($reg.is_gpr8());
+        let val = $axecutor.reg_read_8(wrap);
+        assert_eq!(
+            &val, &$value,
+            "expected register {:?} to have value {:?}, but got {}",
+            $reg, $value, &val
+        );
+    };
+    [w; $axecutor:expr; $reg:expr; $value:expr] => {
+        let wrap = RegisterWrapper::from($reg);
+        assert!($reg.is_gpr16());
+        let val = $axecutor.reg_read_16(wrap);
+        assert_eq!(
+            &val, &$value,
+            "expected register {:?} to have value {:?}, but got {}",
+            $reg, $value, &val
+        );
+    };
+    [d; $axecutor:expr; $reg:expr; $value:expr] => {
+        let wrap = RegisterWrapper::from($reg);
+        assert!($reg.is_gpr32());
+        let val = $axecutor.reg_read_32(wrap);
+        assert_eq!(
+            &val, &$value,
+            "expected register {:?} to have value {:?}, but got {}",
+            $reg, $value, &val
+        );
+    };
+    [q; $axecutor:expr; $reg:expr; $value:expr] => {
+        let wrap = RegisterWrapper::from($reg);
+        assert!($reg.is_gpr64());
+        let val = $axecutor.reg_read_64(wrap);
+        assert_eq!(
+            &val, &$value,
+            "expected register {:?} to have value {:?}, but got {}",
+            $reg, $value, &val
+        );
     };
 }
 
 #[macro_export]
 macro_rules! write_reg_value {
-    ($axecutor:expr; $reg:expr; $value:expr) => {
+    (b; $axecutor:expr; $reg:expr; $value:expr) => {
         let wrap = RegisterWrapper::from($reg);
-        if ($reg.is_gpr8()) {
-            $axecutor.reg_write_8(wrap, $value);
-        } else if ($reg.is_gpr16()) {
-            $axecutor.reg_write_16(wrap, $value);
-        } else if ($reg.is_gpr32()) {
-            $axecutor.reg_write_32(wrap, $value);
-        } else if ($reg.is_gpr64() || $reg.is_ip()) {
-            $axecutor.reg_write_64(wrap, $value);
-        } else {
-            panic!("unimplemented register type {:?}", $reg);
-        }
+        assert!($reg.is_gpr8());
+        $axecutor.reg_write_8(wrap, $value);
+    };
+    (w; $axecutor:expr; $reg:expr; $value:expr) => {
+        let wrap = RegisterWrapper::from($reg);
+        assert!($reg.is_gpr16());
+        $axecutor.reg_write_16(wrap, $value);
+    };
+    (d; $axecutor:expr; $reg:expr; $value:expr) => {
+        let wrap = RegisterWrapper::from($reg);
+        assert!($reg.is_gpr32());
+        $axecutor.reg_write_32(wrap, $value);
+    };
+    (q; $axecutor:expr; $reg:expr; $value:expr) => {
+        let wrap = RegisterWrapper::from($reg);
+        assert!($reg.is_gpr64());
+        $axecutor.reg_write_64(wrap, $value);
     };
 }

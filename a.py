@@ -63,22 +63,22 @@ if __name__ == '__main__':
         setup = input("Test type? (t: ax_test normal; ts: ax_test with setup; o: operand_test; os: operand_test with setup): ")
         if setup == "t":
             code = f"""// {assembly_code}
+    ax_test![{test_id}; {", ".join(hex_arr)}; |a: Axecutor| {{
+        assert_reg_value!(b; a; RBX; 0x10);
+        todo!("write test cases for \\\"{assembly_code}\\\"");
+    }}];"""
+        elif setup == "ts":
+            code = f"""// {assembly_code}
     ax_test![{test_id}; {", ".join(hex_arr)};
         |a: &mut Axecutor| {{
-            write_reg_value!(a; AL; 0x0f);
+            write_reg_value!(b; a; AL; 0x0f);
             todo!("write setup code for \\\"{assembly_code}\\\"");
         }};
         |a: Axecutor| {{
-            assert_reg_value!(a; RBX; 0x10);
+            assert_reg_value!(b; a; RBX; 0x10);
             todo!("write test cases for \\\"{assembly_code}\\\"");
         }}
     ];"""
-        elif setup == "ts":
-            code = f"""// {assembly_code}
-    ax_test![{test_id}; {", ".join(hex_arr)}; |a: Axecutor| {{
-        assert_reg_value!(a; RBX; 0x10);
-        todo!("write test cases for \\\"{assembly_code}\\\"");
-    }}];"""
         elif setup == "o":
             code = f"""// {assembly_code}
     operand_test![{test_id};
