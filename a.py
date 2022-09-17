@@ -1,4 +1,5 @@
 
+from atexit import register
 import os
 from pickletools import markobject
 import random
@@ -28,10 +29,23 @@ byte_registers = ["al", "ah", "bl", "bh", "cl", "ch", "dl", "dh", "sil", "dil", 
 registers = qword_registers + dword_registers + word_registers + byte_registers
 
 def find_register(assembly_code: str):
+    found_registers = []
     for register in registers:
         if " " + register in assembly_code and "[" + register not in assembly_code:
-            return register
-    raise Exception("No register found in assembly code: " + assembly_code)
+            found_registers += [register]
+
+    if len(found_registers) == 0:
+        raise Exception("No register found in assembly code: " + assembly_code)
+
+    # now return the one that is mentioned first in assembly_code
+    return_register = found_registers[0]
+    index = assembly_code.index(return_register)
+    for register in found_registers[1:]:
+        if assembly_code.index(register) < index:
+            return_register = register
+            index = assembly_code.index(register)
+    return return_register
+
 
 def register_size_letter(register: str):
     if register in qword_registers:
@@ -86,6 +100,10 @@ def learn_flags(assembly_code: str, hex_val: str):
                 .text
                 .global _start
                 _start:
+                mov rax, 0x00000002
+                push rax
+                POPFQ
+
                 mov {register}, {hex_val}
                 {assembly_code}
                 PUSHFQ
@@ -194,11 +212,13 @@ def stringify_flags(flags):
     else:
         return " | ".join(flags)
 
-def hexify(number: str | int):
+def hexify(number: str | int, register_size=None):
     if isinstance(number, str):
         number = int(number, base=0)
 
-    if number > (2147483647):
+    if number >= (2147483647):
+        if register_size == 4:
+            return hex(number) + "u32"
         return hex(number)+ "u64"
     else:
         return hex(number)
@@ -221,16 +241,16 @@ def generate_test(assembly_code: str, hex_arr: list):
     if setup == "t":
         code = f"""// {assembly_code}
 ax_test![{test_id}; {", ".join(hex_arr)}; |a: Axecutor| {{
-        assert_reg_value!({register_size_letter(register)}; a; {register.upper()}; {hexify(register_output)});
+        assert_reg_value!({register_size_letter(register)}; a; {register.upper()}; {hexify(register_output, register_size=register_size_bytes(register))});
     }}; ({stringify_flags(flags_set)}; {stringify_flags(flags_not_set)})];"""
     elif setup == "ts":
         code = f"""// {assembly_code}
 ax_test![{test_id}; {", ".join(hex_arr)};
     |a: &mut Axecutor| {{
-        write_reg_value!({register_size_letter(register)}; a; {register.upper()}; {hexify(hex_val)});
+        write_reg_value!({register_size_letter(register)}; a; {register.upper()}; {hexify(hex_val, register_size=register_size_bytes(register))});
     }};
     |a: Axecutor| {{
-        assert_reg_value!({register_size_letter(register)}; a; {register.upper()}; {hexify(register_output)});
+        assert_reg_value!({register_size_letter(register)}; a; {register.upper()}; {hexify(register_output, register_size=register_size_bytes(register))});
     }};
     ({stringify_flags(flags_set)}; {stringify_flags(flags_not_set)})
 ];"""

@@ -26,6 +26,8 @@ pub const FLAG_VIF: u64 = 0x80000; // Virtual Interrupt Flag
 pub const FLAG_VIP: u64 = 0x100000; // Virtual Interrupt Pending
 pub const FLAG_ID: u64 = 0x200000; // ID Flag
 
+pub const FLAGS_UNAFFECTED: u64 = 0xffffffffffffffff;
+
 pub const FLAG_LIST: [u64; 17] = [
     FLAG_CF, FLAG_PF, FLAG_AF, FLAG_ZF, FLAG_SF, FLAG_TF, FLAG_IF, FLAG_DF, FLAG_OF, FLAG_IOPL,
     FLAG_NT, FLAG_RF, FLAG_VM, FLAG_AC, FLAG_VIF, FLAG_VIP, FLAG_ID,
@@ -59,6 +61,10 @@ lazy_static! {
 macro_rules! set_flags {
 	[$type:ident; $type_size:expr] => {
 			|a: &mut Axecutor, flags_to_set: u64, flags_to_clear: u64, result: $type| {
+				if flags_to_set == FLAGS_UNAFFECTED {
+					return;
+				}
+
 				// Clear flags we might set now
 				let mut new_flags = a.state.rflags & !flags_to_set & !flags_to_clear;
 

@@ -3,13 +3,12 @@ use core::panic;
 use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Shl;
-use iced_x86::OpKind;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
-use crate::instructions::registers::RegisterWrapper;
-use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
+
+use crate::calculate_rm_imm;
 
 impl Axecutor {
     pub fn mnemonic_shl(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -62,6 +61,10 @@ impl Axecutor {
         calculate_rm_imm![u16f; u8; self; i; |d: u16, s: u8| {
             assert_ne!(s, 1, "SHL r/m16, imm8 with immediate 1 should be handled by opcode SHL r/m16, 1");
 
+            if s == 0 {
+                return (d, FLAGS_UNAFFECTED);
+            }
+
             match d.checked_shl((s&0x1f) as u32) {
                 Some(v) => (
                     v,
@@ -85,6 +88,9 @@ impl Axecutor {
         calculate_rm_imm![u32f; u8; self; i; |d: u32, s: u8| {
             assert_ne!(s, 1, "SHL r/m32, imm8 with immediate 1 should be handled by opcode SHL r/m32, 1");
 
+            if s == 0 {
+                return (d, FLAGS_UNAFFECTED);
+            }
 
             match d.checked_shl((s&0x1f) as u32) {
                 Some(v) => (
@@ -334,6 +340,17 @@ mod tests {
         (FLAG_CF|FLAG_OF; 0)
     ];
 
+    // shl dx, 0 -- flags not affected
+    ax_test![shl_dx_0; 0x66, 0xc1, 0xe2, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; DX; 0x56ce);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; DX; 0x56ce);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
     // shl r11w, 5
     ax_test![shl_r11w_5_zero; 0x66, 0x41, 0xc1, 0xe3, 0x5;
         |a: &mut Axecutor| {
@@ -409,5 +426,16 @@ mod tests {
             assert_reg_value!(d; a; R11D; 1);
         };
         (0; FLAG_ZF | FLAG_CF | FLAG_OF | FLAG_PF | FLAG_SF)
+    ];
+
+    // shl edx, 0 -- flags not affected
+    ax_test![shl_edx_0; 0xc1, 0xe2, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EDX; 0xbdb406f5u32);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EDX; 0xbdb406f5u32);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 }
