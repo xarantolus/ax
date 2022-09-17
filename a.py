@@ -8,11 +8,11 @@ import sys
 import tempfile
 import pyperclip
 
-FLAG_CF = 0x0001
-FLAG_PF = 0x0004
-FLAG_ZF = 0x0040
-FLAG_SF = 0x0080
-FLAG_OF = 0x0800
+FLAG_CF: int = 0x0001
+FLAG_PF: int = 0x0004
+FLAG_ZF: int = 0x0040
+FLAG_SF: int = 0x0080
+FLAG_OF: int = 0x0800
 FLAGS = [
     (FLAG_CF, "CF"),
     (FLAG_PF, "PF"),
@@ -21,12 +21,17 @@ FLAGS = [
     (FLAG_OF, "OF"),
 ]
 
-qword_registers = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
-dword_registers = ["eax", "ebx", "ecx", "edx", "esi", "edi", "ebp", "esp", "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d"]
-word_registers = ["ax", "bx", "cx", "dx", "si", "di", "bp", "sp", "r8w", "r9w", "r10w", "r11w", "r12w", "r13w", "r14w", "r15w"]
-byte_registers = ["al", "ah", "bl", "bh", "cl", "ch", "dl", "dh", "sil", "dil", "bpl", "spl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b"]
+qword_registers = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp",
+                   "rsp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
+dword_registers = ["eax", "ebx", "ecx", "edx", "esi", "edi", "ebp",
+                   "esp", "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d"]
+word_registers = ["ax", "bx", "cx", "dx", "si", "di", "bp", "sp",
+                  "r8w", "r9w", "r10w", "r11w", "r12w", "r13w", "r14w", "r15w"]
+byte_registers = ["al", "ah", "bl", "bh", "cl", "ch", "dl", "dh", "sil", "dil",
+                  "bpl", "spl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b"]
 
-registers = qword_registers + dword_registers + word_registers + byte_registers
+registers = byte_registers + word_registers + dword_registers + qword_registers
+
 
 def find_register(assembly_code: str):
     found_registers = []
@@ -72,6 +77,7 @@ def register_size_bytes(register: str):
     else:
         raise Exception("Unknown register: " + register)
 
+
 def random_hex_value(register: str):
     if register in qword_registers:
         return hex(random.randint(0, 2 ** 64 - 1))
@@ -83,6 +89,7 @@ def random_hex_value(register: str):
         return hex(random.randint(0, 2 ** 8 - 1))
     else:
         raise Exception("Unknown register: " + register)
+
 
 def learn_flags(assembly_code: str, hex_val: str):
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -137,10 +144,12 @@ def learn_flags(assembly_code: str, hex_val: str):
 
         # turn into executable with gcc, symbol _start
         executable_path = os.path.join(tmpdir, "a")
-        subprocess.run(["gcc", "-m64", "-nostdlib", "-static", "-o", executable_path, object_path])
+        subprocess.run(["gcc", "-m64", "-nostdlib", "-static",
+                       "-o", executable_path, object_path])
 
         # run executable and capture 16 bytes of output
-        output = subprocess.run([executable_path], stdout=subprocess.PIPE).stdout
+        output = subprocess.run(
+            [executable_path], stdout=subprocess.PIPE).stdout
 
         assert len(output) == 16, "Output is not 16 bytes long"
 
@@ -154,10 +163,10 @@ def learn_flags(assembly_code: str, hex_val: str):
             else:
                 flags_not_set.append("FLAG_" + flag_name)
 
-        reg_val = int.from_bytes(output[8:8+register_size_bytes(register)], byteorder="little", signed=False)
+        reg_val = int.from_bytes(
+            output[8:8+register_size_bytes(register)], byteorder="little", signed=False)
 
         return set_flags, flags_not_set, reg_val
-
 
 
 def assembled_bytes(assembly_code: str):
@@ -206,11 +215,13 @@ def assembled_bytes(assembly_code: str):
 
         return hex_arr
 
+
 def stringify_flags(flags):
     if len(flags) == 0:
         return "0"
     else:
         return " | ".join(flags)
+
 
 def hexify(number: str | int, register_size=None):
     if isinstance(number, str):
@@ -219,9 +230,10 @@ def hexify(number: str | int, register_size=None):
     if number >= (2147483647):
         if register_size == 4:
             return hex(number) + "u32"
-        return hex(number)+ "u64"
+        return hex(number) + "u64"
     else:
         return hex(number)
+
 
 def generate_test(assembly_code: str, hex_arr: list):
     test_id = "".join(filter(lambda c: c.isalnum()
@@ -235,8 +247,8 @@ def generate_test(assembly_code: str, hex_arr: list):
     if setup == "t" or setup == "ts":
         register = find_register(assembly_code)
         hex_val = random_hex_value(register)
-        flags_set, flags_not_set, register_output = learn_flags(assembly_code, hex_val)
-
+        flags_set, flags_not_set, register_output = learn_flags(
+            assembly_code, hex_val)
 
     if setup == "t":
         code = f"""// {assembly_code}

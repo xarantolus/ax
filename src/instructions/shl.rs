@@ -61,7 +61,7 @@ impl Axecutor {
         calculate_rm_imm![u16f; u8; self; i; |d: u16, s: u8| {
             assert_ne!(s, 1, "SHL r/m16, imm8 with immediate 1 should be handled by opcode SHL r/m16, 1");
 
-            if s == 0 {
+            if (s&0x1f) == 0 {
                 return (d, FLAGS_UNAFFECTED);
             }
 
@@ -88,7 +88,7 @@ impl Axecutor {
         calculate_rm_imm![u32f; u8; self; i; |d: u32, s: u8| {
             assert_ne!(s, 1, "SHL r/m32, imm8 with immediate 1 should be handled by opcode SHL r/m32, 1");
 
-            if s == 0 {
+            if (s&0x1f) == 0 {
                 return (d, FLAGS_UNAFFECTED);
             }
 
@@ -113,7 +113,26 @@ impl Axecutor {
     fn instr_shl_rm64_imm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Shl_rm64_imm8);
 
-        todo!("instr_shl_rm64_imm8 for Shl")
+        calculate_rm_imm![u64f; u8; self; i; |d: u64, s: u8| {
+            assert_ne!(s, 1, "SHL r/m64, imm8 with immediate 1 should be handled by opcode SHL r/m64, 1");
+
+            if s&0x3f == 0 {
+                return (d, FLAGS_UNAFFECTED);
+            }
+
+            match d.checked_shl((s&0x3f) as u32) {
+                Some(v) => (
+                    v,
+                    if d & (0x8000000000000000u64.wrapping_shr(match s&0x3f {
+                        0 => 0,
+                        v => v-1
+                    } as u32)) == 0 {0} else {FLAG_CF}
+                ),
+                None => {
+                    panic!("u64 s & 0x1f should never be >=64");
+                }
+            }
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
     }
 
     /// SHL r/m8, 1
@@ -127,7 +146,7 @@ impl Axecutor {
 
             let cf = if d & 0x80 == 0 {0} else {FLAG_CF};
             // OF == 0 <=> Two top bits of rm operand were the same
-            let of = if ((d & 0x80) >> 1) ^ (d & 0x40) != 0 {0} else {FLAG_OF};
+            let of = if (d & 0x40 == 0) == (cf == 0) {0} else {FLAG_OF};
 
             (d.wrapping_shl(1), cf | of)
         }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
@@ -144,7 +163,7 @@ impl Axecutor {
 
             let cf = if d & 0x8000 == 0 {0} else {FLAG_CF};
             // OF == 0 <=> Two top bits of rm operand were the same
-            let of = if ((d & 0x8000) >> 1) ^ (d & 0x4000) != 0 {0} else {FLAG_OF};
+            let of = if (d & 0x4000 == 0) == (cf == 0) {0} else {FLAG_OF};
 
             (d.wrapping_shl(1), cf | of)
         }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
@@ -156,7 +175,15 @@ impl Axecutor {
     fn instr_shl_rm32_1(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Shl_rm32_1);
 
-        todo!("instr_shl_rm32_1 for Shl")
+        calculate_rm_imm![u32f; u8; self; i; |d: u32, s: u8| {
+            debug_assert_eq!(s, 1, "SHL r/m32, 1: src is not 1");
+
+            let cf = if d & 0x80000000 == 0 {0} else {FLAG_CF};
+            // OF == 0 <=> Two top bits of rm operand were the same
+            let of = if (d & 0x40000000 == 0) == (cf == 0) {0} else {FLAG_OF};
+
+            (d.wrapping_shl(1), cf | of)
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
     }
 
     /// SHL r/m64, 1
@@ -165,7 +192,15 @@ impl Axecutor {
     fn instr_shl_rm64_1(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Shl_rm64_1);
 
-        todo!("instr_shl_rm64_1 for Shl")
+        calculate_rm_imm![u64f; u8; self; i; |d: u64, s: u8| {
+            debug_assert_eq!(s, 1, "SHL r/m64, 1: src is not 1");
+
+            let cf = if d & 0x8000000000000000 == 0 {0} else {FLAG_CF};
+            // OF == 0 <=> Two top bits of rm operand were the same
+            let of = if (d & 0x8000000000000000) == ((d & 0x4000000000000000)<<1) {0} else {FLAG_OF};
+
+            (d.wrapping_shl(1), cf | of)
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
     }
 
     /// SHL r/m8, CL
@@ -213,65 +248,79 @@ mod tests {
     };
     use iced_x86::Register::*;
 
-    // shl byte ptr [rsp+8], 1
-    ax_test![shl_byte_ptr_rsp8_1_cf; 0xd0, 0x64, 0x24, 0x8;
+    // shl r11b, 1
+    ax_test![shl_r11b_1_cf_of; 0x41, 0xd0, 0xe3;
         |a: &mut Axecutor| {
-            write_reg_value!(q; a; RSP; 0x1000);
-
-            // Setup memory
-            a.mem_init_zero(0x1000, 16).unwrap();
-            a.mem_write_8(0x1008, 0x81).unwrap();
+            write_reg_value!(b; a; R11L; 0x8b);
         };
         |a: Axecutor| {
-            assert_reg_value!(q; a; RSP; 0x1000);
-            assert_eq!(a.mem_read_8(0x1008).unwrap(), 2);
-
-            // Make sure it didn't get moved into bytes next to it
-            assert_eq!(a.mem_read_8(0x1007).unwrap(), 0);
-            assert_eq!(a.mem_read_8(0x1009).unwrap(), 0);
+            assert_reg_value!(b; a; R11L; 0x16);
         };
-        (FLAG_CF; FLAG_PF)
+        (FLAG_CF | FLAG_OF; FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
-    // shl byte ptr [rsp+8], 1
-    ax_test![shl_byte_ptr_rsp8_1_no_cf; 0xd0, 0x64, 0x24, 0x8;
+    // shl r11w, 1
+    ax_test![shl_r11w_1_of_pf; 0x66, 0x41, 0xd1, 0xe3;
         |a: &mut Axecutor| {
-            write_reg_value!(q; a; RSP; 0x1000);
-
-            // Setup memory
-            a.mem_init_zero(0x1000, 16).unwrap();
-            a.mem_write_8(0x1008, 0x71).unwrap();
+            write_reg_value!(q; a; R11; 0x6ea7b6c7ec446be5u64);
         };
         |a: Axecutor| {
-            assert_reg_value!(q; a; RSP; 0x1000);
-            assert_eq!(a.mem_read_8(0x1008).unwrap(), 0xe2);
-
-            // Make sure it didn't get moved into bytes next to it
-            assert_eq!(a.mem_read_8(0x1007).unwrap(), 0);
-            assert_eq!(a.mem_read_8(0x1009).unwrap(), 0);
+            assert_reg_value!(q; a; R11; 0x6ea7b6c7ec44d7cau64);
         };
-        (FLAG_PF; FLAG_CF | FLAG_OF)
+        (FLAG_PF | FLAG_SF | FLAG_OF; FLAG_CF | FLAG_ZF)
+    ];
+    // shl r11w, 1
+    ax_test![shl_r11w_1_cf_pf_sf; 0x66, 0x41, 0xd1, 0xe3;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x2d350ac8bf64d79bu64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; R11; 0x2d350ac8bf64af36u64);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
-    // shl bl, 1 -- test OF flag on 1-bit shifts
+    // shl r11w, 1
+    ax_test![shl_r11w_1_no_flags; 0x66, 0x41, 0xd1, 0xe3;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x89ccc6f0e7781c49u64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; R11; 0x89ccc6f0e7783892u64);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // shl r11w, 1
+    ax_test![shl_r11w_1_sf_of; 0x66, 0x41, 0xd1, 0xe3;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x639025ce570552e2u64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; R11; 0x639025ce5705a5c4u64);
+        };
+        (FLAG_SF | FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF)
+    ];
+
+    // shl bl, 1
     ax_test![shl_bl_1_of; 0xd0, 0xe3;
         |a: &mut Axecutor| {
-            write_reg_value!(b; a; BL; 0xc0);
+            write_reg_value!(b; a; BL; 0xb3);
         };
         |a: Axecutor| {
-            assert_reg_value!(b; a; BL; 0x80);
+            assert_reg_value!(b; a; BL; 0x66);
         };
-        (FLAG_CF | FLAG_OF; 0)
+        (FLAG_CF | FLAG_PF | FLAG_OF; FLAG_ZF | FLAG_SF)
     ];
-    // shl bl, 1 -- test OF flag on 1-bit shifts
+    // shl bl, 1
     ax_test![shl_bl_1_no_of; 0xd0, 0xe3;
         |a: &mut Axecutor| {
-            write_reg_value!(b; a; BL; 0x80);
+            write_reg_value!(b; a; BL; 0x3);
         };
         |a: Axecutor| {
-            assert_reg_value!(b; a; BL; 0x00);
+            assert_reg_value!(b; a; BL; 0x6);
         };
-        (FLAG_CF | FLAG_PF | FLAG_ZF; FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // shl bl, 2
@@ -320,15 +369,16 @@ mod tests {
     ];
 
     // shl r11w, 1
-    ax_test![shl_r11w_1; 0x66, 0x41, 0xd1, 0xe3;
+    ax_test![shl_r11w_1_cf_zf; 0x66, 0x41, 0xd1, 0xe3;
         |a: &mut Axecutor| {
-            write_reg_value!(w; a; R11W; 0x8000);
+            write_reg_value!(w; a; R11W; 0x8000u16);
         };
         |a: Axecutor| {
-            assert_reg_value!(w; a; R11W; 0);
+            assert_reg_value!(w; a; R11W; 0u16);
         };
-        (FLAG_CF | FLAG_ZF; FLAG_OF)
+        (FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_PF; 0)
     ];
+
     // shl r11w, 1
     ax_test![shl_r11w_1_of; 0x66, 0x41, 0xd1, 0xe3;
         |a: &mut Axecutor| {
@@ -337,7 +387,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; R11W; 0x8000);
         };
-        (FLAG_CF|FLAG_OF; 0)
+        (FLAG_CF|FLAG_PF|FLAG_SF; FLAG_OF)
     ];
 
     // shl dx, 0 -- flags not affected
@@ -406,6 +456,17 @@ mod tests {
         (FLAG_CF | FLAG_PF | FLAG_ZF; 0)
     ];
 
+    // shl cx, 16
+    ax_test![shl_cx_16; 0x66, 0xc1, 0xe1, 0x10;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; CX; 0xda60);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; CX; 0x0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
+    ];
+
     // shl r11d, 25
     ax_test![shl_r11d_25; 0x41, 0xc1, 0xe3, 0x19;
         |a: &mut Axecutor| {
@@ -437,5 +498,115 @@ mod tests {
             assert_reg_value!(d; a; EDX; 0xbdb406f5u32);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // shl eax, 1
+    ax_test![shl_eax_1; 0xd1, 0xe0;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EAX; 0x347a69aa);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EAX; 0x68f4d354);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // shl edx, 1
+    ax_test![shl_edx_1; 0xd1, 0xe2;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EDX; 0x4780bbd0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EDX; 0x8f0177a0u32);
+        };
+        (FLAG_PF | FLAG_SF | FLAG_OF; FLAG_CF | FLAG_ZF)
+    ];
+
+    // shl edx, 1
+    ax_test![shl_edx_1_cf; 0xd1, 0xe2;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EDX; 0xbc97b537u32);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EDX; 0x792f6a6e);
+        };
+        (FLAG_CF | FLAG_OF; FLAG_PF | FLAG_ZF | FLAG_SF)
+    ];
+
+    // shl rbx, 5
+    ax_test![shl_rbx_5; 0x48, 0xc1, 0xe3, 0x5;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x4ce597c73d9b9895u64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x9cb2f8e7b37312a0u64);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
+    ];
+
+    // shl rbx, 0
+    ax_test![shl_rbx_0; 0x48, 0xc1, 0xe3, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0xe5e58065bec7819fu64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0xe5e58065bec7819fu64);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // shl rbx, 63
+    ax_test![shl_rbx_63; 0x48, 0xc1, 0xe3, 0x3f;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x2e3f2d1f8d72340bu64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x8000000000000000u64);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
+    ];
+
+    // shl rbx, 64
+    ax_test![shl_rbx_64; 0x48, 0xc1, 0xe3, 0x40;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x8b5cfb2c7e8fc9c3u64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x8b5cfb2c7e8fc9c3u64);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // shl rax, 1
+    ax_test![shl_rax_1; 0x48, 0xd1, 0xe0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x931cc98c02f1d409u64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x2639931805e3a812u64);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_OF; FLAG_ZF | FLAG_SF)
+    ];
+
+    // shl rax, 1
+    ax_test![shl_rax_1_sf; 0x48, 0xd1, 0xe0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0xe50f86adda7cad3au64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0xca1f0d5bb4f95a74u64);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
+    ];
+
+    // shl rax, 1
+    ax_test![shl_rax_1_of; 0x48, 0xd1, 0xe0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x9e8e938742425e0au64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x3d1d270e8484bc14u64);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_OF; FLAG_ZF | FLAG_SF)
     ];
 }
