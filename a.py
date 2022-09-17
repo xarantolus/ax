@@ -7,11 +7,142 @@ import sys
 import tempfile
 import pyperclip
 
+FLAG_CF = 0x0001
+FLAG_PF = 0x0004
+FLAG_ZF = 0x0040
+FLAG_SF = 0x0080
+FLAG_OF = 0x0800
+FLAGS = [
+    (FLAG_CF, "CF"),
+    (FLAG_PF, "PF"),
+    (FLAG_ZF, "ZF"),
+    (FLAG_SF, "SF"),
+    (FLAG_OF, "OF"),
+]
 
-if __name__ == '__main__':
-    # First argument is x86-64 assembly code
-    assembly_code = "mov rax, rbx" if len(sys.argv) == 1 else " ".join(sys.argv[1:])
+qword_registers = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
+dword_registers = ["eax", "ebx", "ecx", "edx", "esi", "edi", "ebp", "esp", "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d"]
+word_registers = ["ax", "bx", "cx", "dx", "si", "di", "bp", "sp", "r8w", "r9w", "r10w", "r11w", "r12w", "r13w", "r14w", "r15w"]
+byte_registers = ["al", "ah", "bl", "bh", "cl", "ch", "dl", "dh", "sil", "dil", "bpl", "spl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b"]
 
+registers = qword_registers + dword_registers + word_registers + byte_registers
+
+def find_register(assembly_code: str):
+    for register in registers:
+        if " " + register in assembly_code and "[" + register not in assembly_code:
+            return register
+    raise Exception("No register found in assembly code: " + assembly_code)
+
+def register_size_letter(register: str):
+    if register in qword_registers:
+        return "q"
+    elif register in dword_registers:
+        return "d"
+    elif register in word_registers:
+        return "w"
+    elif register in byte_registers:
+        return "b"
+    else:
+        raise Exception("Unknown register: " + register)
+
+
+def register_size_bytes(register: str):
+    if register in qword_registers:
+        return 8
+    elif register in dword_registers:
+        return 4
+    elif register in word_registers:
+        return 2
+    elif register in byte_registers:
+        return 1
+    else:
+        raise Exception("Unknown register: " + register)
+
+def random_hex_value(register: str):
+    if register in qword_registers:
+        return hex(random.randint(0, 2 ** 64 - 1))
+    elif register in dword_registers:
+        return hex(random.randint(0, 2 ** 32 - 1))
+    elif register in word_registers:
+        return hex(random.randint(0, 2 ** 16 - 1))
+    elif register in byte_registers:
+        return hex(random.randint(0, 2 ** 8 - 1))
+    else:
+        raise Exception("Unknown register: " + register)
+
+def learn_flags(assembly_code: str, hex_val: str):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        register = find_register(assembly_code)
+
+        # write assembly code to file
+        assembly_path = os.path.join(tmpdir, "a.asm")
+
+        with open(assembly_path, "w", encoding='utf8') as f:
+            f.write(
+                f""".intel_syntax noprefix
+                .data
+                rflags_dest: .space 8
+                reg_val: .space 8
+                .text
+                .global _start
+                _start:
+                mov {register}, {hex_val}
+                {assembly_code}
+                PUSHFQ
+
+                mov [rip+reg_val], {register}
+                pop rax
+                mov [rip+rflags_dest], rax
+
+                mov rax, 1
+                mov rdi, 1
+                lea rsi, [rip+rflags_dest]
+                mov rdx, 8
+                syscall
+
+
+                mov rax, 1
+                mov rdi, 1
+                lea rsi, [rip+reg_val]
+                mov rdx, 8
+                syscall
+
+                mov rax, 60
+                mov rdi, 0
+
+                syscall
+                """)
+
+        # assemble with as
+        object_path = os.path.join(tmpdir, "a.o")
+        subprocess.run(["as", "-o", object_path, assembly_path])
+
+        # turn into executable with gcc, symbol _start
+        executable_path = os.path.join(tmpdir, "a")
+        subprocess.run(["gcc", "-m64", "-nostdlib", "-static", "-o", executable_path, object_path])
+
+        # run executable and capture 16 bytes of output
+        output = subprocess.run([executable_path], stdout=subprocess.PIPE).stdout
+
+        assert len(output) == 16, "Output is not 16 bytes long"
+
+        rflags = int.from_bytes(output[:8], byteorder="little", signed=False)
+
+        # find out which flags were set
+        set_flags, flags_not_set = [], []
+        for flag, flag_name in FLAGS:
+            if rflags & flag:
+                set_flags.append("FLAG_" + flag_name)
+            else:
+                flags_not_set.append("FLAG_" + flag_name)
+
+        reg_val = int.from_bytes(output[8:8+register_size_bytes(register)], byteorder="little", signed=False)
+
+        return set_flags, flags_not_set, reg_val
+
+
+
+def assembled_bytes(assembly_code: str):
     # create temporary directory
     with tempfile.TemporaryDirectory() as tmpdir:
         # write assembly code to file
@@ -55,74 +186,102 @@ if __name__ == '__main__':
         for b in binary[binary_start:binary_end]:
             hex_arr.append(hex(b))
 
-        test_id = "".join(filter(lambda c: c.isalnum()
-                          or c == " ", assembly_code.replace(";", " ")))
-        test_id = " ".join(test_id.split()).replace(" ", "_")
+        return hex_arr
 
-        # ask if setup should be included y/n
-        setup = input("Test type? (t: ax_test normal; ts: ax_test with setup; o: operand_test; os: operand_test with setup): ")
-        if setup == "t":
-            code = f"""// {assembly_code}
-    ax_test![{test_id}; {", ".join(hex_arr)}; |a: Axecutor| {{
-        assert_reg_value!(b; a; RBX; 0x10);
-        todo!("write test cases for \\\"{assembly_code}\\\"");
-    }}; (0; 0)];"""
-        elif setup == "ts":
-            code = f"""// {assembly_code}
-    ax_test![{test_id}; {", ".join(hex_arr)};
-        |a: &mut Axecutor| {{
-            write_reg_value!(b; a; AL; 0x0f);
-            todo!("write setup code for \\\"{assembly_code}\\\"");
-        }};
-        |a: Axecutor| {{
-            assert_reg_value!(b; a; RBX; 0x10);
-            todo!("write test cases for \\\"{assembly_code}\\\"");
-        }};
-        (0; 0)
-    ];"""
-        elif setup == "o":
-            code = f"""// {assembly_code}
-    operand_test![{test_id};
-        {", ".join(hex_arr)};
-        vec![
-            // TODO: Adjust memory operands
-            Operand(Memory {{
-                base: Some(Register::RSP.into()),
-                index: None,
-                scale: 1,
-                displacement: 0,
-            }}),
-            Operand(Immediate {{ data: 1, size: 1 }}),
-        ]
-    ];"""
-        elif setup == "os":
-            code = f"""// {assembly_code}
-    operand_test![{test_id};
-        {", ".join(hex_arr)};
-        vec![
-            // TODO: Adjust memory operands
-            Operand(Memory {{
-                base: Some(Register::RSP.into()),
-                index: None,
-                scale: 1,
-                displacement: 0,
-            }}),
-            Operand(Immediate {{ data: 1, size: 1 }}),
-        ];
-        |a: &mut Axecutor| {{
-			use iced_x86::Register::*;
-			a.reg_write_64(RSP.into(), 0x1000)
-		}};
-		vec![
-            // TODO: Adjust memory addresses
-        ]
-    ];"""
-        else:
-            print("Invalid input")
-            sys.exit(1)
+def stringify_flags(flags):
+    if len(flags) == 0:
+        return "0"
+    else:
+        return " | ".join(flags)
+
+def hexify(number: str | int):
+    if isinstance(number, str):
+        number = int(number, base=0)
+
+    if number > (2147483647):
+        return hex(number)+ "u64"
+    else:
+        return hex(number)
+
+def generate_test(assembly_code: str, hex_arr: list):
+    test_id = "".join(filter(lambda c: c.isalnum()
+                             or c == " ", assembly_code.replace(";", " ")))
+    test_id = " ".join(test_id.split()).replace(" ", "_")
+
+    # ask if setup should be included y/n
+    setup = input(
+        "Test type? (t: ax_test normal; ts: ax_test with setup; o: operand_test; os: operand_test with setup): ")
+
+    if setup == "t" or setup == "ts":
+        register = find_register(assembly_code)
+        hex_val = random_hex_value(register)
+        flags_set, flags_not_set, register_output = learn_flags(assembly_code, hex_val)
 
 
+    if setup == "t":
+        code = f"""// {assembly_code}
+ax_test![{test_id}; {", ".join(hex_arr)}; |a: Axecutor| {{
+        assert_reg_value!({register_size_letter(register)}; a; {register.upper()}; {hexify(register_output)});
+    }}; ({stringify_flags(flags_set)}; {stringify_flags(flags_not_set)})];"""
+    elif setup == "ts":
+        code = f"""// {assembly_code}
+ax_test![{test_id}; {", ".join(hex_arr)};
+    |a: &mut Axecutor| {{
+        write_reg_value!({register_size_letter(register)}; a; {register.upper()}; {hexify(hex_val)});
+    }};
+    |a: Axecutor| {{
+        assert_reg_value!({register_size_letter(register)}; a; {register.upper()}; {hexify(register_output)});
+    }};
+    ({stringify_flags(flags_set)}; {stringify_flags(flags_not_set)})
+];"""
+    elif setup == "o":
+        code = f"""// {assembly_code}
+operand_test![{test_id};
+    {", ".join(hex_arr)};
+    vec![
+        // TODO: Adjust memory operands
+        Operand(Memory {{
+            base: Some(Register::RSP.into()),
+            index: None,
+            scale: 1,
+            displacement: 0,
+        }}),
+        Operand(Immediate {{ data: 1, size: 1 }}),
+    ]
+];"""
+    elif setup == "os":
+        code = f"""// {assembly_code}
+operand_test![{test_id};
+    {", ".join(hex_arr)};
+    vec![
+        // TODO: Adjust memory operands
+        Operand(Memory {{
+            base: Some(Register::RSP.into()),
+            index: None,
+            scale: 1,
+            displacement: 0,
+        }}),
+        Operand(Immediate {{ data: 1, size: 1 }}),
+    ];
+    |a: &mut Axecutor| {{
+        use iced_x86::Register::*;
+        a.reg_write_64(RSP.into(), 0x1000)
+    }};
+    vec![
+        // TODO: Adjust memory addresses
+    ]
+];"""
+    else:
+        print("Invalid input")
+        sys.exit(1)
+
+    pyperclip.copy(code)
+    print(f"Copied test case for \"{assembly_code}\" to clipboard!")
 
 
-        pyperclip.copy(code)
-        print(f"Copied test case for \"{assembly_code}\" to clipboard!")
+if __name__ == '__main__':
+    # First argument is x86-64 assembly code
+    assembly_code = "mov rax, rbx" if len(
+        sys.argv) == 1 else " ".join(sys.argv[1:])
+
+    generate_test(assembly_code, assembled_bytes(assembly_code))

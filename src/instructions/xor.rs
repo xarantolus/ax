@@ -561,4 +561,15 @@ mod tests {
         };
         (FLAG_ZF | FLAG_PF; FLAG_SF | FLAG_OF | FLAG_CF)
     ];
+
+    // xor rcx, 0xffffffffffffffff
+    ax_test![xor_rcx_0xffffffffffffffff_nonzero; 0x48, 0x83, 0xf1, 0xff;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RCX; 0xe759a4c219c95a1bu64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RCX; 0x18a65b3de636a5e4u64);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
 }
