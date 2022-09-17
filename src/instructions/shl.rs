@@ -1,3 +1,5 @@
+use core::panic;
+
 use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Shl;
@@ -39,7 +41,7 @@ impl Axecutor {
         calculate_rm_imm![u8f; self; i; |d: u8, s: u8| {
             assert_ne!(s, 1, "SHL r/m8, imm8 with immediate 1 should be handled by opcode SHL r/m8, 1");
 
-            match d.checked_shl(s as u32) {
+            match d.checked_shl((s&0x1f) as u32) {
                 Some(v) => (
                     v,
                     if d & (0x80u8.wrapping_shr((s&0x1f) as u32 - 1)) == 0 {0} else {FLAG_CF}
@@ -63,7 +65,7 @@ impl Axecutor {
             match d.checked_shl((s&0x1f) as u32) {
                 Some(v) => (
                     v,
-                    if d & (0x8000u16.wrapping_shr(s as u32 - 1)) == 0 {0} else {FLAG_CF}
+                    if d & (0x8000u16.wrapping_shr((s&0x1f) as u32 - 1)) == 0 {0} else {FLAG_CF}
                 ),
                 None => {
                     // Overflow flag is only defined for shifts of 1, which are handled by another opcode,
@@ -80,7 +82,23 @@ impl Axecutor {
     fn instr_shl_rm32_imm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Shl_rm32_imm8);
 
-        todo!("instr_shl_rm32_imm8 for Shl")
+        calculate_rm_imm![u32f; u8; self; i; |d: u32, s: u8| {
+            assert_ne!(s, 1, "SHL r/m32, imm8 with immediate 1 should be handled by opcode SHL r/m32, 1");
+
+
+            match d.checked_shl((s&0x1f) as u32) {
+                Some(v) => (
+                    v,
+                    if d & (0x80000000u32.wrapping_shr(match s&0x1f {
+                        0 => 0,
+                        v => v-1
+                    } as u32)) == 0 {0} else {FLAG_CF}
+                ),
+                None => {
+                    panic!("u32 s & 0x1f should never be >=32");
+                }
+            }
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
     }
 
     /// SHL r/m64, imm8
@@ -369,5 +387,27 @@ mod tests {
             assert_reg_value!(w; a; R11W; 0);
         };
         (FLAG_CF | FLAG_PF | FLAG_ZF; 0)
+    ];
+
+    // shl r11d, 25
+    ax_test![shl_r11d_25; 0x41, 0xc1, 0xe3, 0x19;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; R11D; 0x80000000);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; R11D; 0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF)
+    ];
+
+    // shl r11d, 32
+    ax_test![shl_r11d_32; 0x41, 0xc1, 0xe3, 0x20;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; R11D; 1);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; R11D; 1);
+        };
+        (0; FLAG_ZF | FLAG_CF | FLAG_OF | FLAG_PF | FLAG_SF)
     ];
 }

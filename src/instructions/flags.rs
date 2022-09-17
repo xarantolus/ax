@@ -160,6 +160,11 @@ macro_rules! set_flags {
 					"flags: set_flags: FLAG_ID not implemented"
 				);
 
+				debug_assert!(
+					!(new_flags & FLAG_ZF != 0) || (new_flags & FLAG_PF != 0),
+					"flags: set_flags: ZF set (so number of bits set is 0 => even) but PF (\"even number of bits\") not set; this does not make sense"
+				);
+
 				a.state.rflags = new_flags;
 		}
 	};
