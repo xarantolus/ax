@@ -8,6 +8,7 @@ pub mod memory;
 pub mod mov;
 pub mod operand;
 pub mod registers;
+pub mod shl;
 pub mod switch;
 mod tests;
 pub mod xor;

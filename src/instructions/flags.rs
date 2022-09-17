@@ -58,13 +58,17 @@ lazy_static! {
 
 macro_rules! set_flags {
 	[$type:ident; $type_size:expr] => {
-			|a: &mut Axecutor, flags_to_set: u64, flags_to_clear: u64, result: $type, carry: bool| {
+			|a: &mut Axecutor, flags_to_set: u64, flags_to_clear: u64, result: $type| {
 				// Clear flags we might set now
 				let mut new_flags = a.state.rflags & !flags_to_set & !flags_to_clear;
 
 				// Carry Flag is defined by caller
-				if flags_to_set & FLAG_CF != 0 && carry {
+				if flags_to_set & FLAG_CF != 0 {
 					new_flags |= FLAG_CF;
+				}
+				// Overflow also defined by caller
+				if flags_to_set & FLAG_OF != 0 {
+					new_flags |= FLAG_OF;
 				}
 
 				// If zero, set ZF
@@ -116,11 +120,6 @@ macro_rules! set_flags {
 					"flags: set_flags: FLAG_DF not implemented"
 				);
 				assert_eq!(
-					flags_to_set & FLAG_OF,
-					0,
-					"flags: set_flags: FLAG_OF not implemented"
-				);
-				assert_eq!(
 					flags_to_set & FLAG_IOPL,
 					0,
 					"flags: set_flags: FLAG_IOPL not implemented"
@@ -168,43 +167,19 @@ macro_rules! set_flags {
 
 #[wasm_bindgen]
 impl Axecutor {
-    pub fn set_flags_u8(
-        &mut self,
-        flags_to_set: u64,
-        flags_to_clear: u64,
-        result: u8,
-        carry: bool,
-    ) {
-        set_flags!(u8; 8)(self, flags_to_set, flags_to_clear, result, carry);
+    pub fn set_flags_u8(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u8) {
+        set_flags!(u8; 8)(self, flags_to_set, flags_to_clear, result);
     }
 
-    pub fn set_flags_u16(
-        &mut self,
-        flags_to_set: u64,
-        flags_to_clear: u64,
-        result: u16,
-        carry: bool,
-    ) {
-        set_flags!(u16; 16)(self, flags_to_set, flags_to_clear, result, carry);
+    pub fn set_flags_u16(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u16) {
+        set_flags!(u16; 16)(self, flags_to_set, flags_to_clear, result);
     }
 
-    pub fn set_flags_u32(
-        &mut self,
-        flags_to_set: u64,
-        flags_to_clear: u64,
-        result: u32,
-        carry: bool,
-    ) {
-        set_flags!(u32; 32)(self, flags_to_set, flags_to_clear, result, carry);
+    pub fn set_flags_u32(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u32) {
+        set_flags!(u32; 32)(self, flags_to_set, flags_to_clear, result);
     }
 
-    pub fn set_flags_u64(
-        &mut self,
-        flags_to_set: u64,
-        flags_to_clear: u64,
-        result: u64,
-        carry: bool,
-    ) {
-        set_flags!(u64; 64)(self, flags_to_set, flags_to_clear, result, carry);
+    pub fn set_flags_u64(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u64) {
+        set_flags!(u64; 64)(self, flags_to_set, flags_to_clear, result);
     }
 }
