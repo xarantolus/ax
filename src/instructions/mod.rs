@@ -14,5 +14,6 @@ pub mod push;
 pub mod registers;
 pub mod shl;
 pub mod switch;
+pub mod test;
 mod tests;
 pub mod xor;

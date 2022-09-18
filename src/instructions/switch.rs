@@ -13,6 +13,7 @@ impl Axecutor {
             Pop => self.mnemonic_pop(i),
             Push => self.mnemonic_push(i),
             Shl => self.mnemonic_shl(i),
+            Test => self.mnemonic_test(i),
             Xor => self.mnemonic_xor(i),
             _ => Err(AxError::from(format!(
                 "unimplemented mnemonic {:?}",
