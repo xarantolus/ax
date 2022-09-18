@@ -1,3 +1,4 @@
+from ctypes import memset
 from multiprocessing.dummy import Pool
 import pyperclip
 import abc
@@ -30,6 +31,20 @@ class Operand(abc.ABC):
     def size() -> int:
         pass
 
+    def size_letter(self):
+        size = self.size()
+        if size == 1:
+            return "b"
+        elif size == 2:
+            return "w"
+        elif size == 4:
+            return "d"
+        elif size == 8:
+            return "q"
+        else:
+            raise Exception("Invalid size")
+
+
 # Argument like "rax" in "mov rax, 0x5"
 
 
@@ -48,18 +63,6 @@ class RegisterOperand(Operand):
             return 2
         elif self.name in byte_registers:
             return 1
-        else:
-            raise Exception("Unknown register: " + str(self.name))
-
-    def size_letter(self):
-        if self.name in qword_registers:
-            return "q"
-        elif self.name in dword_registers:
-            return "d"
-        elif self.name in word_registers:
-            return "w"
-        elif self.name in byte_registers:
-            return "b"
         else:
             raise Exception("Unknown register: " + str(self.name))
 
@@ -441,71 +444,67 @@ FLAGS = [
 ]
 
 
+def assemble(instruction: Instruction):
+    # create temporary directory
+    with tempfile.TemporaryDirectory(prefix="ax_assemble") as tmpdir:
+        # write assembly code to file
+        assembly_path = os.path.join(tmpdir, "a.asm")
+        with open(assembly_path, "w", encoding='utf8') as f:
+            f.write(f""".intel_syntax noprefix
+            main:
+            .word 0x1020
+            .word 0x3040
+            .word 0x1020
+            .word 0x3040
+            .word 0x1020
+            .word 0x3040
+            .word 0x1020
+            .word 0x3040
+            {instruction}
+            .word 0x1020
+            .word 0x3040
+            .word 0x1020
+            .word 0x3040
+            .word 0x1020
+            .word 0x3040
+            .word 0x1020
+            .word 0x3040
+            """)
+
+        # assemble to binary
+        binary_path = os.path.join(tmpdir, "a.bin")
+        subprocess.run(["as", "-o", binary_path, assembly_path])
+
+        with open(binary_path, "rb") as f:
+            binary = f.read()
+
+        marker = b"\x20\x10\x40\x30\x20\x10\x40\x30\x20\x10\x40\x30\x20\x10\x40\x30"
+
+        # find offset of main
+        binary_start = binary.find(marker) + len(marker)
+        binary_end = binary.rfind(marker)
+
+        hex_arr = []
+        for b in binary[binary_start:binary_end]:
+            hex_arr.append(hex(b))
+
+        return hex_arr
+
 class TestCase:
-    def __init__(self, instruction: Instruction, set_flags: List[str], flags_not_set: List[str], operand_values: List[int], expected_values: List[int]):
+    def __init__(self, assembled, instruction: Instruction, set_flags: List[str], flags_not_set: List[str], operand_values: List[int], expected_values: List[int]):
         self.instruction = instruction if isinstance(
             instruction, Instruction) else Instruction.parse(instruction)
         assert isinstance(instruction, Instruction)
 
         assert len(operand_values) == len(expected_values)
 
-        self.assembled_bytes = None
-        self.assemble()
+        self.assembled_bytes = assembled
 
         self.flags_set = set_flags
         self.flags_not_set = flags_not_set
         self.operand_values = operand_values
         self.expected_values = expected_values
 
-    def assemble(self):
-        if self.assembled_bytes is not None:
-            return self.assembled_bytes
-
-        # create temporary directory
-        with tempfile.TemporaryDirectory(prefix="ax_assemble") as tmpdir:
-            # write assembly code to file
-            assembly_path = os.path.join(tmpdir, "a.asm")
-            with open(assembly_path, "w", encoding='utf8') as f:
-                f.write(f""".intel_syntax noprefix
-                main:
-                .word 0x1020
-                .word 0x3040
-                .word 0x1020
-                .word 0x3040
-                .word 0x1020
-                .word 0x3040
-                .word 0x1020
-                .word 0x3040
-                {self.instruction}
-                .word 0x1020
-                .word 0x3040
-                .word 0x1020
-                .word 0x3040
-                .word 0x1020
-                .word 0x3040
-                .word 0x1020
-                .word 0x3040
-    """)
-
-            # assemble to binary
-            binary_path = os.path.join(tmpdir, "a.bin")
-            subprocess.run(["as", "-o", binary_path, assembly_path])
-
-            with open(binary_path, "rb") as f:
-                binary = f.read()
-
-            marker = b"\x20\x10\x40\x30\x20\x10\x40\x30\x20\x10\x40\x30\x20\x10\x40\x30"
-
-            # find offset of main
-            binary_start = binary.find(marker) + len(marker)
-            binary_end = binary.rfind(marker)
-
-            hex_arr = []
-            for b in binary[binary_start:binary_end]:
-                hex_arr.append(hex(b))
-
-            self.assembled_bytes = hex_arr
-            return hex_arr
 
     GOOD_TEST_VALUES = list(dict.fromkeys([
         0x0,
@@ -572,7 +571,7 @@ class TestCase:
             raise NotImplementedError()
 
     @staticmethod
-    def learn_single_flags(i: int, instruction: Instruction, operand_values: List[int], tmpdir: str):
+    def learn_single_flags(i: int, assembled, instruction: Instruction, operand_values: List[int], tmpdir: str):
         try:
             setup_code = []
 
@@ -701,13 +700,9 @@ class TestCase:
                 else:
                     flags_not_set.append("FLAG_" + flag_name)
 
-            output_op_val1 = int.from_bytes(
-                output[8:8+dynamic_operands[0].size()], byteorder="little", signed=False)
-            output_op_val2 = int.from_bytes(
-                output[16:16+dynamic_operands[1].size()], byteorder="little", signed=False)
-
             if len(dynamic_operands) == 0:
                 return TestCase(
+                    assembled,
                     instruction,
                     set_flags,
                     flags_not_set,
@@ -715,7 +710,11 @@ class TestCase:
                     []
                 )
             elif len(dynamic_operands) == 1:
+                output_op_val1 = int.from_bytes(
+                    output[8:8+dynamic_operands[0].size()], byteorder="little", signed=False)
+
                 return TestCase(
+                    assembled,
                     instruction,
                     set_flags,
                     flags_not_set,
@@ -723,7 +722,13 @@ class TestCase:
                     [output_op_val1],
                 )
             elif len(dynamic_operands) == 2:
+                output_op_val1 = int.from_bytes(
+                    output[8:8+dynamic_operands[0].size()], byteorder="little", signed=False)
+                output_op_val2 = int.from_bytes(
+                    output[16:16+dynamic_operands[1].size()], byteorder="little", signed=False)
+
                 return TestCase(
+                    assembled,
                     instruction,
                     set_flags,
                     flags_not_set,
@@ -740,6 +745,8 @@ class TestCase:
     def learn_flags(instruction: Instruction, operand_values_arg: List[List[int]]):
         results: List[TestCase] = []
 
+        assembled = assemble(instruction)
+
         def is_new(flags_set, flags_not_set):
             for ts in results:
                 if ts.flags_set == flags_set and ts.flags_not_set == flags_not_set:
@@ -751,7 +758,7 @@ class TestCase:
                 temp_results = list(
                     tqdm(
                         p.imap(lambda tpl: TestCase.learn_single_flags(
-                            tpl[0], instruction, tpl[1], tmpdir
+                            tpl[0],  assembled, instruction, tpl[1], tmpdir
                         ), enumerate(operand_values_arg)),
                         total=len(operand_values_arg)
                     ))
@@ -762,7 +769,7 @@ class TestCase:
                     try:
                         str(r)
                     except Exception as e:
-                        pass
+                        continue
 
                     results.append(r)
 
@@ -777,22 +784,9 @@ class TestCase:
             return [x[5:] for x in f]
 
         # generate name from instruction string and flags set, but replaces spaces and commas with _
-        return f"{self.instruction}_{'_'.join(map_flags(self.flags_set))}_{'_'.join(map_flags(self.flags_not_set))}".replace(" ", "_").replace(",", "_").lower()
+        return f"{self.instruction}_{'_'.join(map_flags(self.flags_set))}_{'_'.join(map_flags(self.flags_not_set))}".replace(" ", "_").replace(",", "_").replace("[", "").replace("]", "").lower().replace("__", "_")
 
     def __str__(self):
-        """
-        // shl rax, 1
-        ax_test![shl_rax_1_of; 0x48, 0xd1, 0xe0;
-            |a: &mut Axecutor| {
-                write_reg_value!(q; a; RAX; 0x9e8e938742425e0au64);
-            };
-            |a: Axecutor| {
-                assert_reg_value!(q; a; RAX; 0x3d1d270e8484bc14u64);
-            };
-            (FLAG_CF | FLAG_PF | FLAG_OF; FLAG_ZF | FLAG_SF)
-        ];
-        """
-
         def joinflags(flags):
             return " | ".join(flags) if len(flags) > 0 else "0"
 
@@ -803,7 +797,7 @@ class TestCase:
 
         if len(dynamic_operands) == 0:
             return f"""// {self.instruction}
-ax_test![{self.test_id()}; {", ".join(self.assemble())}; |a: Axecutor| {{
+ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: Axecutor| {{
         todo!("Asset state of registers");
     }};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
@@ -812,7 +806,7 @@ ax_test![{self.test_id()}; {", ".join(self.assemble())}; |a: Axecutor| {{
             assert isinstance(
                 dynamic_operands[0], RegisterOperand), "Only register operands are currently supported for stringification"
             return f"""// {self.instruction}
-ax_test![{self.test_id()}; {", ".join(self.assemble())};
+ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
         write_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])});
     }};
@@ -822,12 +816,9 @@ ax_test![{self.test_id()}; {", ".join(self.assemble())};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
         elif len(dynamic_operands) == 2:
-            assert isinstance(
-                dynamic_operands[0], RegisterOperand), "Only register operands are currently supported for stringification"
-            assert isinstance(
-                dynamic_operands[1], RegisterOperand), "Only register operands are currently supported for stringification"
-            return f"""// {self.instruction}
-ax_test![{self.test_id()}; {", ".join(self.assemble())}; |a: &mut Axecutor| {{
+            if isinstance(dynamic_operands[0], RegisterOperand) and isinstance(dynamic_operands[1], RegisterOperand):
+                return f"""// {self.instruction}
+ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: &mut Axecutor| {{
         write_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])});
         write_reg_value!({dynamic_operands[1].size_letter()}; a; {dynamic_operands[1].name.upper()}; {ImmediateOperand(self.operand_values[1]).hexify(dynamic_operands[1])});
     }};
@@ -837,11 +828,42 @@ ax_test![{self.test_id()}; {", ".join(self.assemble())}; |a: &mut Axecutor| {{
     }};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
+            elif isinstance(dynamic_operands[0], RegisterOperand) and isinstance(dynamic_operands[1], MemoryOperand):
+                mem_start = 0x1000;
+                return f"""// {self.instruction}
+ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
+    |a: &mut Axecutor| {{
+        write_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])});
+        write_reg_value!({dynamic_operands[1].base_register.size_letter()}; a; {dynamic_operands[1].base_register.name.upper()}; {hex(mem_start)});
+        a.mem_init_zero({hex(mem_start)}, {dynamic_operands[1].size()}).unwrap();
+        a.mem_write_{dynamic_operands[1].size() * 8}({hex(mem_start + dynamic_operands[1].offset)}, {ImmediateOperand(self.operand_values[1]).hexify(dynamic_operands[1])}).unwrap();
+    }};
+    |a: Axecutor| {{
+        assert_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
+        assert_eq!(a.mem_read_{dynamic_operands[1].size() * 8}({hex(mem_start + dynamic_operands[1].offset)}).unwrap(), {ImmediateOperand(self.expected_values[1]).hexify(dynamic_operands[1])});
+    }};
+    ({flags_to_str(self.flags_set, self.flags_not_set)})
+];"""
+            elif isinstance(dynamic_operands[0], MemoryOperand) and isinstance(dynamic_operands[1], RegisterOperand):
+                mem_start = 0x1000
+                return f"""// {self.instruction}
+ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
+    |a: &mut Axecutor| {{
+        write_reg_value!({dynamic_operands[1].size_letter()}; a; {dynamic_operands[1].name.upper()}; {ImmediateOperand(self.operand_values[1]).hexify(dynamic_operands[1])});
+        write_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});
+        a.mem_init_zero({hex(mem_start)}, {dynamic_operands[0].size()}).unwrap();
+        a.mem_write_{dynamic_operands[0].size() * 8}({hex(mem_start + dynamic_operands[0].offset)}, {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])}).unwrap();
+    }};
+    |a: Axecutor| {{
+        assert_reg_value!({dynamic_operands[1].size_letter()}; a; {dynamic_operands[1].name.upper()}; {ImmediateOperand(self.expected_values[1]).hexify(dynamic_operands[1])});
+        assert_eq!(a.mem_read_{dynamic_operands[0].size() * 8}({hex(mem_start + dynamic_operands[0].offset)}).unwrap(), {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
+    }};
+    ({flags_to_str(self.flags_set, self.flags_not_set)})
+];"""
         else:
             raise Exception("invalid number of dynamic operands")
 
 
-# TODO: Memory operands don't really seem to work well?
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == "test":
         sys.argv = sys.argv[:1]
@@ -849,7 +871,7 @@ if __name__ == '__main__':
         exit(0)
 
     # Arguments of this script are joined together
-    assembly_code = "mov [rsp+8], bl" if len(
+    assembly_code = "xor byte ptr [rax], al" if len(
         sys.argv) == 1 else " ".join(sys.argv[1:])
 
     instruction = Instruction.parse(assembly_code)
@@ -866,7 +888,7 @@ if __name__ == '__main__':
 
     print(f"Found {len(test_cases_str)} test cases for {assembly_code}")
 
-    tests = "\n\n".join(test_cases_str);
+    tests = "\n\n".join(test_cases_str)
     pyperclip.copy(tests)
 
     print(tests)
