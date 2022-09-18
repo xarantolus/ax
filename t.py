@@ -446,7 +446,7 @@ FLAGS = [
 
 def assemble(instruction: Instruction):
     # create temporary directory
-    with tempfile.TemporaryDirectory(prefix="ax_assemble") as tmpdir:
+    with tempfile.TemporaryDirectory(prefix="ax_assemble", dir="/dev/shm") as tmpdir:
         # write assembly code to file
         assembly_path = os.path.join(tmpdir, "a.asm")
         with open(assembly_path, "w", encoding='utf8') as f:
@@ -490,6 +490,7 @@ def assemble(instruction: Instruction):
 
         return hex_arr
 
+
 class TestCase:
     def __init__(self, assembled, instruction: Instruction, set_flags: List[str], flags_not_set: List[str], operand_values: List[int], expected_values: List[int]):
         self.instruction = instruction if isinstance(
@@ -504,7 +505,6 @@ class TestCase:
         self.flags_not_set = flags_not_set
         self.operand_values = operand_values
         self.expected_values = expected_values
-
 
     GOOD_TEST_VALUES = list(dict.fromkeys([
         0x0,
@@ -551,6 +551,7 @@ class TestCase:
             return TestCase.learn_flags(i,
                                         [[v]
                                             for v in TestCase.GOOD_TEST_VALUES]
+                                        + [i for i in range(0, 1024)]
                                         + [[random.randint(0, 2**64)]
                                            for _ in range(50)]
                                         )
@@ -625,7 +626,7 @@ class TestCase:
 
                 push rax
                 # Reset flags
-                mov rax, 0x00000002
+                mov rax, 0x0000000000000000
                 push rax
                 POPFQ
                 pop rax # We can do this because push/pop doesn't affect flags
@@ -753,8 +754,8 @@ class TestCase:
                     return False
             return True
 
-        with tempfile.TemporaryDirectory(prefix="ax_flag_learner") as tmpdir:
-            with Pool() as p:
+        with tempfile.TemporaryDirectory(prefix="ax_flag_learner", dir="/dev/shm") as tmpdir:
+            with Pool(os.cpu_count() * 4) as p:
                 temp_results = list(
                     tqdm(
                         p.imap(lambda tpl: TestCase.learn_single_flags(
@@ -784,7 +785,7 @@ class TestCase:
             return [x[5:] for x in f]
 
         # generate name from instruction string and flags set, but replaces spaces and commas with _
-        return f"{self.instruction}_{'_'.join(map_flags(self.flags_set))}_{'_'.join(map_flags(self.flags_not_set))}".replace(" ", "_").replace(",", "_").replace("[", "").replace("]", "").lower().replace("__", "_")
+        return f"{self.instruction}_{'_'.join(map_flags(self.flags_set))}".replace(" ", "_").replace(",", "_").replace("[", "").replace("]", "").lower().replace("__", "_").strip("_ ")
 
     def __str__(self):
         def joinflags(flags):
@@ -829,7 +830,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: &mut Axecutor|
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
             elif isinstance(dynamic_operands[0], RegisterOperand) and isinstance(dynamic_operands[1], MemoryOperand):
-                mem_start = 0x1000;
+                mem_start = 0x1000
                 return f"""// {self.instruction}
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
