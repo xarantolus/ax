@@ -7,6 +7,7 @@ mod macros;
 pub mod memory;
 pub mod mov;
 pub mod operand;
+pub mod pop;
 pub mod push;
 pub mod registers;
 pub mod shl;
