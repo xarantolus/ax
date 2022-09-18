@@ -8,6 +8,7 @@ impl Axecutor {
     pub fn switch_instruction_mnemonic(&mut self, i: Instruction) -> Result<(), AxError> {
         match i.mnemonic() {
             Jmp => self.mnemonic_jmp(i),
+            Lea => self.mnemonic_lea(i),
             Mov => self.mnemonic_mov(i),
             Pop => self.mnemonic_pop(i),
             Push => self.mnemonic_push(i),

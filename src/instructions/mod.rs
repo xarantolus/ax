@@ -4,6 +4,7 @@ pub mod execute;
 pub mod flags;
 mod integration_tests;
 pub mod jmp;
+pub mod lea;
 mod macros;
 pub mod memory;
 pub mod mov;

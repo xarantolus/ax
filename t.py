@@ -785,7 +785,7 @@ class TestCase:
             return [x[5:] for x in f]
 
         # generate name from instruction string and flags set, but replaces spaces and commas with _
-        return f"{self.instruction}_{'_'.join(map_flags(self.flags_set))}".replace(" ", "_").replace(",", "_").replace("[", "").replace("]", "").lower().replace("__", "_").strip("_ ")
+        return f"{self.instruction}_{'_'.join(map_flags(self.flags_set))}".replcae("*", "_").replace("+", "_").replace("-", "_").replace(" ", "_").replace(",", "_").replace("[", "").replace("]", "").lower().replace("__", "_").strip("_ ")
 
     def __str__(self):
         def joinflags(flags):

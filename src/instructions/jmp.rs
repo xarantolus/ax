@@ -187,9 +187,6 @@ macro_rules! jmp_test {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, instructions::registers::RegisterWrapper};
-    use iced_x86::Register::*;
 
     /*
     // jmp main -- a symbol defined some bytes before the instruction
