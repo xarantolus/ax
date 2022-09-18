@@ -5,3 +5,7 @@ bin/
 pkg/
 wasm-pack.log
 lcov.info
+*.s
+*.c
+main
+a.out

@@ -16,7 +16,7 @@ switch:
 	python3 generate.py switch
 
 dependencies:
-	python3 -m pip install pyperclip
+	python3 -m pip install pyperclip tqdm
 
 clean:
 	rm -rf pkg
