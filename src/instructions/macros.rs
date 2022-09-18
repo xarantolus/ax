@@ -765,7 +765,7 @@ macro_rules! calculate_rm_imm {
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
                 Operand::Immediate{ size, data } => {
-                    debug_assert_eq!(size, 4);
+                    debug_assert_eq!(size, 4, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u32
                 }
                 _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
@@ -819,7 +819,7 @@ macro_rules! calculate_rm_imm {
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
                 Operand::Immediate{ size, data } => {
-                    debug_assert_eq!(size, 1);
+                    debug_assert_eq!(size, 1, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u8
                 }
                 _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
@@ -849,7 +849,7 @@ macro_rules! calculate_rm_imm {
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
                 Operand::Immediate{ size, data } => {
-                    debug_assert_eq!(size, 1);
+                    debug_assert_eq!(size, 1, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u8
                 }
                 _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
@@ -879,7 +879,7 @@ macro_rules! calculate_rm_imm {
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
                 Operand::Immediate{ size, data } => {
-                    debug_assert_eq!(size, 1);
+                    debug_assert_eq!(size, 1, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u8
                 }
                 _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
@@ -909,7 +909,7 @@ macro_rules! calculate_rm_imm {
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
                 Operand::Immediate{ size, data } => {
-                    debug_assert_eq!(size, 1);
+                    debug_assert_eq!(size, 1, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u8
                 }
                 _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
