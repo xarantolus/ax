@@ -806,9 +806,8 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: Axecutor| {{
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
         elif len(dynamic_operands) == 1:
-            assert isinstance(
-                dynamic_operands[0], RegisterOperand), "Only register operands are currently supported for stringification"
-            return f"""// {self.instruction}
+            if isinstance(dynamic_operands[0], RegisterOperand):
+                return f"""// {self.instruction}
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
         write_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])});
@@ -818,6 +817,24 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     }};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
+            elif isinstance(dynamic_operands[0], MemoryOperand):
+                mem_start = 0x1000
+                return f"""// {self.instruction}
+ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
+    |a: &mut Axecutor| {{
+        write_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});
+        a.mem_init_zero({hex(mem_start +  + dynamic_operands[0].offset)}, {dynamic_operands[0].size()}).unwrap();
+        a.mem_write_{dynamic_operands[0].size() * 8}({hex(mem_start + dynamic_operands[0].offset)}, {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])}).unwrap();
+    }};
+    |a: Axecutor| {{
+        assert_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});
+        assert_eq!(a.mem_read_{dynamic_operands[0].size() * 8}({hex(mem_start + dynamic_operands[0].offset)}).unwrap(), {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
+    }};
+    ({flags_to_str(self.flags_set, self.flags_not_set)})
+];"""
+            else:
+                raise Exception("invalid dynamic operand")
+
         elif len(dynamic_operands) == 2:
             if isinstance(dynamic_operands[0], RegisterOperand) and isinstance(dynamic_operands[1], RegisterOperand):
                 return f"""// {self.instruction}
@@ -874,7 +891,7 @@ if __name__ == '__main__':
         exit(0)
 
     # Arguments of this script are joined together
-    assembly_code = "test al, 0x7f" if len(
+    assembly_code = "add byte ptr [rbx], 0x7f" if len(
         sys.argv) == 1 else " ".join(sys.argv[1:])
 
     instruction = Instruction.parse(assembly_code)

@@ -2811,4 +2811,466 @@ mod tests {
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
     ];
+
+    // add byte ptr [rbx], 0x7f
+    ax_test![add_byte_ptr_rbx_0x7f; 0x80, 0x3, 0x7f;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x7f);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add byte ptr [rbx], 0x7f
+    ax_test![add_byte_ptr_rbx_0x7f_sf_of_af; 0x80, 0x3, 0x7f;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x1).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
+        };
+        (FLAG_SF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF)
+    ];
+
+    // add byte ptr [rbx], 0x7f
+    ax_test![add_byte_ptr_rbx_0x7f_pf_sf_of_af; 0x80, 0x3, 0x7f;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x8).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x87);
+        };
+        (FLAG_PF | FLAG_SF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF)
+    ];
+
+    // add byte ptr [rbx], 0x7f
+    ax_test![add_byte_ptr_rbx_0x7f_sf_of; 0x80, 0x3, 0x7f;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x10).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x8f);
+        };
+        (FLAG_SF | FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_AF)
+    ];
+
+    // add byte ptr [rbx], 0x7f
+    ax_test![add_byte_ptr_rbx_0x7f_pf_sf_of; 0x80, 0x3, 0x7f;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x20).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x9f);
+        };
+        (FLAG_PF | FLAG_SF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_AF)
+    ];
+
+    // add byte ptr [rbx], 0x7f
+    ax_test![add_byte_ptr_rbx_0x7f_pf_sf; 0x80, 0x3, 0x7f;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x80).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xff);
+        };
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add byte ptr [rbx], 0x7f
+    ax_test![add_byte_ptr_rbx_0x7f_cf_pf_af; 0x80, 0x3, 0x7f;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0xff).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x7e);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_AF; FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add word ptr [rbx], 0xff
+    ax_test![add_word_ptr_rbx_0xff_pf; 0x66, 0x81, 0x3, 0xff, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0xff);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add word ptr [rbx], 0xff
+    ax_test![add_word_ptr_rbx_0xff_pf_af; 0x66, 0x81, 0x3, 0xff, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x1).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x100);
+        };
+        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add word ptr [rbx], 0xff
+    ax_test![add_word_ptr_rbx_0xff_af; 0x66, 0x81, 0x3, 0xff, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x8).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x107);
+        };
+        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add word ptr [rbx], 0xff
+    ax_test![add_word_ptr_rbx_0xff; 0x66, 0x81, 0x3, 0xff, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x20).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x11f);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add word ptr [rbx], 0xff
+    ax_test![add_word_ptr_rbx_0xff_sf_of_af; 0x66, 0x81, 0x3, 0xff, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x7fff).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x80fe);
+        };
+        (FLAG_SF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF)
+    ];
+
+    // add word ptr [rbx], 0xff
+    ax_test![add_word_ptr_rbx_0xff_pf_sf; 0x66, 0x81, 0x3, 0xff, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x8000).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x80ff);
+        };
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add dword ptr [rbx], 0xff
+    ax_test![add_dword_ptr_rbx_0xff_pf; 0x81, 0x3, 0xff, 0x0, 0x0, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0xff);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add dword ptr [rbx], 0xff
+    ax_test![add_dword_ptr_rbx_0xff_pf_af; 0x81, 0x3, 0xff, 0x0, 0x0, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x1).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x100);
+        };
+        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add dword ptr [rbx], 0xff
+    ax_test![add_dword_ptr_rbx_0xff_af; 0x81, 0x3, 0xff, 0x0, 0x0, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x8).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x107);
+        };
+        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add dword ptr [rbx], 0xff
+    ax_test![add_dword_ptr_rbx_0xff; 0x81, 0x3, 0xff, 0x0, 0x0, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x20).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x11f);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add dword ptr [rbx], 0xff
+    ax_test![add_dword_ptr_rbx_0xff_sf_of_af; 0x81, 0x3, 0xff, 0x0, 0x0, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x7fffffffu32).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x800000feu32);
+        };
+        (FLAG_SF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF)
+    ];
+
+    // add dword ptr [rbx], 0xff
+    ax_test![add_dword_ptr_rbx_0xff_pf_sf; 0x81, 0x3, 0xff, 0x0, 0x0, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x80000000u32).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x800000ffu32);
+        };
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add dword ptr [rbx], 0x3
+    ax_test![add_dword_ptr_rbx_0x3_pf; 0x83, 0x3, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x3);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add dword ptr [rbx], 0x3
+    ax_test![add_dword_ptr_rbx_0x3; 0x83, 0x3, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x1).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x4);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add dword ptr [rbx], 0x3
+    ax_test![add_dword_ptr_rbx_0x3_pf_af; 0x83, 0x3, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0xf).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x12);
+        };
+        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add dword ptr [rbx], 0x3
+    ax_test![add_dword_ptr_rbx_0x3_af; 0x83, 0x3, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0xff).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x102);
+        };
+        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add dword ptr [rbx], 0x3
+    ax_test![add_dword_ptr_rbx_0x3_sf_of_af; 0x83, 0x3, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x7fffffffu32).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000002u32);
+        };
+        (FLAG_SF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF)
+    ];
+
+    // add dword ptr [rbx], 0x3
+    ax_test![add_dword_ptr_rbx_0x3_pf_sf; 0x83, 0x3, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x80000000u32).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000003u32);
+        };
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add qword ptr [r11+15], 0x1
+    ax_test![add_qword_ptr_r11_15_0x1; 0x49, 0x83, 0x43, 0xf, 0x1;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x1000);
+            a.mem_init_zero(0x100f, 8).unwrap();
+            a.mem_write_64(0x100f, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; R11; 0x1000);
+            assert_eq!(a.mem_read_64(0x100f).unwrap(), 0x1);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add qword ptr [r11+15], 0x1
+    ax_test![add_qword_ptr_r11_15_0x1_pf; 0x49, 0x83, 0x43, 0xf, 0x1;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x1000);
+            a.mem_init_zero(0x100f, 8).unwrap();
+            a.mem_write_64(0x100f, 0x8).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; R11; 0x1000);
+            assert_eq!(a.mem_read_64(0x100f).unwrap(), 0x9);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add qword ptr [r11+15], 0x1
+    ax_test![add_qword_ptr_r11_15_0x1_af; 0x49, 0x83, 0x43, 0xf, 0x1;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x1000);
+            a.mem_init_zero(0x100f, 8).unwrap();
+            a.mem_write_64(0x100f, 0xf).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; R11; 0x1000);
+            assert_eq!(a.mem_read_64(0x100f).unwrap(), 0x10);
+        };
+        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add qword ptr [r11+15], 0x1
+    ax_test![add_qword_ptr_r11_15_0x1_pf_af; 0x49, 0x83, 0x43, 0xf, 0x1;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x1000);
+            a.mem_init_zero(0x100f, 8).unwrap();
+            a.mem_write_64(0x100f, 0xff).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; R11; 0x1000);
+            assert_eq!(a.mem_read_64(0x100f).unwrap(), 0x100);
+        };
+        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add qword ptr [r11+15], 0xffff931
+    ax_test![add_qword_ptr_r11_15_0xffff931; 0x49, 0x81, 0x43, 0xf, 0x31, 0xf9, 0xff, 0xf;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x1000);
+            a.mem_init_zero(0x100f, 8).unwrap();
+            a.mem_write_64(0x100f, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; R11; 0x1000);
+            assert_eq!(a.mem_read_64(0x100f).unwrap(), 0xffff931);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add qword ptr [r11+15], 0xffff931
+    ax_test![add_qword_ptr_r11_15_0xffff931_pf; 0x49, 0x81, 0x43, 0xf, 0x31, 0xf9, 0xff, 0xf;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x1000);
+            a.mem_init_zero(0x100f, 8).unwrap();
+            a.mem_write_64(0x100f, 0x8).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; R11; 0x1000);
+            assert_eq!(a.mem_read_64(0x100f).unwrap(), 0xffff939);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add qword ptr [r11+15], 0xffff931
+    ax_test![add_qword_ptr_r11_15_0xffff931_af; 0x49, 0x81, 0x43, 0xf, 0x31, 0xf9, 0xff, 0xf;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x1000);
+            a.mem_init_zero(0x100f, 8).unwrap();
+            a.mem_write_64(0x100f, 0xf).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; R11; 0x1000);
+            assert_eq!(a.mem_read_64(0x100f).unwrap(), 0xffff940);
+        };
+        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add qword ptr [r11+15], 0xffff931
+    ax_test![add_qword_ptr_r11_15_0xffff931_pf_af; 0x49, 0x81, 0x43, 0xf, 0x31, 0xf9, 0xff, 0xf;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; R11; 0x1000);
+            a.mem_init_zero(0x100f, 8).unwrap();
+            a.mem_write_64(0x100f, 0x1f).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; R11; 0x1000);
+            assert_eq!(a.mem_read_64(0x100f).unwrap(), 0xffff950);
+        };
+        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
 }
