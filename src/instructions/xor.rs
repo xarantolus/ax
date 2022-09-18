@@ -782,4 +782,153 @@ mod tests {
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
+    // xor al, byte ptr [rbx]
+    ax_test![xor_al_byte_ptr_rbx_pf_zf_cf_sf_of; 0x32, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x0);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
+    ];
+
+    // xor al, byte ptr [rbx]
+    ax_test![xor_al_byte_ptr_rbx_cf_pf_zf_sf_of; 0x32, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x1).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x1);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // xor al, byte ptr [rbx]
+    ax_test![xor_al_byte_ptr_rbx_pf_cf_zf_sf_of; 0x32, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0xf).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0xf);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xf);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // xor al, byte ptr [rbx]
+    ax_test![xor_al_byte_ptr_rbx_sf_cf_pf_zf_of; 0x32, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x80).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x80);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
+        };
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
+    ];
+
+    // xor al, byte ptr [rbx]
+    ax_test![xor_al_byte_ptr_rbx_pf_sf_cf_zf_of; 0x32, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0xff).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0xff);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xff);
+        };
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
+    ];
+
+    // xor r11w, word ptr [rbx]
+    ax_test![xor_r11w_word_ptr_rbx_pf_zf_cf_sf_of; 0x66, 0x44, 0x33, 0x1b;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; R11W; 0x0);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; R11W; 0x0);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
+    ];
+
+    // xor r11w, word ptr [rbx]
+    ax_test![xor_r11w_word_ptr_rbx_cf_pf_zf_sf_of; 0x66, 0x44, 0x33, 0x1b;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; R11W; 0x0);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x1).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; R11W; 0x1);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // xor r11w, word ptr [rbx]
+    ax_test![xor_r11w_word_ptr_rbx_pf_cf_zf_sf_of; 0x66, 0x44, 0x33, 0x1b;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; R11W; 0x0);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0xf).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; R11W; 0xf);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0xf);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // xor r11w, word ptr [rbx]
+    ax_test![xor_r11w_word_ptr_rbx_pf_sf_cf_zf_of; 0x66, 0x44, 0x33, 0x1b;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; R11W; 0x0);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x8000).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; R11W; 0x8000);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8000);
+        };
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
+    ];
+
+    // xor r11w, word ptr [rbx]
+    ax_test![xor_r11w_word_ptr_rbx_sf_cf_pf_zf_of; 0x66, 0x44, 0x33, 0x1b;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; R11W; 0x1);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x8000).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; R11W; 0x8001);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8000);
+        };
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
+    ];
 }
