@@ -2,6 +2,7 @@ pub mod axecutor;
 pub mod errors;
 pub mod execute;
 pub mod flags;
+mod integration_tests;
 pub mod jmp;
 mod macros;
 pub mod memory;

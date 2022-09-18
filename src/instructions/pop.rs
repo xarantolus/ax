@@ -1,14 +1,13 @@
 use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Pop;
-use iced_x86::OpKind;
+
 use iced_x86::Register;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
-use crate::instructions::flags::*;
+
 use crate::instructions::registers::RegisterWrapper;
-use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
 
 impl Axecutor {
     pub fn mnemonic_pop(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -99,9 +98,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::super::axecutor::Axecutor;
-    use crate::{
-        assert_reg_value, ax_test, instructions::registers::RegisterWrapper, write_reg_value,
-    };
+    use crate::{assert_reg_value, ax_test, instructions::registers::RegisterWrapper};
     use iced_x86::Register::*;
 
     // pop ax

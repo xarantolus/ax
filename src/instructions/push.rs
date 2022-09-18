@@ -8,10 +8,9 @@ use iced_x86::Register;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
-use crate::instructions::flags::*;
+
 use crate::instructions::operand::Operand;
 use crate::instructions::registers::RegisterWrapper;
-use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
 
 impl Axecutor {
     pub fn mnemonic_push(&mut self, i: Instruction) -> Result<(), AxError> {
