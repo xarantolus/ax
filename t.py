@@ -113,23 +113,23 @@ class MemoryOperand(Operand):
                 RegisterOperand(index_register) if index_register != None else None)
 
         assert size in [1, 2, 4, 8]
-        self.size = size
+        self._size = size
 
     def size(self) -> Literal[1, 2, 4, 8]:
-        return self.size
+        return self._size
 
     def __eq__(self, other):
-        return self.base_register == other.base_register and self.offset == other.offset and self.scale == other.scale and self.index_register == other.index_register and self.size == other.size
+        return self.base_register == other.base_register and self.offset == other.offset and self.scale == other.scale and self.index_register == other.index_register and self._size == other._size
 
     def __str__(self):
         size_prefix = ""
-        if self.size == 1:
+        if self._size == 1:
             size_prefix = "byte ptr "
-        elif self.size == 2:
+        elif self._size == 2:
             size_prefix = "word ptr "
-        elif self.size == 4:
+        elif self._size == 4:
             size_prefix = "dword ptr "
-        elif self.size == 8:
+        elif self._size == 8:
             size_prefix = "qword ptr "
 
         if self.index_register is None:
@@ -535,8 +535,8 @@ class TestCase:
         0x7fffffffffffffff,
         0x8000000000000000,
     ]
-    + # powers of 2
-    [2**i for i in range(64)]
+        +  # powers of 2
+        [2**i for i in range(64)]
     ))
 
     @staticmethod
@@ -586,9 +586,11 @@ class TestCase:
                     idx += 1
                 elif isinstance(arg, MemoryOperand):
                     # move rsp to base register to make sure memory operands
-                    setup_code.append(f"mov {arg.base_register}, rsp")
+                    if arg.base_register != RegisterOperand("rsp"):
+                        setup_code.append(f"mov {arg.base_register}, rsp")
                     # set index register to 1
-                    setup_code.append(f"mov {arg.index_register}, 1")
+                    if arg.index_register is not None:
+                        setup_code.append(f"mov {arg.index_register}, 1")
                     # write to memory
                     setup_code.append(
                         f"mov {arg}, {operand_values[idx]}")
@@ -606,6 +608,9 @@ class TestCase:
             # write assembly code to file
             assembly_path = os.path.join(tmpdir, f"{i}.asm")
 
+            def get_rax(op):
+                return {1: 'al', 2: 'ax', 4: 'eax', 8: 'rax'}[op.size()]
+
             with open(assembly_path, "w", encoding='utf8') as f:
                 f.write(
                     f""".intel_syntax noprefix
@@ -619,8 +624,8 @@ class TestCase:
                 # Setup
                 {NEWLINE.join(setup_code)}
 
-                # Reset flags
                 push rax
+                # Reset flags
                 mov rax, 0x00000002
                 push rax
                 POPFQ
@@ -629,15 +634,26 @@ class TestCase:
                 # Run the actual instruction we care about
                 {assembly_code}
 
+                push rax
                 # Save flag state
                 PUSHFQ
+                pop rax # load flags into rax
+                mov [rflags_dest], rax
 
-                {f'mov [rip+output_val], {dynamic_operands[0]}' if len(
+                pop rax
+
+                # Now read the output values
+
+                push rax
+                {f'mov {get_rax(dynamic_operands[0])}, {dynamic_operands[0]}; mov [rip+output_val], {get_rax(dynamic_operands[0])}' if len(
                     dynamic_operands) > 0 else ''}
-                {f'mov [rip+output_val2], {dynamic_operands[1]}' if len(
+                pop rax
+
+                push rax
+                {f'mov {get_rax(dynamic_operands[1])}, {dynamic_operands[1]}; mov [rip+output_val2], {get_rax(dynamic_operands[1])}' if len(
                     dynamic_operands) > 1 else ''}
                 pop rax
-                mov [rip+rflags_dest], rax
+
 
                 mov rax, 1
                 mov rdi, 1
@@ -717,15 +733,12 @@ class TestCase:
             else:
                 raise Exception(
                     "invalid number of dynamic operands")
-        except:
+        except Exception as e:
             return None
 
     @staticmethod
     def learn_flags(instruction: Instruction, operand_values_arg: List[List[int]]):
         results: List[TestCase] = []
-
-        progress_bar = tqdm(
-            enumerate(operand_values_arg), desc=f"Learning flags for '{instruction}' using {len(operand_values_arg)} test cases")
 
         def is_new(flags_set, flags_not_set):
             for ts in results:
@@ -736,8 +749,12 @@ class TestCase:
         with tempfile.TemporaryDirectory(prefix="ax_flag_learner") as tmpdir:
             with Pool() as p:
                 temp_results = list(
-                    tqdm(p.imap(lambda tpl: TestCase.learn_single_flags(
-                        tpl[0], instruction, tpl[1], tmpdir), enumerate(operand_values_arg)), total=len(operand_values_arg)))
+                    tqdm(
+                        p.imap(lambda tpl: TestCase.learn_single_flags(
+                            tpl[0], instruction, tpl[1], tmpdir
+                        ), enumerate(operand_values_arg)),
+                        total=len(operand_values_arg)
+                    ))
 
             for r in temp_results:
                 if r is not None and is_new(r.flags_set, r.flags_not_set):
@@ -749,6 +766,9 @@ class TestCase:
 
                     results.append(r)
 
+            if len(results) == 0:
+                raise Exception(
+                    f"Could not learn any flags for instruction {instruction}, likely due to some bug with with the flag learner")
         return results
 
     def test_id(self):
@@ -821,6 +841,7 @@ ax_test![{self.test_id()}; {", ".join(self.assemble())}; |a: &mut Axecutor| {{
             raise Exception("invalid number of dynamic operands")
 
 
+# TODO: Memory operands don't really seem to work well?
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == "test":
         sys.argv = sys.argv[:1]
@@ -828,7 +849,7 @@ if __name__ == '__main__':
         exit(0)
 
     # Arguments of this script are joined together
-    assembly_code = "shl rax, cl" if len(
+    assembly_code = "mov [rsp+8], bl" if len(
         sys.argv) == 1 else " ".join(sys.argv[1:])
 
     instruction = Instruction.parse(assembly_code)
@@ -845,9 +866,9 @@ if __name__ == '__main__':
 
     print(f"Found {len(test_cases_str)} test cases for {assembly_code}")
 
-    # print test cases
-    for test_case in test_cases_str:
-        print(test_case)
+    tests = "\n\n".join(test_cases_str);
+    pyperclip.copy(tests)
 
-    pyperclip.copy("\n\n".join(test_cases_str))
-    print("Copied tests to clipboard")
+    print(tests)
+
+    print(f"Copied {len(test_cases_str)} tests to clipboard")
