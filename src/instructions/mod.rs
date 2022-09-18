@@ -1,3 +1,4 @@
+pub mod add;
 pub mod axecutor;
 pub mod errors;
 pub mod execute;

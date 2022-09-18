@@ -76,7 +76,10 @@ macro_rules! set_flags {
 				if flags_to_set & FLAG_OF != 0 {
 					new_flags |= FLAG_OF;
 				}
-
+				// Auxiliary Carry Flag is defined by caller
+				if flags_to_set & FLAG_AF != 0 {
+					new_flags |= FLAG_AF;
+				}
 				// If zero, set ZF
 				if result == 0 {
 					new_flags |= FLAG_ZF;
@@ -105,11 +108,6 @@ macro_rules! set_flags {
 
 
 				// Fail if any other flags should be set
-				assert_eq!(
-					flags_to_set & FLAG_AF,
-					0,
-					"flags: set_flags: FLAG_AF not implemented"
-				);
 				assert_eq!(
 					flags_to_set & FLAG_TF,
 					0,

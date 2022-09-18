@@ -36,7 +36,7 @@ macro_rules! calculate_rm_r {
 
             match dest {
                 Operand::Memory(m) => {
-                    let dest_val = $self.mem_read_8($self.mem_addr(m))?;
+                    let dest_val = $self.mem_read_16($self.mem_addr(m))?;
                     let (result, flags) = $op(dest_val, src_val);
                     $self.set_flags_u16($flags_to_set | flags, $flags_to_clear, result);
                     $self.mem_write_16($self.mem_addr(m), result)
@@ -298,49 +298,53 @@ macro_rules! calculate_r_rm {
         {
 			use crate::instructions::operand::Operand;
 
-            let (src, dest) = $self.instruction_operands_2($i)?;
-            let src_val = $self.reg_read_8(src);
+            let (dest, src) = $self.instruction_operands_2($i)?;
+            let dest_reg : RegisterWrapper = dest.into();
+            let dest_val = $self.reg_read_8(dest_reg);
 
-            match dest {
+            match src {
                 Operand::Memory(m) => {
-                    let dest_val = $self.mem_read_8($self.mem_addr(m))?;
-                    let result = $op(src_val, dest_val);
-                    $self.set_flags_u8f($flags_to_set, $flags_to_clear, result);
-                    $self.mem_write_8($self.mem_addr(m), result)
-                }
-                Operand::Register(r) => {
-                    let dest_val = $self.reg_read_8(r);
-                    let result = $op(src_val, dest_val);
-                    $self.set_flags_u8f($flags_to_set, $flags_to_clear, result);
-                    $self.reg_write_8(r, result);
+                    let src_val = $self.mem_read_8($self.mem_addr(m))?;
+                    let (result, flags) = $op(dest_val, src_val);
+                    $self.set_flags_u8($flags_to_set | flags, $flags_to_clear, result);
+                    $self.reg_write_8(dest_reg, result);
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                Operand::Register(r) => {
+                    let src_val = $self.reg_read_8(r);
+                    let (result, flags) = $op(dest_val, src_val);
+                    $self.set_flags_u8($flags_to_set | flags, $flags_to_clear, result);
+                    $self.reg_write_8(dest_reg, result);
+                    Ok(())
+                }
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
             }
         }
     };
     [u16f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-			use crate::instructions::operand::Operand;
+            use crate::instructions::operand::Operand;
 
-            let (src, dest) = $self.instruction_operands_2($i)?;
-            let src_val = $self.reg_read_16(src);
+            let (dest, src) = $self.instruction_operands_2($i)?;
+            let dest_reg : RegisterWrapper = dest.into();
+            let dest_val = $self.reg_read_16(dest_reg);
 
-            match dest {
+            match src {
                 Operand::Memory(m) => {
-                    let dest_val = $self.mem_read_16($self.mem_addr(m))?;
-                    let result = $op(src_val, dest_val);
-                    $self.set_flags_u16f($flags_to_set, $flags_to_clear, result);
-                    $self.mem_write_16($self.mem_addr(m), result)
-                }
-                Operand::Register(r) => {
-                    let dest_val = $self.reg_read_16(r);
-                    let result = $op(src_val, dest_val);
-                    $self.set_flags_u16f($flags_to_set, $flags_to_clear, result);
-                    $self.reg_write_16(r, result);
+                    let src_val = $self.mem_read_16($self.mem_addr(m))?;
+                    let (result, flags) = $op(dest_val, src_val);
+                    $self.set_flags_u16($flags_to_set | flags, $flags_to_clear, result);
+                    $self.reg_write_16(dest_reg, result);
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                Operand::Register(r) => {
+                    let src_val = $self.reg_read_16(r);
+                    let (result, flags) = $op(dest_val, src_val);
+                    $self.set_flags_u16($flags_to_set | flags, $flags_to_clear, result);
+                    $self.reg_write_16(dest_reg, result);
+                    Ok(())
+                }
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
             }
         }
     };
@@ -348,24 +352,26 @@ macro_rules! calculate_r_rm {
         {
             use crate::instructions::operand::Operand;
 
-            let (src, dest) = $self.instruction_operands_2($i)?;
-            let src_val = $self.reg_read_32(src);
+            let (dest, src) = $self.instruction_operands_2($i)?;
+            let dest_reg : RegisterWrapper = dest.into();
+            let dest_val = $self.reg_read_32(dest_reg);
 
-            match dest {
+            match src {
                 Operand::Memory(m) => {
-                    let dest_val = $self.mem_read_32($self.mem_addr(m))?;
-                    let result = $op(src_val, dest_val);
-                    $self.set_flags_u32f($flags_to_set, $flags_to_clear, result);
-                    $self.mem_write_32($self.mem_addr(m), result)
-                }
-                Operand::Register(r) => {
-                    let dest_val = $self.reg_read_32(r);
-                    let result = $op(src_val, dest_val);
-                    $self.set_flags_u32f($flags_to_set, $flags_to_clear, result);
-                    $self.reg_write_32(r, result);
+                    let src_val = $self.mem_read_32($self.mem_addr(m))?;
+                    let (result, flags) = $op(dest_val, src_val);
+                    $self.set_flags_u32($flags_to_set | flags, $flags_to_clear, result);
+                    $self.reg_write_32(dest_reg, result);
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                Operand::Register(r) => {
+                    let src_val = $self.reg_read_32(r);
+                    let (result, flags) = $op(dest_val, src_val);
+                    $self.set_flags_u32($flags_to_set | flags, $flags_to_clear, result);
+                    $self.reg_write_32(dest_reg, result);
+                    Ok(())
+                }
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
             }
         }
     };
@@ -373,24 +379,26 @@ macro_rules! calculate_r_rm {
         {
             use crate::instructions::operand::Operand;
 
-            let (src, dest) = $self.instruction_operands_2($i)?;
-            let src_val = $self.reg_read_64(src);
+            let (dest, src) = $self.instruction_operands_2($i)?;
+            let dest_reg : RegisterWrapper = dest.into();
+            let dest_val = $self.reg_read_64(dest_reg);
 
-            match dest {
+            match src {
                 Operand::Memory(m) => {
-                    let dest_val = $self.mem_read_64($self.mem_addr(m))?;
-                    let result = $op(src_val, dest_val);
-                    $self.set_flags_u64f($flags_to_set, $flags_to_clear, result);
-                    $self.mem_write_64($self.mem_addr(m), result)
-                }
-                Operand::Register(r) => {
-                    let dest_val = $self.reg_read_64(r);
-                    let result = $op(src_val, dest_val);
-                    $self.set_flags_u64f($flags_to_set, $flags_to_clear, result);
-                    $self.reg_write_64(r, result);
+                    let src_val = $self.mem_read_64($self.mem_addr(m))?;
+                    let (result, flags) = $op(dest_val, src_val);
+                    $self.set_flags_u64($flags_to_set | flags, $flags_to_clear, result);
+                    $self.reg_write_64(dest_reg, result);
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                Operand::Register(r) => {
+                    let src_val = $self.reg_read_64(r);
+                    let (result, flags) = $op(dest_val, src_val);
+                    $self.set_flags_u64($flags_to_set | flags, $flags_to_clear, result);
+                    $self.reg_write_64(dest_reg, result);
+                    Ok(())
+                }
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
             }
         }
     };

@@ -7,6 +7,7 @@ use iced_x86::{Instruction, Mnemonic::*};
 impl Axecutor {
     pub fn switch_instruction_mnemonic(&mut self, i: Instruction) -> Result<(), AxError> {
         match i.mnemonic() {
+            Add => self.mnemonic_add(i),
             Jmp => self.mnemonic_jmp(i),
             Lea => self.mnemonic_lea(i),
             Mov => self.mnemonic_mov(i),

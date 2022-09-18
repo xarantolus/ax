@@ -435,12 +435,14 @@ FLAG_PF: int = 0x0004
 FLAG_ZF: int = 0x0040
 FLAG_SF: int = 0x0080
 FLAG_OF: int = 0x0800
+FLAG_AF: int = 0x0010
 FLAGS = [
     (FLAG_CF, "CF"),
     (FLAG_PF, "PF"),
     (FLAG_ZF, "ZF"),
     (FLAG_SF, "SF"),
     (FLAG_OF, "OF"),
+    (FLAG_AF, "AF"),
 ]
 
 
@@ -785,7 +787,7 @@ class TestCase:
             return [x[5:] for x in f]
 
         # generate name from instruction string and flags set, but replaces spaces and commas with _
-        return f"{self.instruction}_{'_'.join(map_flags(self.flags_set))}".replcae("*", "_").replace("+", "_").replace("-", "_").replace(" ", "_").replace(",", "_").replace("[", "").replace("]", "").lower().replace("__", "_").strip("_ ")
+        return f"{self.instruction}_{'_'.join(map_flags(self.flags_set))}".replace("*", "_").replace("+", "_").replace("-", "_").replace(" ", "_").replace(",", "_").replace("[", "").replace("]", "").lower().replace("__", "_").strip("_ ")
 
     def __str__(self):
         def joinflags(flags):
@@ -836,7 +838,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
         write_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])});
         write_reg_value!({dynamic_operands[1].base_register.size_letter()}; a; {dynamic_operands[1].base_register.name.upper()}; {hex(mem_start)});
-        a.mem_init_zero({hex(mem_start)}, {dynamic_operands[1].size()}).unwrap();
+        a.mem_init_zero({hex(mem_start + dynamic_operands[1].offset)}, {dynamic_operands[1].size()}).unwrap();
         a.mem_write_{dynamic_operands[1].size() * 8}({hex(mem_start + dynamic_operands[1].offset)}, {ImmediateOperand(self.operand_values[1]).hexify(dynamic_operands[1])}).unwrap();
     }};
     |a: Axecutor| {{
@@ -852,7 +854,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
         write_reg_value!({dynamic_operands[1].size_letter()}; a; {dynamic_operands[1].name.upper()}; {ImmediateOperand(self.operand_values[1]).hexify(dynamic_operands[1])});
         write_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});
-        a.mem_init_zero({hex(mem_start)}, {dynamic_operands[0].size()}).unwrap();
+        a.mem_init_zero({hex(mem_start +  + dynamic_operands[0].offset)}, {dynamic_operands[0].size()}).unwrap();
         a.mem_write_{dynamic_operands[0].size() * 8}({hex(mem_start + dynamic_operands[0].offset)}, {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])}).unwrap();
     }};
     |a: Axecutor| {{
@@ -866,13 +868,13 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1] == "test":
+    if len(sys.argv) == 2 and sys.argv[1] == "test":
         sys.argv = sys.argv[:1]
         unittest.main()
         exit(0)
 
     # Arguments of this script are joined together
-    assembly_code = "xor byte ptr [rax], al" if len(
+    assembly_code = "test al, 0x7f" if len(
         sys.argv) == 1 else " ".join(sys.argv[1:])
 
     instruction = Instruction.parse(assembly_code)

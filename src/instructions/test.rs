@@ -1,14 +1,11 @@
 use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Test;
-use iced_x86::OpKind;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
 use crate::instructions::operand::Operand;
-use crate::instructions::registers::RegisterWrapper;
-use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
 
 impl Axecutor {
     pub fn mnemonic_test(&mut self, i: Instruction) -> Result<(), AxError> {
