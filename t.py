@@ -1,5 +1,6 @@
 from ctypes import memset
 from multiprocessing.dummy import Pool
+import re
 import pyperclip
 import abc
 from curses.ascii import isspace
@@ -486,6 +487,28 @@ def assemble(instruction: Instruction | str):
 
         return hex_arr
 
+def test_id(instruction, flags_set):
+    def map_flags(f):
+            # remove the FLAG_ prefix from each flag
+            return [x[5:] for x in f]
+
+    # generate name from instruction string and flags set, but replaces spaces and commas with _
+    test_name = f"{instruction}_{'_'.join(map_flags(flags_set))}";
+
+    # only keep alphanumerial characters
+    test_name = re.sub(r'\W+', '_', test_name)
+
+    # replace consecutive _ with only one
+    test_name = re.sub(r'_+', '_', test_name)
+
+    return test_name.strip("_").lower()
+
+def flags_to_str(set, notset):
+    def joinflags(flags):
+        return " | ".join(flags) if len(flags) > 0 else "0"
+
+    return f"{joinflags(set)}; {joinflags(notset)}"
+
 
 class TestCase:
     def __init__(self, assembled, instruction: Instruction, set_flags: List[str], flags_not_set: List[str], operand_values: List[int], expected_values: List[int]):
@@ -777,20 +800,9 @@ class TestCase:
         return results
 
     def test_id(self):
-        def map_flags(f):
-            # remove the FLAG_ prefix from each flag
-            return [x[5:] for x in f]
-
-        # generate name from instruction string and flags set, but replaces spaces and commas with _
-        return f"{self.instruction}_{'_'.join(map_flags(self.flags_set))}".replace("*", "_").replace("+", "_").replace("-", "_").replace(" ", "_").replace(",", "_").replace("[", "").replace("]", "").lower().replace("__", "_").strip("_ ")
+        return test_id(self.instruction, self.flags_set);
 
     def __str__(self):
-        def joinflags(flags):
-            return " | ".join(flags) if len(flags) > 0 else "0"
-
-        def flags_to_str(set, notset):
-            return f"{joinflags(set)}; {joinflags(notset)}"
-
         dynamic_operands = self.dynamic_operands(self.instruction)
 
         if len(dynamic_operands) == 0:

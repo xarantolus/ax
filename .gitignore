@@ -9,3 +9,5 @@ lcov.info
 *.c
 main
 a.out
+__pycache__
+**.pyc
