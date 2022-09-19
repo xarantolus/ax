@@ -201,7 +201,7 @@ macro_rules! jmp_test {
         fn $name() {
 			let bytes = code_with_nops!($($bytes_start),*; $count; $($bytes_end),*);
 
-            let mut ax = Axecutor::new(&bytes, $initial_rip).expect("Failed to create axecutor");
+            let mut ax = Axecutor::new(&bytes, $initial_rip, $initial_rip).expect("Failed to create axecutor");
             $setup(&mut ax);
 
             assert_reg_value!(q; ax; RIP; $initial_rip);
@@ -269,6 +269,22 @@ mod tests {
         0x48, 0xc7, 0xc0, 0x5, 0x0, 0x0, 0x0, 0xeb, 0x32; // mov rax, 5; JMP .label
         50; // 50 bytes of 0x90 (nop) as padding
         0x48, 0x83, 0xe8, 0x1; // .label: sub rax, 1
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    jmp_test![jmp_lend_lend_nop_8;
+        start: 0x401010; end: 0x401018;
+        0xeb, 0x5; // JMP .Lend
+        5; // 5 bytes of 0x90 (nop) as padding
+        0x90; // .Lend: nop
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    jmp_test![jmp_lend_lend_nop_32;
+        start: 0x401010; end: 0x44f048;
+        0xe9, 0x32, 0xe0, 0x4, 0x0; // JMP .Lend
+        319538; // 319538 bytes of 0x90 (nop) as padding
+        0x90; // .Lend: nop
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
     ];
 }

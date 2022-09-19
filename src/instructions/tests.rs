@@ -14,7 +14,7 @@ macro_rules! ax_test {
             // Always use a random rip
             let random_rip = rand::thread_rng().gen::<u64>() & 0x0000_ffff_ffff_ffff;
 
-            let mut ax = Axecutor::new(bytes, random_rip).expect("Failed to create axecutor");
+            let mut ax = Axecutor::new(bytes, random_rip, random_rip).expect("Failed to create axecutor");
 
             $setup(&mut ax);
 

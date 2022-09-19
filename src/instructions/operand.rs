@@ -220,7 +220,7 @@ mod tests {
 			#[test]
 			fn $test_name () {
 				let expected : Vec<Operand> = $expected;
-				let axecutor = Axecutor::new(&[$($bytes),*], TEST_RIP_VALUE).expect("Failed to create axecutor");
+				let axecutor = Axecutor::new(&[$($bytes),*], TEST_RIP_VALUE, TEST_RIP_VALUE).expect("Failed to create axecutor");
 				assert_eq!(axecutor.instructions.len(), 1, "Expected 1 instruction, got {}", axecutor.instructions.len());
 				let instruction = axecutor.instructions[0];
 
@@ -236,7 +236,7 @@ mod tests {
 			#[test]
 			fn $test_name () {
 				let expected : Vec<Operand> = $expected;
-				let mut axecutor = Axecutor::new(&[$($bytes),*], 0x1000).expect("Failed to create axecutor");
+				let mut axecutor = Axecutor::new(&[$($bytes),*], 0x1000, 0x1000).expect("Failed to create axecutor");
 				assert_eq!(axecutor.instructions.len(), 1, "Expected 1 instruction, got {}", axecutor.instructions.len());
 				let instruction = axecutor.instructions[0];
 

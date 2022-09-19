@@ -170,6 +170,10 @@ if __name__ == '__main__':
     # Third argument is x86-64 assembly code
     code_end = sys.argv[3]
 
+    if code_end.strip().endswith(":"):
+        print("Error: Final code cannot be a label, as otherwise the test case won't work. You should insert e.g. a NOP")
+        sys.exit(1)
+
     testcase = JumpTestCase.create(code_start, padding, code_end)
 
     # ask user which variant they want

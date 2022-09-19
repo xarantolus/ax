@@ -27,10 +27,6 @@ impl Axecutor {
         // TODO: Maybe should use self.write_reg_64 instead, but that threw borrow checker errors
         self.state.registers.insert(rip_register, instr.next_ip());
 
-        if instr.next_ip() == self.instructions.last().unwrap().next_ip() {
-            self.finished = true;
-        }
-
         Ok(*instr)
     }
 

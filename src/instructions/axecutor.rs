@@ -30,8 +30,8 @@ pub(crate) struct MachineState {
 #[wasm_bindgen]
 impl Axecutor {
     #[wasm_bindgen(constructor)]
-    pub fn new(code: &[u8], initial_rip: u64) -> Result<Axecutor, AxError> {
-        let instructions = decode_all(code, initial_rip)?;
+    pub fn new(code: &[u8], code_start_addr: u64, initial_rip: u64) -> Result<Axecutor, AxError> {
+        let instructions = decode_all(code, code_start_addr)?;
 
         let mut rti = HashMap::new();
         for (idx, instr) in instructions.iter().enumerate() {
@@ -61,12 +61,12 @@ impl Axecutor {
     }
 }
 
-fn decode_all(code: &[u8], initial_rip: u64) -> Result<Vec<Instruction>, AxError> {
+fn decode_all(code: &[u8], code_start_addr: u64) -> Result<Vec<Instruction>, AxError> {
     if code.is_empty() {
         return Err(AxError::from("Cannot decode empty code buffer"));
     }
 
-    let mut dec = Decoder::with_ip(64, code, initial_rip, DecoderOptions::NONE);
+    let mut dec = Decoder::with_ip(64, code, code_start_addr, DecoderOptions::NONE);
     let mut instructions = Vec::new();
 
     while dec.can_decode() {
@@ -103,7 +103,7 @@ mod tests {
     #[test]
     fn test_rip() {
         let code = [0x48, 0xc7, 0xc0, 0x3, 0x0, 0x0, 0x0];
-        let ax = Axecutor::new(&code, 0x1000).unwrap();
+        let ax = Axecutor::new(&code, 0x1000, 0x1000).unwrap();
         assert_eq!(ax.instructions.len(), 1);
         assert_eq!(ax.instructions[0].ip(), 0x1000);
         assert_eq!(ax.instructions[0].next_ip(), 0x1000 + code.len() as u64);
