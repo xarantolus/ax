@@ -352,19 +352,6 @@ mod tests {
         assert_reg_value, ax_test, instructions::registers::RegisterWrapper, write_reg_value,
     };
     use iced_x86::Register::*;
-
-    // add al, bl
-    ax_test![add_al_bl_pf_zf; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x0);
-            write_reg_value!(b; a; BL; 0x0);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x0);
-            assert_reg_value!(b; a; BL; 0x0);
-        };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
-    ];
-
     // add al, bl
     ax_test![add_al_bl; 0x0, 0xd8; |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x0);
@@ -375,42 +362,6 @@ mod tests {
             assert_reg_value!(b; a; BL; 0x1);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
-    ];
-
-    // add al, bl
-    ax_test![add_al_bl_pf; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x0);
-            write_reg_value!(b; a; BL; 0xf);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0xf);
-            assert_reg_value!(b; a; BL; 0xf);
-        };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
-    ];
-
-    // add al, bl
-    ax_test![add_al_bl_sf; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x0);
-            write_reg_value!(b; a; BL; 0x80);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x80);
-            assert_reg_value!(b; a; BL; 0x80);
-        };
-        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
-    ];
-
-    // add al, bl
-    ax_test![add_al_bl_pf_sf; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x0);
-            write_reg_value!(b; a; BL; 0xff);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0xff);
-            assert_reg_value!(b; a; BL; 0xff);
-        };
-        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
     ];
 
     // add al, bl
@@ -426,135 +377,27 @@ mod tests {
     ];
 
     // add al, bl
-    ax_test![add_al_bl_sf_of_af; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x1);
-            write_reg_value!(b; a; BL; 0x7f);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x80);
-            assert_reg_value!(b; a; BL; 0x7f);
-        };
-        (FLAG_SF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF)
-    ];
-
-    // add al, bl
-    ax_test![add_al_bl_cf_pf_zf_af; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x1);
-            write_reg_value!(b; a; BL; 0xff);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x0);
-            assert_reg_value!(b; a; BL; 0xff);
-        };
-        (FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_AF; FLAG_SF | FLAG_OF)
-    ];
-
-    // add al, bl
-    ax_test![add_al_bl_cf_pf_af; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x7);
-            write_reg_value!(b; a; BL; 0xff);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x6);
-            assert_reg_value!(b; a; BL; 0xff);
-        };
-        (FLAG_CF | FLAG_PF | FLAG_AF; FLAG_ZF | FLAG_SF | FLAG_OF)
-    ];
-
-    // add al, bl
-    ax_test![add_al_bl_pf_af; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x8);
-            write_reg_value!(b; a; BL; 0xf);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x17);
-            assert_reg_value!(b; a; BL; 0xf);
-        };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
-    ];
-
-    // add al, bl
-    ax_test![add_al_bl_pf_sf_of_af; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x8);
-            write_reg_value!(b; a; BL; 0x7f);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x87);
-            assert_reg_value!(b; a; BL; 0x7f);
-        };
-        (FLAG_PF | FLAG_SF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF)
-    ];
-
-    // add al, bl
-    ax_test![add_al_bl_cf_af; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x8);
-            write_reg_value!(b; a; BL; 0xff);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x7);
-            assert_reg_value!(b; a; BL; 0xff);
-        };
-        (FLAG_CF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
-    ];
-
-    // add al, bl
-    ax_test![add_al_bl_sf_of; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x10);
-            write_reg_value!(b; a; BL; 0x7f);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x8f);
-            assert_reg_value!(b; a; BL; 0x7f);
-        };
-        (FLAG_SF | FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_AF)
-    ];
-
-    // add al, bl
-    ax_test![add_al_bl_cf_pf; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x10);
-            write_reg_value!(b; a; BL; 0xff);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0xf);
-            assert_reg_value!(b; a; BL; 0xff);
-        };
-        (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
-    ];
-
-    // add al, bl
-    ax_test![add_al_bl_pf_sf_of; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x20);
-            write_reg_value!(b; a; BL; 0x7f);
-        };
-        |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x9f);
-            assert_reg_value!(b; a; BL; 0x7f);
-        };
-        (FLAG_PF | FLAG_SF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_AF)
-    ];
-
-    // add al, bl
     ax_test![add_al_bl_cf; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x20);
-            write_reg_value!(b; a; BL; 0xff);
+            write_reg_value!(b; a; AL; 0x10);
+            write_reg_value!(b; a; BL; 0xf1);
         };
         |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x1f);
-            assert_reg_value!(b; a; BL; 0xff);
+            assert_reg_value!(b; a; AL; 0x1);
+            assert_reg_value!(b; a; BL; 0xf1);
         };
         (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
     ];
 
     // add al, bl
-    ax_test![add_al_bl_cf_pf_zf_of; 0x0, 0xd8; |a: &mut Axecutor| {
-            write_reg_value!(b; a; AL; 0x80);
-            write_reg_value!(b; a; BL; 0x80);
+    ax_test![add_al_bl_cf_af; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x7);
+            write_reg_value!(b; a; BL; 0xfa);
         };
         |a: Axecutor| {
-            assert_reg_value!(b; a; AL; 0x0);
-            assert_reg_value!(b; a; BL; 0x80);
+            assert_reg_value!(b; a; AL; 0x1);
+            assert_reg_value!(b; a; BL; 0xfa);
         };
-        (FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF; FLAG_SF | FLAG_AF)
+        (FLAG_CF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // add al, bl
@@ -570,6 +413,138 @@ mod tests {
     ];
 
     // add al, bl
+    ax_test![add_al_bl_cf_of_af; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x81);
+            write_reg_value!(b; a; BL; 0x8f);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x10);
+            assert_reg_value!(b; a; BL; 0x8f);
+        };
+        (FLAG_CF | FLAG_OF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_SF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_cf_pf; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x10);
+            write_reg_value!(b; a; BL; 0xff);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0xf);
+            assert_reg_value!(b; a; BL; 0xff);
+        };
+        (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_cf_pf_af; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x7);
+            write_reg_value!(b; a; BL; 0xff);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x6);
+            assert_reg_value!(b; a; BL; 0xff);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_AF; FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_cf_pf_of; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x80);
+            write_reg_value!(b; a; BL; 0x83);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x3);
+            assert_reg_value!(b; a; BL; 0x83);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_OF; FLAG_ZF | FLAG_SF | FLAG_AF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_cf_pf_of_af; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x81);
+            write_reg_value!(b; a; BL; 0xaf);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x30);
+            assert_reg_value!(b; a; BL; 0xaf);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_OF | FLAG_AF; FLAG_ZF | FLAG_SF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_cf_pf_sf; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0xff);
+            write_reg_value!(b; a; BL; 0xa0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x9f);
+            assert_reg_value!(b; a; BL; 0xa0);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_cf_pf_sf_af; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0xff);
+            write_reg_value!(b; a; BL; 0x82);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x81);
+            assert_reg_value!(b; a; BL; 0x82);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_cf_pf_zf; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x10);
+            write_reg_value!(b; a; BL; 0xf0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x0);
+            assert_reg_value!(b; a; BL; 0xf0);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_ZF; FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_cf_pf_zf_af; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x1);
+            write_reg_value!(b; a; BL; 0xff);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x0);
+            assert_reg_value!(b; a; BL; 0xff);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_AF; FLAG_SF | FLAG_OF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_cf_pf_zf_of; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x80);
+            write_reg_value!(b; a; BL; 0x80);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x0);
+            assert_reg_value!(b; a; BL; 0x80);
+        };
+        (FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF; FLAG_SF | FLAG_AF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_cf_sf; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0xff);
+            write_reg_value!(b; a; BL; 0x90);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x8f);
+            assert_reg_value!(b; a; BL; 0x90);
+        };
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add al, bl
     ax_test![add_al_bl_cf_sf_af; 0x0, 0xd8; |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0xff);
             write_reg_value!(b; a; BL; 0xff);
@@ -579,6 +554,138 @@ mod tests {
             assert_reg_value!(b; a; BL; 0xff);
         };
         (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_pf; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_reg_value!(b; a; BL; 0xf);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0xf);
+            assert_reg_value!(b; a; BL; 0xf);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_pf_af; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x1);
+            write_reg_value!(b; a; BL; 0x2f);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x30);
+            assert_reg_value!(b; a; BL; 0x2f);
+        };
+        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_pf_sf; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_reg_value!(b; a; BL; 0xff);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0xff);
+            assert_reg_value!(b; a; BL; 0xff);
+        };
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_pf_sf_af; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x1);
+            write_reg_value!(b; a; BL; 0x8f);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x90);
+            assert_reg_value!(b; a; BL; 0x8f);
+        };
+        (FLAG_PF | FLAG_SF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_OF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_pf_sf_of; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x10);
+            write_reg_value!(b; a; BL; 0x71);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x81);
+            assert_reg_value!(b; a; BL; 0x71);
+        };
+        (FLAG_PF | FLAG_SF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_AF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_pf_sf_of_af; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x7);
+            write_reg_value!(b; a; BL; 0x7a);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x81);
+            assert_reg_value!(b; a; BL; 0x7a);
+        };
+        (FLAG_PF | FLAG_SF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_pf_zf; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_reg_value!(b; a; BL; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x0);
+            assert_reg_value!(b; a; BL; 0x0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_sf; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_reg_value!(b; a; BL; 0x80);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x80);
+            assert_reg_value!(b; a; BL; 0x80);
+        };
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_sf_af; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x1);
+            write_reg_value!(b; a; BL; 0xaf);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0xb0);
+            assert_reg_value!(b; a; BL; 0xaf);
+        };
+        (FLAG_SF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_sf_of; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x10);
+            write_reg_value!(b; a; BL; 0x7f);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x8f);
+            assert_reg_value!(b; a; BL; 0x7f);
+        };
+        (FLAG_SF | FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_AF)
+    ];
+
+    // add al, bl
+    ax_test![add_al_bl_sf_of_af; 0x0, 0xd8; |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x1);
+            write_reg_value!(b; a; BL; 0x7f);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x80);
+            assert_reg_value!(b; a; BL; 0x7f);
+        };
+        (FLAG_SF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF)
     ];
 
     // add bx, cx

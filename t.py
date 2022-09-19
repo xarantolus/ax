@@ -25,6 +25,21 @@ registers = (byte_registers + word_registers +
              dword_registers + qword_registers)
 registers.sort(key=len, reverse=True)
 
+FLAG_CF: int = 0x0001
+FLAG_PF: int = 0x0004
+FLAG_ZF: int = 0x0040
+FLAG_SF: int = 0x0080
+FLAG_OF: int = 0x0800
+FLAG_AF: int = 0x0010
+FLAGS = [
+    (FLAG_CF, "CF"),
+    (FLAG_PF, "PF"),
+    (FLAG_ZF, "ZF"),
+    (FLAG_SF, "SF"),
+    (FLAG_OF, "OF"),
+    (FLAG_AF, "AF"),
+]
+
 
 class Operand(abc.ABC):
     @abc.abstractclassmethod
@@ -43,9 +58,6 @@ class Operand(abc.ABC):
             return "q"
         else:
             raise Exception("Invalid size")
-
-
-# Argument like "rax" in "mov rax, 0x5"
 
 
 class RegisterOperand(Operand):
@@ -99,8 +111,6 @@ class ImmediateOperand(Operand):
 
     def __str__(self):
         return hex(self.number)
-
-# An argument like "byte ptr [rax]" in "mov byte ptr [rax], 0x5", "[rsp+8]" in "mov [rsp+8], 0x5", "[rsp+4*rcx]" in "mov [rsp+4*rcx], 0x5"
 
 
 class MemoryOperand(Operand):
@@ -430,22 +440,6 @@ class Tests(unittest.TestCase):
         self.assertEqual(instr.arguments, [])
 
 
-FLAG_CF: int = 0x0001
-FLAG_PF: int = 0x0004
-FLAG_ZF: int = 0x0040
-FLAG_SF: int = 0x0080
-FLAG_OF: int = 0x0800
-FLAG_AF: int = 0x0010
-FLAGS = [
-    (FLAG_CF, "CF"),
-    (FLAG_PF, "PF"),
-    (FLAG_ZF, "ZF"),
-    (FLAG_SF, "SF"),
-    (FLAG_OF, "OF"),
-    (FLAG_AF, "AF"),
-]
-
-
 def assemble(instruction: Instruction):
     # create temporary directory
     with tempfile.TemporaryDirectory(prefix="ax_assemble", dir="/dev/shm") as tmpdir:
@@ -573,6 +567,8 @@ class TestCase:
         else:
             raise NotImplementedError()
 
+    NEWLINE = "\n"
+
     @staticmethod
     def learn_single_flags(i: int, assembled, instruction: Instruction, operand_values: List[int], tmpdir: str):
         try:
@@ -592,7 +588,7 @@ class TestCase:
                         setup_code.append(f"mov {arg.base_register}, rsp")
                     # set index register to 1
                     if arg.index_register is not None:
-                        setup_code.append(f"mov {arg.index_register}, 1")
+                        setup_code.append(f"mov {arg.index_register}, 0")
                     # write to memory
                     setup_code.append(
                         f"mov {arg}, {operand_values[idx]}")
@@ -606,7 +602,6 @@ class TestCase:
             assert len(
                 dynamic_operands) <= 2, "Too many dynamic operands"
 
-            NEWLINE = "\n"
             # write assembly code to file
             assembly_path = os.path.join(tmpdir, f"{i}.asm")
 
@@ -624,7 +619,7 @@ class TestCase:
                 .global _start
                 _start:
                 # Setup
-                {NEWLINE.join(setup_code)}
+                {TestCase.NEWLINE.join(setup_code)}
 
                 push rax
                 # Reset flags
@@ -822,7 +817,8 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
                 return f"""// {self.instruction}
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
-        write_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});
+        write_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});{
+        f'{TestCase.NEWLINE}        write_reg_value!({dynamic_operands[0].index_register.size_letter()}; a; {dynamic_operands[0].index_register.name.upper()}; 0);' if dynamic_operands[0].index_register is not None else ''}
         a.mem_init_zero({hex(mem_start +  + dynamic_operands[0].offset)}, {dynamic_operands[0].size()}).unwrap();
         a.mem_write_{dynamic_operands[0].size() * 8}({hex(mem_start + dynamic_operands[0].offset)}, {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])}).unwrap();
     }};
@@ -854,7 +850,8 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: &mut Axecutor|
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
         write_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])});
-        write_reg_value!({dynamic_operands[1].base_register.size_letter()}; a; {dynamic_operands[1].base_register.name.upper()}; {hex(mem_start)});
+        write_reg_value!({dynamic_operands[1].base_register.size_letter()}; a; {dynamic_operands[1].base_register.name.upper()}; {hex(mem_start)});{
+        f'{TestCase.NEWLINE}        write_reg_value!({dynamic_operands[1].index_register.size_letter()}; a; {dynamic_operands[1].index_register.name.upper()}; 0);' if dynamic_operands[1].index_register is not None else ''}
         a.mem_init_zero({hex(mem_start + dynamic_operands[1].offset)}, {dynamic_operands[1].size()}).unwrap();
         a.mem_write_{dynamic_operands[1].size() * 8}({hex(mem_start + dynamic_operands[1].offset)}, {ImmediateOperand(self.operand_values[1]).hexify(dynamic_operands[1])}).unwrap();
     }};
@@ -870,7 +867,8 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
         write_reg_value!({dynamic_operands[1].size_letter()}; a; {dynamic_operands[1].name.upper()}; {ImmediateOperand(self.operand_values[1]).hexify(dynamic_operands[1])});
-        write_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});
+        write_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});{
+        f'{TestCase.NEWLINE}        write_reg_value!({dynamic_operands[0].index_register.size_letter()}; a; {dynamic_operands[0].index_register.name.upper()}; 0);' if dynamic_operands[0].index_register is not None else ''}
         a.mem_init_zero({hex(mem_start +  + dynamic_operands[0].offset)}, {dynamic_operands[0].size()}).unwrap();
         a.mem_write_{dynamic_operands[0].size() * 8}({hex(mem_start + dynamic_operands[0].offset)}, {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])}).unwrap();
     }};
@@ -885,19 +883,50 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2 and sys.argv[1] == "test":
-        sys.argv = sys.argv[:1]
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Generate tests for axecutor')
+    parser.add_argument(
+        '-t', '--test', help='Run tests for this script', dest='test', action='store_true')
+    parser.add_argument(
+        '-f', '--flags', help='Select flags to test for', action='store', dest='flags',)
+    parser.add_argument('-e',                       '--extreme',
+                        help='Run more tests (default for < 2 dynamic arguments)', action='store_true', dest='extreme',)
+
+    parser.add_argument('rest', nargs=argparse.REMAINDER, action='store')
+
+    args = parser.parse_args()
+
+    # Arguments of this script are joined together
+    assembly_code = "sub dl, byte ptr [rbp+4*rcx]" if len(
+        args.rest) == 0 else " ".join(args.rest)
+    instruction = Instruction.parse(assembly_code)
+
+    if args.test:
+        sys.argv = [sys.argv[0]]
         unittest.main()
         exit(0)
 
-    # Arguments of this script are joined together
-    assembly_code = "add byte ptr [rbx], 0x7f" if len(
-        sys.argv) == 1 else " ".join(sys.argv[1:])
+    if args.flags:
+        flags = [s.strip().upper() for s in args.flags.split(',')]
+        valid = all(map(lambda f: any(map(lambda t: t[1] == f, FLAGS)), flags))
 
-    instruction = Instruction.parse(assembly_code)
+        if not valid:
+            raise Exception(
+                f"Invalid flags: {args.flags}, valid flags are {FLAGS}")
+        FLAGS = list(filter(lambda t: t[1] in flags, FLAGS))
 
-    # generate test cases
+        print(f"Testing flags: {FLAGS}")
+
+    if args.extreme or len(TestCase.dynamic_operands(instruction)) < 2:
+        TestCase.GOOD_TEST_VALUES += [i for i in range(0, 256)]
+
+    print(
+        f"Testing instruction {instruction} with more than {len(TestCase.GOOD_TEST_VALUES)} values (all combinations)")
+
     test_cases = TestCase.auto_learn_flags(instruction)
+
+    test_cases.sort(key=lambda t: t.test_id())
 
     test_cases_str = []
     for test_case in test_cases:

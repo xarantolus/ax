@@ -14,6 +14,7 @@ pub mod pop;
 pub mod push;
 pub mod registers;
 pub mod shl;
+pub mod sub;
 pub mod switch;
 pub mod test;
 mod tests;
