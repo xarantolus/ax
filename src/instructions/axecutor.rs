@@ -74,7 +74,7 @@ fn decode_all(code: &[u8], initial_rip: u64) -> Result<Vec<Instruction>, AxError
         if instr.is_invalid() {
             return Err(AxError::from(format!(
                 "Invalid instruction at offset {}",
-                dec.position()
+                dec.position() - instr.len()
             )));
         }
         instructions.push(instr);

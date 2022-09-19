@@ -134,7 +134,7 @@ def read_code() -> List[Instruction]:
     return instructions
 
 
-availble_codes = read_code()
+available_codes = read_code()
 mnemonics = read_mnemonics()
 
 
@@ -199,7 +199,7 @@ def generate_mnemonic_file(mnemonic: str):
 	# find mnemonic from mnemonics string list
 	normalized_mnemonic_idx = index_of_first(mnemonics, lambda m: m.lower() == mnemonic)
 
-	codes = list(filter(lambda instr: instr.enum_name.lower().startswith(mnemonic + "_"), availble_codes))
+	codes = list(filter(lambda instr: instr.enum_name.lower().startswith(mnemonic), available_codes))
 	if len(codes) == 0:
 		print(f"Warning: no instructions for mnemonic {mnemonic}")
 		return

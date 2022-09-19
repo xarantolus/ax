@@ -11,6 +11,7 @@ impl Axecutor {
             Jmp => self.mnemonic_jmp(i),
             Lea => self.mnemonic_lea(i),
             Mov => self.mnemonic_mov(i),
+            Nop => self.mnemonic_nop(i),
             Pop => self.mnemonic_pop(i),
             Push => self.mnemonic_push(i),
             Shl => self.mnemonic_shl(i),
