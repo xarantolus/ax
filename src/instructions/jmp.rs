@@ -54,7 +54,14 @@ impl Axecutor {
     fn instr_jmp_rel32_64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_rel32_64);
 
-        todo!("instr_jmp_rel32_64 for Jmp")
+        match i.op0_kind() {
+            OpKind::NearBranch64 => {
+                let offset = i.near_branch64() as i64 as u64;
+                self.reg_write_64(RIP.into(), offset);
+                Ok(())
+            }
+            _ => panic!("Invalid op0_kind for JMP rel32: {:?}", i.op0_kind()),
+        }
     }
 
     /// JMP ptr16:16
@@ -81,7 +88,11 @@ impl Axecutor {
     fn instr_jmp_rel8_16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_rel8_16);
 
-        todo!("instr_jmp_rel8_16 for Jmp")
+        // imm8 sign-extended
+        let offset = i.immediate8() as i8 as u64;
+        let rip = self.reg_read_64(RIP.into()) as i64 as u64;
+        self.reg_write_64(RIP.into(), rip + offset);
+        Ok(())
     }
 
     /// JMP rel8
@@ -102,9 +113,7 @@ impl Axecutor {
         match i.op0_kind() {
             OpKind::NearBranch64 => {
                 let offset = i.near_branch64() as i64 as u64;
-                let new_ip = self.reg_read_64(RIP.into()).wrapping_add(offset);
-                self.reg_write_64(RIP.into(), new_ip);
-
+                self.reg_write_64(RIP.into(), offset);
                 Ok(())
             }
             _ => panic!("Invalid op0_kind {:?} for JMP rel8", i.op0_kind()),
@@ -168,17 +177,40 @@ impl Axecutor {
     }
 }
 
+macro_rules! code_with_nops {
+    ($($bytes:expr),*; $count:expr; $($bytes2:expr),*) => {
+        // Concatenate bytes, then add count times 0x90 (nop), then the rest of bytes 2
+        let mut bytes = vec![$($bytes),*];
+        bytes.extend(vec![0x90; $count]);
+        bytes.extend(vec![$($bytes2),*]);
+        bytes
+    };
+}
+
+// TODO: Check if this makes sense
 macro_rules! jmp_test {
-    [$name:ident; $($bytes:expr),*; $initial_rip:expr; $final_rip:expr] => {
+    [$name:ident; $initial_rip:expr; $final_rip:expr; $($bytes:expr),*] => {
         #[test]
         fn $name() {
 			let bytes = &[$($bytes),*];
             let mut ax = Axecutor::new(bytes, $initial_rip).expect("Failed to create axecutor");
 
-            assert_eq!(ax.instructions.len(), 1, "Expected 1 jump instruction, but got {}", ax.instructions.len());
             assert_reg_value!(q; ax; RIP; $initial_rip);
 
-            ax.step().expect("Could not execute a single jump instruction step");
+            ax.execute().expect("Could not execute a single jump instruction step");
+
+            assert_reg_value!(q; ax; RIP; $final_rip);
+        }
+    };
+    [$name:ident; $initial_rip:expr; $final_rip:expr; $setup:expr; $($bytes:expr),*] => {
+        #[test]
+        fn $name() {
+			let bytes = &[$($bytes),*];
+            let mut ax = Axecutor::new(bytes, $initial_rip).expect("Failed to create axecutor");
+
+            assert_reg_value!(q; ax; RIP; $initial_rip);
+
+            ax.execute().expect("Could not execute a single jump instruction step");
 
             assert_reg_value!(q; ax; RIP; $final_rip);
         }
@@ -187,12 +219,37 @@ macro_rules! jmp_test {
 
 #[cfg(test)]
 mod tests {
+    use super::super::axecutor::Axecutor;
+    use crate::{
+        assert_reg_value, ax_test, instructions::registers::RegisterWrapper, write_reg_value,
+    };
+    use iced_x86::Register::*;
+
+    // jmp main -- a symbol defined some bytes before the instruction
+    jmp_test![jmp_rel8_64; 0x1000; 0x0ff0; 0xeb, 0xee];
+
+    // mov rax, 5; JMP .Llabel; xor rax, rax; .Llabel:
+    ax_test![mov_rax_5_jmp_label_xor_rax_rax_label;
+        0x48, 0xc7, 0xc0, 0x5, 0x0, 0x0, 0x0, 0xeb, 0x3, 0x48, 0x31, 0xc0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0xee1e96ff08a61c35u64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x5);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
 
     /*
-    // jmp main -- a symbol defined some bytes before the instruction
-    jmp_test![jmp_rel8_64; 0xeb, 0xee; 0x1000; 0x0ff2];
-
-    // jmp 0xff
-    jmp_test![instr_jmp_rel32_64; 0xe9, 0x0, 0x0, 0x0, 0x0; 0x1000; 0x1005];
+    // mov rax, 5; JMP .Llabel; .space 0xf; xor rax, rax; .Llabel:
+    ax_test![mov_rax_5_JMP_Llabel_space_0xf_xor_rax_rax_Llabel; 0x48, 0xc7, 0xc0, 0x5, 0x0, 0x0, 0x0, 0xeb, 0x12, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x48, 0x31, 0xc0;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0xd2cfbd678612818u64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x5);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
     */
 }

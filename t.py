@@ -440,7 +440,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(instr.arguments, [])
 
 
-def assemble(instruction: Instruction):
+def assemble(instruction: Instruction | str):
     # create temporary directory
     with tempfile.TemporaryDirectory(prefix="ax_assemble", dir="/dev/shm") as tmpdir:
         # write assembly code to file
@@ -629,7 +629,7 @@ class TestCase:
                 pop rax # We can do this because push/pop doesn't affect flags
 
                 # Run the actual instruction we care about
-                {assembly_code}
+                {instruction}
 
                 push rax
                 # Save flag state
