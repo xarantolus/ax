@@ -1,5 +1,6 @@
 pub mod add;
 pub mod axecutor;
+pub mod cmp;
 pub mod errors;
 pub mod execute;
 pub mod flags;

@@ -195,11 +195,12 @@ mod tests {
     return code
 
 def generate_mnemonic_file(mnemonic: str):
-	mnemonic = mnemonic.lower()
+	has_underscore = mnemonic.endswith("_")
+	mnemonic = mnemonic.lower().strip("_")
 	# find mnemonic from mnemonics string list
 	normalized_mnemonic_idx = index_of_first(mnemonics, lambda m: m.lower() == mnemonic)
 
-	codes = list(filter(lambda instr: instr.enum_name.lower().startswith(mnemonic), available_codes))
+	codes = list(filter(lambda instr: instr.enum_name.lower().startswith(mnemonic + ("_" if has_underscore else '')), available_codes))
 	if len(codes) == 0:
 		print(f"Warning: no instructions for mnemonic {mnemonic}")
 		return
@@ -280,3 +281,4 @@ if __name__ == '__main__':
             generate_mnemonic_file(mnemonic)
     else:
         generate_mnemonic_file(mnemonics_to_generate)
+        print(f"Generated file for new mnemonic. To integrate this mnemonic into the project, run `make switch`")

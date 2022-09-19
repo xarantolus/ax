@@ -26,7 +26,7 @@ pub const FLAG_VIF: u64 = 0x80000; // Virtual Interrupt Flag
 pub const FLAG_VIP: u64 = 0x100000; // Virtual Interrupt Pending
 pub const FLAG_ID: u64 = 0x200000; // ID Flag
 
-pub const FLAGS_UNAFFECTED: u64 = 0xffffffffffffffff;
+pub const FLAGS_UNAFFECTED: u64 = 0x7fffffffffffffff;
 
 pub const FLAG_LIST: [u64; 17] = [
     FLAG_CF, FLAG_PF, FLAG_AF, FLAG_ZF, FLAG_SF, FLAG_TF, FLAG_IF, FLAG_DF, FLAG_OF, FLAG_IOPL,
