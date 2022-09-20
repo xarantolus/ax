@@ -8,7 +8,7 @@ use crate::instructions::flags::FLAG_TO_NAMES;
 use super::errors::AxError;
 use super::hooks::HookProcessor;
 use super::memory::MemoryArea;
-use super::registers::{randomized_register_set, RegisterWrapper};
+use super::registers::{randomized_register_set, SupportedRegister};
 
 #[wasm_bindgen]
 #[derive(Debug)]
@@ -28,7 +28,7 @@ pub struct Axecutor {
 pub(crate) struct MachineState {
     // TODO: memory could better be modeled with some kind of interval tree that allows storing additional data with each interval
     pub(crate) memory: Vec<MemoryArea>,
-    pub(crate) registers: HashMap<RegisterWrapper, u64>,
+    pub(crate) registers: HashMap<SupportedRegister, u64>,
     pub(crate) rflags: u64,
 }
 

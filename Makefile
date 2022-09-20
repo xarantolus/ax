@@ -1,10 +1,10 @@
 .PHONY: build normal watch test clean generate
 
 build:
-	wasm-pack build --target=web --release
+	wasm-pack build --target web --release
 
 normal:
-	wasm-pack build --target=web
+	wasm-pack build --target web
 
 watch:
 	cargo watch -s "make normal"

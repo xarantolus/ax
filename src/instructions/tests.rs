@@ -59,7 +59,7 @@ macro_rules! ax_test {
 #[cfg(test)]
 macro_rules! assert_reg_value {
     [b; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = RegisterWrapper::from($reg);
+        let wrap = SupportedRegister::from($reg);
         assert!($reg.is_gpr8(), "Register must be 8 bit wide");
         let val = $axecutor.reg_read_8(wrap);
         assert_eq!(
@@ -69,7 +69,7 @@ macro_rules! assert_reg_value {
         );
     };
     [w; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = RegisterWrapper::from($reg);
+        let wrap = SupportedRegister::from($reg);
         assert!($reg.is_gpr16(), "Register must be 16 bit wide");
         let val = $axecutor.reg_read_16(wrap);
         assert_eq!(
@@ -79,7 +79,7 @@ macro_rules! assert_reg_value {
         );
     };
     [d; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = RegisterWrapper::from($reg);
+        let wrap = SupportedRegister::from($reg);
         assert!($reg.is_gpr32(), "Register must be 32 bit wide");
         let val = $axecutor.reg_read_32(wrap);
         assert_eq!(
@@ -89,7 +89,7 @@ macro_rules! assert_reg_value {
         );
     };
     [q; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = RegisterWrapper::from($reg);
+        let wrap = SupportedRegister::from($reg);
         assert!($reg.is_gpr64() || $reg.is_ip(), "Register must be 64 bit wide");
         let val = $axecutor.reg_read_64(wrap);
         assert_eq!(
@@ -104,22 +104,22 @@ macro_rules! assert_reg_value {
 #[cfg(test)]
 macro_rules! write_reg_value {
     (b; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = RegisterWrapper::from($reg);
+        let wrap = SupportedRegister::from($reg);
         assert!($reg.is_gpr8(), "Register must be 8 bit wide");
         $axecutor.reg_write_8(wrap, $value);
     };
     (w; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = RegisterWrapper::from($reg);
+        let wrap = SupportedRegister::from($reg);
         assert!($reg.is_gpr16(), "Register must be 16 bit wide");
         $axecutor.reg_write_16(wrap, $value);
     };
     (d; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = RegisterWrapper::from($reg);
+        let wrap = SupportedRegister::from($reg);
         assert!($reg.is_gpr32(), "Register must be 32 bit wide");
         $axecutor.reg_write_32(wrap, $value);
     };
     (q; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = RegisterWrapper::from($reg);
+        let wrap = SupportedRegister::from($reg);
         assert!($reg.is_gpr64(), "Register must be 64 bit wide");
         $axecutor.reg_write_64(wrap, $value);
     };

@@ -28,7 +28,8 @@ pub const FLAG_ID: u64 = 0x200000; // ID Flag
 
 pub const FLAGS_UNAFFECTED: u64 = 0x7fffffffffffffff;
 
-pub const FLAG_LIST: [u64; 17] = [
+#[cfg(test)]
+pub(crate) const FLAG_LIST: [u64; 17] = [
     FLAG_CF, FLAG_PF, FLAG_AF, FLAG_ZF, FLAG_SF, FLAG_TF, FLAG_IF, FLAG_DF, FLAG_OF, FLAG_IOPL,
     FLAG_NT, FLAG_RF, FLAG_VM, FLAG_AC, FLAG_VIF, FLAG_VIP, FLAG_ID,
 ];

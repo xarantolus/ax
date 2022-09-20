@@ -2,14 +2,14 @@ use iced_x86::{Instruction, Register};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsError;
 
-use crate::instructions::registers::RegisterWrapper;
+use crate::instructions::registers::SupportedRegister;
 
 use super::{axecutor::Axecutor, errors::AxError};
 
 #[wasm_bindgen]
 impl Axecutor {
     fn get_next_instruction(&self) -> Result<Instruction, AxError> {
-        let rip_register: RegisterWrapper = Register::RIP.into();
+        let rip_register: SupportedRegister = Register::RIP.into();
 
         let rip = self.reg_read_64(rip_register);
 

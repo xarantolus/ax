@@ -371,7 +371,7 @@ macro_rules! calculate_r_rm {
 			use crate::instructions::operand::Operand;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
-            let dest_reg : RegisterWrapper = dest.into();
+            let dest_reg : SupportedRegister = dest.into();
             let dest_val = $self.reg_read_8(dest_reg);
 
             match src {
@@ -404,7 +404,7 @@ macro_rules! calculate_r_rm {
             use crate::instructions::operand::Operand;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
-            let dest_reg : RegisterWrapper = dest.into();
+            let dest_reg : SupportedRegister = dest.into();
             let dest_val = $self.reg_read_16(dest_reg);
 
             match src {
@@ -438,7 +438,7 @@ macro_rules! calculate_r_rm {
             use crate::instructions::operand::Operand;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
-            let dest_reg : RegisterWrapper = dest.into();
+            let dest_reg : SupportedRegister = dest.into();
             let dest_val = $self.reg_read_32(dest_reg);
 
             match src {
@@ -472,7 +472,7 @@ macro_rules! calculate_r_rm {
             use crate::instructions::operand::Operand;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
-            let dest_reg : RegisterWrapper = dest.into();
+            let dest_reg : SupportedRegister = dest.into();
             let dest_val = $self.reg_read_64(dest_reg);
 
             match src {

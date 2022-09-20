@@ -7,7 +7,7 @@ use iced_x86::Register;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
-use crate::instructions::registers::RegisterWrapper;
+use crate::instructions::registers::SupportedRegister;
 
 impl Axecutor {
     pub fn mnemonic_pop(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -30,7 +30,7 @@ impl Axecutor {
     fn instr_pop_r16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Pop_r16);
 
-        let reg: RegisterWrapper = i.op0_register().into();
+        let reg: SupportedRegister = i.op0_register().into();
         let rsp = self.reg_read_64(Register::RSP.into());
 
         let value = self.mem_read_16(rsp)?;
@@ -56,7 +56,7 @@ impl Axecutor {
     fn instr_pop_r64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Pop_r64);
 
-        let reg: RegisterWrapper = i.op0_register().into();
+        let reg: SupportedRegister = i.op0_register().into();
         let rsp = self.reg_read_64(Register::RSP.into());
 
         let value = self.mem_read_64(rsp)?;
@@ -98,7 +98,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, ax_test, instructions::registers::RegisterWrapper};
+    use crate::{assert_reg_value, ax_test, instructions::registers::SupportedRegister};
     use iced_x86::Register::*;
 
     // pop ax

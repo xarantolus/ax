@@ -6,7 +6,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
 use crate::instructions::macros::NO_WRITEBACK;
-use crate::instructions::registers::RegisterWrapper;
+use crate::instructions::registers::SupportedRegister;
 use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
 
 impl Axecutor {
@@ -350,7 +350,7 @@ impl Axecutor {
 mod tests {
     use super::super::axecutor::Axecutor;
     use crate::{
-        assert_reg_value, ax_test, instructions::registers::RegisterWrapper, write_reg_value,
+        assert_reg_value, ax_test, instructions::registers::SupportedRegister, write_reg_value,
     };
     use iced_x86::Register::*;
     // cmp byte ptr [rax], bl

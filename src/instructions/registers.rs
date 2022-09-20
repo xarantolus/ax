@@ -10,7 +10,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use super::axecutor::Axecutor;
 
 lazy_static! {
-    pub(crate) static ref REGISTER_TO_QWORD: HashMap<RegisterWrapper, RegisterWrapper> =
+    pub(crate) static ref REGISTER_TO_QWORD: HashMap<SupportedRegister, SupportedRegister> =
         [
             // 8-bit registers
             (AH, RAX),
@@ -84,18 +84,18 @@ lazy_static! {
             (R13, R13),
             (R14, R14),
             (R15, R15),
-    ].iter().map(|(a,b)| (RegisterWrapper::from(a), RegisterWrapper::from(b))).collect();
+    ].iter().map(|(a,b)| (SupportedRegister::from(*a), SupportedRegister::from(*b))).collect();
 
-    pub(crate) static ref HIGHER_BYTE_REGISTERS: HashSet<RegisterWrapper> = [
+    pub(crate) static ref HIGHER_BYTE_REGISTERS: HashSet<SupportedRegister> = [
         AH, BH, CH, DH
-    ].iter().map(|a| RegisterWrapper::from(a)).collect();
+    ].iter().map(|a| SupportedRegister::from(*a)).collect();
 
-    pub(crate) static ref NATURAL_REGISTER_ORDER : Vec<RegisterWrapper> = [
+    pub(crate) static ref NATURAL_REGISTER_ORDER : Vec<SupportedRegister> = [
         RIP, RAX, RBX, RCX, RDX, RSI, RDI, RSP, RBP, R8, R9, R10, R11, R12, R13, R14, R15
-    ].iter().map(|a| RegisterWrapper::from(a)).collect();
+    ].iter().map(|a| SupportedRegister::from(*a)).collect();
 }
 
-pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<RegisterWrapper, u64> {
+pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<SupportedRegister, u64> {
     let mut map = HashMap::new();
 
     let mut rng = rand::thread_rng();
@@ -106,40 +106,263 @@ pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<RegisterWrapper
 
     for register in registers {
         let value = rng.gen::<u64>();
-        map.insert(RegisterWrapper::from(register), value);
+        map.insert(SupportedRegister::from(register), value);
     }
 
-    map.insert(RegisterWrapper::from(Register::RIP), rip_value);
+    map.insert(SupportedRegister::from(Register::RIP), rip_value);
 
     return map;
 }
 
 #[wasm_bindgen(js_name = Register)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct RegisterWrapper(Register);
+pub enum SupportedRegister {
+    // 64-bit registers
+    RIP,
+    RAX,
+    RBX,
+    RCX,
+    RDX,
+    RSI,
+    RDI,
+    RSP,
+    RBP,
+    R8,
+    R9,
+    R10,
+    R11,
+    R12,
+    R13,
+    R14,
+    R15,
+    // 32-bit registers
+    EIP,
+    EAX,
+    EBX,
+    ECX,
+    EDX,
+    ESI,
+    EDI,
+    ESP,
+    EBP,
+    R8D,
+    R9D,
+    R10D,
+    R11D,
+    R12D,
+    R13D,
+    R14D,
+    R15D,
+    // 16-bit registers
+    AX,
+    BX,
+    CX,
+    DX,
+    SI,
+    DI,
+    SP,
+    BP,
+    R8W,
+    R9W,
+    R10W,
+    R11W,
+    R12W,
+    R13W,
+    R14W,
+    R15W,
+    // 8-bit registers
+    AH,
+    AL,
+    BH,
+    BL,
+    CH,
+    CL,
+    DH,
+    DL,
+    SIL,
+    DIL,
+    SPL,
+    BPL,
+    R8L,
+    R9L,
+    R10L,
+    R11L,
+    R12L,
+    R13L,
+    R14L,
+    R15L,
+}
 
-impl From<Register> for RegisterWrapper {
+impl From<Register> for SupportedRegister {
     fn from(register: Register) -> Self {
-        RegisterWrapper(register)
-    }
-}
-impl From<&Register> for RegisterWrapper {
-    fn from(register: &Register) -> Self {
-        RegisterWrapper(*register)
+        match register {
+            Register::RIP => SupportedRegister::RIP,
+            Register::RAX => SupportedRegister::RAX,
+            Register::RBX => SupportedRegister::RBX,
+            Register::RCX => SupportedRegister::RCX,
+            Register::RDX => SupportedRegister::RDX,
+            Register::RSI => SupportedRegister::RSI,
+            Register::RDI => SupportedRegister::RDI,
+            Register::RSP => SupportedRegister::RSP,
+            Register::RBP => SupportedRegister::RBP,
+            Register::R8 => SupportedRegister::R8,
+            Register::R9 => SupportedRegister::R9,
+            Register::R10 => SupportedRegister::R10,
+            Register::R11 => SupportedRegister::R11,
+            Register::R12 => SupportedRegister::R12,
+            Register::R13 => SupportedRegister::R13,
+            Register::R14 => SupportedRegister::R14,
+            Register::R15 => SupportedRegister::R15,
+
+            Register::EIP => SupportedRegister::EIP,
+            Register::EAX => SupportedRegister::EAX,
+            Register::EBX => SupportedRegister::EBX,
+            Register::ECX => SupportedRegister::ECX,
+            Register::EDX => SupportedRegister::EDX,
+            Register::ESI => SupportedRegister::ESI,
+            Register::EDI => SupportedRegister::EDI,
+            Register::ESP => SupportedRegister::ESP,
+            Register::EBP => SupportedRegister::EBP,
+            Register::R8D => SupportedRegister::R8D,
+            Register::R9D => SupportedRegister::R9D,
+            Register::R10D => SupportedRegister::R10D,
+            Register::R11D => SupportedRegister::R11D,
+            Register::R12D => SupportedRegister::R12D,
+            Register::R13D => SupportedRegister::R13D,
+            Register::R14D => SupportedRegister::R14D,
+            Register::R15D => SupportedRegister::R15D,
+
+            Register::AX => SupportedRegister::AX,
+            Register::BX => SupportedRegister::BX,
+            Register::CX => SupportedRegister::CX,
+            Register::DX => SupportedRegister::DX,
+            Register::SI => SupportedRegister::SI,
+            Register::DI => SupportedRegister::DI,
+            Register::SP => SupportedRegister::SP,
+            Register::BP => SupportedRegister::BP,
+            Register::R8W => SupportedRegister::R8W,
+            Register::R9W => SupportedRegister::R9W,
+            Register::R10W => SupportedRegister::R10W,
+            Register::R11W => SupportedRegister::R11W,
+            Register::R12W => SupportedRegister::R12W,
+            Register::R13W => SupportedRegister::R13W,
+            Register::R14W => SupportedRegister::R14W,
+            Register::R15W => SupportedRegister::R15W,
+
+            Register::AH => SupportedRegister::AH,
+            Register::AL => SupportedRegister::AL,
+            Register::BH => SupportedRegister::BH,
+            Register::BL => SupportedRegister::BL,
+            Register::CH => SupportedRegister::CH,
+            Register::CL => SupportedRegister::CL,
+            Register::DH => SupportedRegister::DH,
+            Register::DL => SupportedRegister::DL,
+            Register::SIL => SupportedRegister::SIL,
+            Register::DIL => SupportedRegister::DIL,
+            Register::SPL => SupportedRegister::SPL,
+            Register::BPL => SupportedRegister::BPL,
+            Register::R8L => SupportedRegister::R8L,
+            Register::R9L => SupportedRegister::R9L,
+            Register::R10L => SupportedRegister::R10L,
+            Register::R11L => SupportedRegister::R11L,
+            Register::R12L => SupportedRegister::R12L,
+            Register::R13L => SupportedRegister::R13L,
+            Register::R14L => SupportedRegister::R14L,
+            Register::R15L => SupportedRegister::R15L,
+
+            _ => panic!("Unsupported register"),
+        }
     }
 }
 
-#[wasm_bindgen]
-impl RegisterWrapper {
+impl From<SupportedRegister> for Register {
+    fn from(register: SupportedRegister) -> Self {
+        match register {
+            SupportedRegister::RIP => Register::RIP,
+            SupportedRegister::RAX => Register::RAX,
+            SupportedRegister::RBX => Register::RBX,
+            SupportedRegister::RCX => Register::RCX,
+            SupportedRegister::RDX => Register::RDX,
+            SupportedRegister::RSI => Register::RSI,
+            SupportedRegister::RDI => Register::RDI,
+            SupportedRegister::RSP => Register::RSP,
+            SupportedRegister::RBP => Register::RBP,
+            SupportedRegister::R8 => Register::R8,
+            SupportedRegister::R9 => Register::R9,
+            SupportedRegister::R10 => Register::R10,
+            SupportedRegister::R11 => Register::R11,
+            SupportedRegister::R12 => Register::R12,
+            SupportedRegister::R13 => Register::R13,
+            SupportedRegister::R14 => Register::R14,
+            SupportedRegister::R15 => Register::R15,
+            SupportedRegister::EAX => Register::EAX,
+            SupportedRegister::EBX => Register::EBX,
+            SupportedRegister::ECX => Register::ECX,
+            SupportedRegister::EDX => Register::EDX,
+            SupportedRegister::ESI => Register::ESI,
+            SupportedRegister::EDI => Register::EDI,
+            SupportedRegister::ESP => Register::ESP,
+            SupportedRegister::EBP => Register::EBP,
+            SupportedRegister::AX => Register::AX,
+            SupportedRegister::BX => Register::BX,
+            SupportedRegister::CX => Register::CX,
+            SupportedRegister::DX => Register::DX,
+            SupportedRegister::SI => Register::SI,
+            SupportedRegister::DI => Register::DI,
+            SupportedRegister::SP => Register::SP,
+            SupportedRegister::BP => Register::BP,
+            SupportedRegister::AH => Register::AH,
+            SupportedRegister::BH => Register::BH,
+            SupportedRegister::CH => Register::CH,
+            SupportedRegister::DH => Register::DH,
+            SupportedRegister::SIL => Register::SIL,
+            SupportedRegister::DIL => Register::DIL,
+            SupportedRegister::SPL => Register::SPL,
+            SupportedRegister::BPL => Register::BPL,
+            SupportedRegister::R8D => Register::R8D,
+            SupportedRegister::R9D => Register::R9D,
+            SupportedRegister::R10D => Register::R10D,
+            SupportedRegister::R11D => Register::R11D,
+            SupportedRegister::R12D => Register::R12D,
+            SupportedRegister::R13D => Register::R13D,
+            SupportedRegister::R14D => Register::R14D,
+            SupportedRegister::R15D => Register::R15D,
+            SupportedRegister::R8W => Register::R8W,
+            SupportedRegister::R9W => Register::R9W,
+            SupportedRegister::R10W => Register::R10W,
+            SupportedRegister::R11W => Register::R11W,
+            SupportedRegister::R12W => Register::R12W,
+            SupportedRegister::R13W => Register::R13W,
+            SupportedRegister::R14W => Register::R14W,
+            SupportedRegister::R15W => Register::R15W,
+            SupportedRegister::R8L => Register::R8L,
+            SupportedRegister::R9L => Register::R9L,
+            SupportedRegister::R10L => Register::R10L,
+            SupportedRegister::R11L => Register::R11L,
+            SupportedRegister::R12L => Register::R12L,
+            SupportedRegister::R13L => Register::R13L,
+            SupportedRegister::R14L => Register::R14L,
+            SupportedRegister::R15L => Register::R15L,
+            SupportedRegister::AL => Register::AL,
+            SupportedRegister::BL => Register::BL,
+            SupportedRegister::CL => Register::CL,
+            SupportedRegister::DL => Register::DL,
+            _ => panic!("Unsupported register"),
+        }
+    }
+}
+
+impl SupportedRegister {
     pub fn name(&self) -> String {
-        format!("{:?}", self.0)
+        format!("{:?}", self)
     }
 }
 
 #[wasm_bindgen]
 impl Axecutor {
-    pub fn reg_write_8(&mut self, reg: RegisterWrapper, value: u8) {
-        assert!(reg.0.is_gpr8());
+    pub fn reg_write_8(&mut self, reg: SupportedRegister, value: u8) {
+        let r: Register = reg.into();
+        assert!(r.is_gpr8());
 
         // Map 8-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -157,8 +380,9 @@ impl Axecutor {
         self.state.registers.insert(*qword_register, result_value);
     }
 
-    pub fn reg_write_16(&mut self, reg: RegisterWrapper, value: u16) {
-        assert!(reg.0.is_gpr16());
+    pub fn reg_write_16(&mut self, reg: SupportedRegister, value: u16) {
+        let r: Register = reg.into();
+        assert!(r.is_gpr16());
 
         // Map 16-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -169,8 +393,9 @@ impl Axecutor {
         self.state.registers.insert(*qword_register, result_value);
     }
 
-    pub fn reg_write_32(&mut self, reg: RegisterWrapper, value: u32) {
-        assert!(reg.0.is_gpr32());
+    pub fn reg_write_32(&mut self, reg: SupportedRegister, value: u32) {
+        let r: Register = reg.into();
+        assert!(r.is_gpr32());
 
         // Map 32-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -180,14 +405,16 @@ impl Axecutor {
         self.state.registers.insert(*qword_register, result_value);
     }
 
-    pub fn reg_write_64(&mut self, reg: RegisterWrapper, value: u64) {
-        assert!(reg.0.is_gpr64() || reg.0.is_ip());
+    pub fn reg_write_64(&mut self, reg: SupportedRegister, value: u64) {
+        let r: Register = reg.into();
+        assert!(r.is_gpr64() || r.is_ip());
 
         self.state.registers.insert(reg, value);
     }
 
-    pub fn reg_read_8(&self, reg: RegisterWrapper) -> u8 {
-        assert!(reg.0.is_gpr8());
+    pub fn reg_read_8(&self, reg: SupportedRegister) -> u8 {
+        let r: Register = reg.into();
+        assert!(r.is_gpr8());
 
         // Map 8-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -205,8 +432,9 @@ impl Axecutor {
         return result_value;
     }
 
-    pub fn reg_read_16(&self, reg: RegisterWrapper) -> u16 {
-        assert!(reg.0.is_gpr16());
+    pub fn reg_read_16(&self, reg: SupportedRegister) -> u16 {
+        let r: Register = reg.into();
+        assert!(r.is_gpr16());
 
         // Map 16-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -217,8 +445,9 @@ impl Axecutor {
         return result_value;
     }
 
-    pub fn reg_read_32(&self, reg: RegisterWrapper) -> u32 {
-        assert!(reg.0.is_gpr32());
+    pub fn reg_read_32(&self, reg: SupportedRegister) -> u32 {
+        let r: Register = reg.into();
+        assert!(r.is_gpr32());
 
         // Map 32-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -229,8 +458,9 @@ impl Axecutor {
         return result_value;
     }
 
-    pub fn reg_read_64(&self, reg: RegisterWrapper) -> u64 {
-        assert!(reg.0.is_gpr64() || reg.0.is_ip());
+    pub fn reg_read_64(&self, reg: SupportedRegister) -> u64 {
+        let r: Register = reg.into();
+        assert!(r.is_gpr64() || r.is_ip());
 
         let reg_value = self.state.registers.get(&reg).unwrap().clone();
         return reg_value;

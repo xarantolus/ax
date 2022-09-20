@@ -1,11 +1,11 @@
 use iced_x86::Instruction;
 
-use super::{axecutor::Axecutor, errors::AxError, registers::RegisterWrapper};
+use super::{axecutor::Axecutor, errors::AxError, registers::SupportedRegister};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct MemOperand {
-    base: Option<RegisterWrapper>,
-    index: Option<RegisterWrapper>,
+    base: Option<SupportedRegister>,
+    index: Option<SupportedRegister>,
     scale: u32,
     displacement: u64,
 }
@@ -13,11 +13,11 @@ pub struct MemOperand {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Operand {
     Memory(MemOperand),
-    Register(RegisterWrapper),
+    Register(SupportedRegister),
     Immediate { data: u64, size: i8 },
 }
 
-impl From<Operand> for RegisterWrapper {
+impl From<Operand> for SupportedRegister {
     fn from(operand: Operand) -> Self {
         match operand {
             Operand::Register(register) => register,
@@ -141,11 +141,11 @@ impl Axecutor {
                     iced_x86::Register::None => None,
                     // If base is RIP, we can use the displacement as-it. No need to add it to the memory address
                     iced_x86::Register::RIP => None,
-                    r => Some(RegisterWrapper::from(r)),
+                    r => Some(SupportedRegister::from(r)),
                 };
                 let index = match i.memory_index() {
                     iced_x86::Register::None => None,
-                    r => Some(RegisterWrapper::from(r)),
+                    r => Some(SupportedRegister::from(r)),
                 };
                 let scale = i.memory_index_scale();
                 let displacement = i.memory_displacement64();
@@ -157,7 +157,7 @@ impl Axecutor {
                     displacement,
                 }))
             }
-            iced_x86::OpKind::Register => Ok(Operand::Register(RegisterWrapper::from(
+            iced_x86::OpKind::Register => Ok(Operand::Register(SupportedRegister::from(
                 i.op_register(operand_idx),
             ))),
             iced_x86::OpKind::Immediate8 => Ok(Operand::Immediate {

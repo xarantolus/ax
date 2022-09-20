@@ -32,6 +32,7 @@ impl Hook {
         mnemonic: SupportedMnemonic,
     ) -> Result<(), AxError> {
         for js_fn in &self.before {
+            // TODO: Handle errors, the function stopping the emulator etc
             run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
         }
 
@@ -44,6 +45,7 @@ impl Hook {
         mnemonic: SupportedMnemonic,
     ) -> Result<(), AxError> {
         for js_fn in &self.after {
+            // TODO: Handle errors, the function stopping the emulator etc
             run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
         }
 
@@ -102,7 +104,6 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     // TODO: Test
     // #[test]
@@ -133,7 +134,7 @@ async fn run_promise(promise_arg: JsValue) -> Result<JsValue, JsValue> {
 }
 
 fn run_function(
-    ax: &mut Axecutor,
+    _ax: &mut Axecutor,
     function_arg: JsValue,
     arguments: Vec<JsValue>,
 ) -> Result<JsValue, JsValue> {
