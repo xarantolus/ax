@@ -7,7 +7,7 @@ normal:
 	wasm-pack build --target=web
 
 watch:
-	watchexec -r "make normal && ghfs"
+	cargo watch -s "make normal"
 
 test:
 	cargo test

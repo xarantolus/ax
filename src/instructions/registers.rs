@@ -89,6 +89,10 @@ lazy_static! {
     pub(crate) static ref HIGHER_BYTE_REGISTERS: HashSet<RegisterWrapper> = [
         AH, BH, CH, DH
     ].iter().map(|a| RegisterWrapper::from(a)).collect();
+
+    pub(crate) static ref NATURAL_REGISTER_ORDER : Vec<RegisterWrapper> = [
+        RIP, RAX, RBX, RCX, RDX, RSI, RDI, RSP, RBP, R8, R9, R10, R11, R12, R13, R14, R15
+    ].iter().map(|a| RegisterWrapper::from(a)).collect();
 }
 
 pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<RegisterWrapper, u64> {
@@ -122,6 +126,13 @@ impl From<Register> for RegisterWrapper {
 impl From<&Register> for RegisterWrapper {
     fn from(register: &Register) -> Self {
         RegisterWrapper(*register)
+    }
+}
+
+#[wasm_bindgen]
+impl RegisterWrapper {
+    pub fn name(&self) -> String {
+        format!("{:?}", self.0)
     }
 }
 

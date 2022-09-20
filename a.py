@@ -242,7 +242,7 @@ def generate_test(assembly_code: str, hex_arr: list):
 
     # ask if setup should be included y/n
     setup = input(
-        "Test type? (t: ax_test normal; ts: ax_test with setup; o: operand_test; os: operand_test with setup): ")
+        "Test type? (t: ax_test normal; ts: ax_test with setup; o: operand_test; os: operand_test with setup; u: JS Uint8Array): ")
 
     if setup == "t" or setup == "ts":
         register = find_register(assembly_code)
@@ -303,12 +303,17 @@ operand_test![{test_id};
         // TODO: Adjust memory addresses
     ]
 ];"""
+    elif setup == "u":
+        # For javascript
+        code = f"""// {assembly_code}
+		let code = new Uint8Array([{", ".join(hex_arr)}]);
+        """
     else:
         print("Invalid input")
         sys.exit(1)
 
     pyperclip.copy(code)
-    print(f"Copied test case for \"{assembly_code}\" to clipboard!")
+    print(f"Copied code for \"{assembly_code}\" to clipboard!")
 
 
 if __name__ == '__main__':

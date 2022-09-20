@@ -9,6 +9,38 @@ pub(crate) struct MemoryArea {
     data: Vec<u8>,
 }
 
+impl MemoryArea {
+    pub fn to_string_ident(&self, i: usize) -> String {
+        let mut s = String::new();
+
+        s.push_str(&format!("MemoryArea {{\n"));
+        s.push_str(&format!(
+            "{}    start: {},\n",
+            " ".repeat(i * 4),
+            self.start
+        ));
+        s.push_str(&format!(
+            "{}    length: {},\n",
+            " ".repeat(i * 4),
+            self.length
+        ));
+        s.push_str(&format!("{}    data: [", " ".repeat(i * 4)));
+
+        for (i, byte) in self.data.iter().enumerate() {
+            s.push_str(&format!("0x{:02x}", byte));
+
+            if i != self.data.len() - 1 {
+                s.push_str(", ");
+            }
+        }
+
+        s.push_str("],\n");
+        s.push_str(&format!("{}    }}", " ".repeat(i * 4)));
+
+        s
+    }
+}
+
 impl Axecutor {
     // TODO: Currently cannot read consecutive sections of memory
     pub fn mem_read_bytes(&self, address: u64, length: u64) -> Result<Vec<u8>, AxError> {

@@ -2,7 +2,6 @@ use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Cmp;
 
-
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;

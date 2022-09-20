@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use iced_x86::{Decoder, DecoderOptions, Instruction};
 use wasm_bindgen::prelude::*;
 
+use crate::instructions::flags::FLAG_TO_NAMES;
+
 use super::errors::AxError;
 use super::memory::MemoryArea;
 use super::registers::{randomized_register_set, RegisterWrapper};
@@ -25,6 +27,67 @@ pub(crate) struct MachineState {
     pub(crate) memory: Vec<MemoryArea>,
     pub(crate) registers: HashMap<RegisterWrapper, u64>,
     pub(crate) rflags: u64,
+}
+
+#[wasm_bindgen]
+impl MachineState {
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        self.to_string_ident(0)
+    }
+
+    #[wasm_bindgen(js_name = toStringIdent)]
+    pub fn to_string_ident(&self, i: usize) -> String {
+        let mut s = String::new();
+
+        s.push_str("MachineState {\n");
+        s.push_str(&format!("{}    memory: [\n", " ".repeat(i * 4)));
+        for area in &self.memory {
+            s.push_str(&format!(
+                "{}        {},\n",
+                " ".repeat(i * 4),
+                area.to_string_ident(i + 2)
+            ));
+        }
+
+        s.push_str(&format!("{}    ],\n", " ".repeat(i * 4)));
+        s.push_str(&format!("{}    registers: {{\n", " ".repeat(i * 4)));
+
+        // Iterate over all registers, sorted by the order i like
+        for register in super::registers::NATURAL_REGISTER_ORDER.iter() {
+            if let Some(value) = self.registers.get(register) {
+                s.push_str(&format!(
+                    "{}        {}: {}{:#018x},\n",
+                    " ".repeat(i * 4),
+                    register.name(),
+                    if register.name().len() == 2 { " " } else { "" },
+                    value
+                ));
+            }
+        }
+
+        s.push_str(&format!("{}    }},\n", " ".repeat(i * 4)));
+
+        // Write rflags as 64-bit hex value with leading 0x AND also stringify them using the FLAG_TO_NAMES hashmap
+        s.push_str(&format!(
+            "{}    rflags_raw: 0x{:#016x},\n",
+            " ".repeat(i * 4),
+            self.rflags
+        ));
+
+        s.push_str(&format!("{}    rflags: [\n", " ".repeat(i * 4)));
+        for (flag, name) in FLAG_TO_NAMES.iter() {
+            if self.rflags & flag != 0 {
+                s.push_str(&format!("{}        {},\n", " ".repeat(i * 4), name));
+            }
+        }
+
+        s.push_str(&format!("{}    ],\n", " ".repeat(i * 4)));
+
+        s.push_str(&format!("{}}}", " ".repeat(i * 4)));
+
+        s
+    }
 }
 
 #[wasm_bindgen]
@@ -55,9 +118,33 @@ impl Axecutor {
     #[wasm_bindgen(js_name = toString)]
     pub fn to_string(&self) -> String {
         format!(
-            "Axecutor {{ ran: {}, instructions: {:#?}, rip_to_index: {:#?}, state: {:#?} }}",
-            self.finished, self.instructions, self.rip_to_index, self.state
+            "Axecutor {{
+    ran: {},
+    state: {},
+    instructions: {},
+    rip_to_index: {},
+}}",
+            self.finished,
+            self.state.to_string_ident(1),
+            self.prefix_each_line(format!("{:#?}", self.instructions).as_str(), "    "),
+            self.prefix_each_line(format!("{:#?}", self.rip_to_index).as_str(), "    ")
         )
+    }
+
+    fn prefix_each_line(&self, s: &str, prefix: &str) -> String {
+        let mut result = String::new();
+
+        // Prefix each line except for the first
+        for (idx, line) in s.lines().enumerate() {
+            if idx != 0 {
+                result.push_str("\n");
+                result.push_str(prefix);
+            }
+
+            result.push_str(line);
+        }
+
+        result
     }
 }
 
