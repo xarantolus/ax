@@ -6,11 +6,12 @@ use wasm_bindgen::prelude::*;
 use crate::instructions::flags::FLAG_TO_NAMES;
 
 use super::errors::AxError;
+use super::hooks::HookProcessor;
 use super::memory::MemoryArea;
 use super::registers::{randomized_register_set, RegisterWrapper};
 
 #[wasm_bindgen]
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Axecutor {
     pub(crate) finished: bool,
 
@@ -18,6 +19,8 @@ pub struct Axecutor {
     pub(crate) rip_to_index: HashMap<u64, usize>,
 
     pub(crate) state: MachineState,
+
+    pub(crate) hooks: HookProcessor,
 }
 
 #[wasm_bindgen]
@@ -105,6 +108,7 @@ impl Axecutor {
             finished: false,
             instructions,
             rip_to_index: rti,
+            hooks: HookProcessor::new(),
             state: MachineState {
                 memory: Vec::new(),
                 registers: randomized_register_set(initial_rip),

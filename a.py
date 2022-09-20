@@ -242,7 +242,7 @@ def generate_test(assembly_code: str, hex_arr: list):
 
     # ask if setup should be included y/n
     setup = input(
-        "Test type? (t: ax_test normal; ts: ax_test with setup; o: operand_test; os: operand_test with setup; u: JS Uint8Array): ")
+        "Test type? (t: ax_test normal; ts: ax_test with setup; o: operand_test; os: operand_test with setup; u: JS Uint8Array, b: Binary): ")
 
     if setup == "t" or setup == "ts":
         register = find_register(assembly_code)
@@ -306,8 +306,12 @@ operand_test![{test_id};
     elif setup == "u":
         # For javascript
         code = f"""// {assembly_code}
-		let code = new Uint8Array([{", ".join(hex_arr)}]);
+let code = new Uint8Array([{", ".join(hex_arr)}]);
         """
+    elif setup == "b":
+        # just the binary hex representation
+        code = f"""// {assembly_code}
+[{", ".join(hex_arr)}]"""
     else:
         print("Invalid input")
         sys.exit(1)

@@ -1,5 +1,7 @@
 use std::fmt;
 
+use wasm_bindgen::JsValue;
+
 pub struct AxError {
     pub message: String,
 }
@@ -14,6 +16,12 @@ impl From<&str> for AxError {
 impl From<String> for AxError {
     fn from(message: String) -> Self {
         Self { message: message }
+    }
+}
+
+impl From<AxError> for JsValue {
+    fn from(err: AxError) -> Self {
+        JsValue::from_str(&err.message)
     }
 }
 

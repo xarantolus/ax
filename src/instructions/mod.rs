@@ -4,6 +4,7 @@ pub mod cmp;
 pub mod errors;
 pub mod execute;
 pub mod flags;
+pub mod hooks;
 mod integration_tests;
 pub mod jmp;
 pub mod lea;

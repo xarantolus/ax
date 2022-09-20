@@ -7,8 +7,8 @@ use super::{axecutor::Axecutor, errors::AxError};
 
 #[wasm_bindgen]
 impl Axecutor {
-    fn advance_next_instruction(&mut self) -> Result<Instruction, AxError> {
-        let rip_register = RegisterWrapper::from(Register::RIP);
+    fn get_next_instruction(&self) -> Result<Instruction, AxError> {
+        let rip_register: RegisterWrapper = Register::RIP.into();
 
         let rip = self.reg_read_64(rip_register);
 
@@ -23,10 +23,6 @@ impl Axecutor {
             *idx, rip,
         )))?;
 
-        // Set rip to the instruction after this one
-        // TODO: Maybe should use self.write_reg_64 instead, but that threw borrow checker errors
-        self.state.registers.insert(rip_register, instr.next_ip());
-
         Ok(*instr)
     }
 
@@ -40,17 +36,26 @@ impl Axecutor {
         }
 
         // Fetch the next instruction
-        let instr = self.advance_next_instruction()?;
+        let instr = self.get_next_instruction()?;
+
+        self.reg_write_64(Register::RIP.into(), instr.next_ip());
+
+        let mnem = instr.mnemonic().into();
+
+        let hooks = self.mnemonic_hooks(mnem);
+        if let Some(ref h) = hooks {
+            h.run_before(self, mnem)?;
+        }
 
         self.switch_instruction_mnemonic(instr)?;
-
-        // TODO: Actually execute the instruction
-        // TODO: Figure out what to do with flags, when to reset e.g. carry etc.
-        // Maybe create a bitmask that is xored after the next instruction is executed
 
         // If we reached the last instruction (and no jump has been performed etc.), we're done
         if self.reg_read_64(Register::RIP.into()) == self.instructions.last().unwrap().next_ip() {
             self.finished = true;
+        }
+
+        if let Some(ref h) = hooks {
+            h.run_after(self, mnem)?;
         }
 
         Ok(!self.finished)
