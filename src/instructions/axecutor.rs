@@ -112,7 +112,6 @@ impl Axecutor {
             state: MachineState {
                 memory: Vec::new(),
                 registers: randomized_register_set(initial_rip),
-                // TODO: Think about how to handle flags
                 // Intel SDM 3.4.3 EFLAGS Register mentions this default value:
                 rflags: 0x00000002,
             },
@@ -187,9 +186,8 @@ fn decode_all(code: &[u8], code_start_addr: u64) -> Result<Vec<Instruction>, AxE
 
 #[cfg(test)]
 mod tests {
-    use iced_x86::Register;
-
     use super::*;
+    use iced_x86::Register;
 
     #[test]
     fn test_rip() {

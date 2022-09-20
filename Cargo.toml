@@ -27,6 +27,8 @@ js-sys = "0.3.60"
 wasm-bindgen-futures = "0.4.33"
 lazy_static = "1.4.0"
 rand = { version = "0.7.3", features = ["wasm-bindgen"] }
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.4"
 
 [dependencies.iced-x86]
 version = "1.17.0"
@@ -36,6 +38,7 @@ features = ["std", "decoder", "nasm", "instr_info"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.13"
+smol = "1.2.5"
 
 [profile.release]
 # Tell `rustc` to optimize for small code size.

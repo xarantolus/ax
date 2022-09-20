@@ -1,4 +1,4 @@
-.PHONY: build normal watch test clean switch
+.PHONY: build normal watch test clean generate
 
 build:
 	wasm-pack build --target=web --release
@@ -12,8 +12,8 @@ watch:
 test:
 	cargo test
 
-switch:
-	python3 generate.py switch
+generate:
+	python3 generate.py generate
 
 dependencies:
 	python3 -m pip install pyperclip tqdm

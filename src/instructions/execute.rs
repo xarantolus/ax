@@ -1,5 +1,6 @@
 use iced_x86::{Instruction, Register};
 use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::JsError;
 
 use crate::instructions::registers::RegisterWrapper;
 
@@ -28,11 +29,11 @@ impl Axecutor {
 
     // step executes the next instruction, returning if the execution can continue running
     #[wasm_bindgen]
-    pub fn step(&mut self) -> Result<bool, AxError> {
+    pub async fn step(&mut self) -> Result<bool, JsError> {
         if self.finished {
-            return Err(AxError::from(
-                "Cannot advance after execution has already finished",
-            ));
+            return Err(
+                AxError::from("Cannot advance after execution has already finished").into(),
+            );
         }
 
         // Fetch the next instruction
@@ -44,7 +45,7 @@ impl Axecutor {
 
         let hooks = self.mnemonic_hooks(mnem);
         if let Some(ref h) = hooks {
-            h.run_before(self, mnem)?;
+            h.run_before(self, mnem).await?;
         }
 
         self.switch_instruction_mnemonic(instr)?;
@@ -55,14 +56,14 @@ impl Axecutor {
         }
 
         if let Some(ref h) = hooks {
-            h.run_after(self, mnem)?;
+            h.run_after(self, mnem).await?;
         }
 
         Ok(!self.finished)
     }
 
-    pub fn execute(&mut self) -> Result<(), AxError> {
-        while self.step()? {}
+    pub async fn execute(&mut self) -> Result<(), JsError> {
+        while self.step().await? {}
         Ok(())
     }
 }

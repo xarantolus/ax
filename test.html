@@ -55,7 +55,7 @@
 
 		console.log(ex.toString());
 
-		while (ex.step()) {
+		while (await ex.step()) {
 			console.log(ex);
 			console.log(ex.toString());
 		}

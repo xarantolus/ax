@@ -48,7 +48,7 @@ def index_of_first(lst, pred):
 
 
 # read_mnemonics reads all mnemonic names from the iced-x86 crate
-def read_mnemonics():
+def read_mnemonics(with_codes: bool) -> List[str] | List:
     mnemonic_rs_path = os.path.join(iced_package_dir, "mnemonic.rs")
     with open(mnemonic_rs_path, "r", encoding='utf8') as f:
         mnemonic_rs = f.readlines()
@@ -60,11 +60,17 @@ def read_mnemonics():
     end_idx = index_of_first(mnemonic_rs, lambda line: line.startswith("}"))
     mnemonic_rs = mnemonic_rs[:end_idx]
 
-    mnemonics = map(lambda line: line.strip().split(
-        ",")[0].split("=")[0].strip(), mnemonic_rs)
+    if with_codes is True:
+        mnemonics = map(lambda line: line.strip().split(",")[0].split("="), mnemonic_rs)
+        mnemonics = filter(lambda mnemonic: not (mnemonic)[0].startswith("//"), mnemonics)
+        mnemonics = filter(lambda line: len(line) == 2, mnemonics)
+        mnemonics = list(map(lambda line: (line[0].strip(), int(line[1].strip())), mnemonics))
+    else:
+        mnemonics = map(lambda line: line.strip().split(
+            ",")[0].split("=")[0].strip(), mnemonic_rs)
 
-    mnemonics = filter(
-        lambda mnemonic: not mnemonic.startswith("//"), mnemonics)
+        mnemonics = filter(
+            lambda mnemonic: not mnemonic.startswith("//"), mnemonics)
 
     return list(mnemonics)
 
@@ -135,7 +141,7 @@ def read_code() -> List[Instruction]:
 
 
 available_codes = read_code()
-mnemonics = read_mnemonics()
+mnemonics = read_mnemonics(False)
 
 
 def generate_mnemonic_text(instruction_codes: List[Instruction], mnemonic: str):
@@ -195,60 +201,69 @@ mod tests {
     return code
 
 def generate_mnemonic_file(mnemonic: str):
-	has_underscore = mnemonic.endswith("_")
-	mnemonic = mnemonic.lower().strip("_")
-	# find mnemonic from mnemonics string list
-	normalized_mnemonic_idx = index_of_first(mnemonics, lambda m: m.lower() == mnemonic)
+    has_underscore = mnemonic.endswith("_")
+    mnemonic = mnemonic.lower().strip("_")
+    # find mnemonic from mnemonics string list
+    normalized_mnemonic_idx = index_of_first(mnemonics, lambda m: m.lower() == mnemonic)
 
-	codes = list(filter(lambda instr: instr.enum_name.lower().startswith(mnemonic + ("_" if has_underscore else '')), available_codes))
-	if len(codes) == 0:
-		print(f"Warning: no instructions for mnemonic {mnemonic}")
-		return
+    codes = list(filter(lambda instr: instr.enum_name.lower().startswith(mnemonic + ("_" if has_underscore else '')), available_codes))
+    if len(codes) == 0:
+        print(f"Warning: no instructions for mnemonic {mnemonic}")
+        return
 
-	normalized = mnemonics[normalized_mnemonic_idx]
-	text = generate_mnemonic_text(codes, normalized)
+    normalized = mnemonics[normalized_mnemonic_idx]
+    text = generate_mnemonic_text(codes, normalized)
 
-	# write to file at src/instructions/{mnemonic.lower()}.rs if not exists
-	mnemonic_path = os.path.join("src", "instructions", mnemonic.lower() + ".rs")
-	if os.path.exists(mnemonic_path):
-		print(f"Warning: file {mnemonic_path} already exists, not overwriting")
-		return
+    # write to file at src/instructions/{mnemonic.lower()}.rs if not exists
+    mnemonic_path = os.path.join("src", "instructions", mnemonic.lower() + ".rs")
+    if os.path.exists(mnemonic_path):
+        print(f"Warning: file {mnemonic_path} already exists, not overwriting")
+        return
 
-	with open(mnemonic_path, "w", encoding='utf8') as f:
-		f.write(text)
+    with open(mnemonic_path, "w", encoding='utf8') as f:
+        f.write(text)
 
-	# append pub mod mnemonic; to src/instructions/mod.rs if not already present
-	mod_path = os.path.join("src", "instructions", "mod.rs")
-	with open(mod_path, "r", encoding='utf8') as f:
-		mod_rs = f.readlines()
+    # append pub mod mnemonic; to src/instructions/mod.rs if not already present
+    mod_path = os.path.join("src", "instructions", "mod.rs")
+    with open(mod_path, "r", encoding='utf8') as f:
+        mod_rs = f.readlines()
 
-	if f"pub mod {normalized.lower()};" not in mod_rs:
-		mod_rs.append(f"pub mod {normalized.lower()};\r")
-		with open(mod_path, "w", encoding='utf8') as f:
-			f.writelines(mod_rs)
+    if f"pub mod {normalized.lower()};" not in mod_rs:
+        mod_rs.append(f"pub mod {normalized.lower()};\r")
+        with open(mod_path, "w", encoding='utf8') as f:
+            f.writelines(mod_rs)
 
-	# run rustfmt on files
-	subprocess.run(["rustfmt", mnemonic_path, mod_path])
+    # run rustfmt on files
+    subprocess.run(["rustfmt", mnemonic_path, mod_path])
 
 def generate_all_switch():
+    mnemonics = read_mnemonics(True)
+
     # Read list of files ending with ".rs" in src/instructions
     instructions_dir = os.path.join("src", "instructions")
     files = os.listdir(instructions_dir)
     files = list(filter(lambda f: f.endswith(".rs"), files))
 
+    mnems = list(filter(lambda m: m[0].lower()+".rs" in files, mnemonics))
+
     # Generate match statement
     code = f"""// THIS FILE IS AUTOGENERATED, DO NOT EDIT
-// You can regenerate it using `make switch` after creating a new instruction file with `python3 generate.py <mneumonic>`
+// You can regenerate it using `make generate` after creating a new instruction file with `python3 generate.py <mneumonic>`
 
-use iced_x86::{{Instruction, Mnemonic::*}};
 use super::{{axecutor::Axecutor, errors::AxError}};
+use iced_x86::{{
+    Instruction,
+    Mnemonic::{{self, *}},
+}};
+use wasm_bindgen::{{prelude::wasm_bindgen}};
 
 impl Axecutor {{
     pub fn switch_instruction_mnemonic(&mut self, i: Instruction) -> Result<(), AxError> {{
         match i.mnemonic() {{"""
 
-    for mnemonic in filter(lambda m: m.lower()+".rs" in files, mnemonics):
-        code += f"""            {mnemonic} => self.mnemonic_{mnemonic.lower()}(i),"""
+    for (mnemonic, num) in mnems:
+        code += f"""            {mnemonic} => self.mnemonic_{mnemonic.lower()}(i),
+"""
 
     code += f"""            _ => Err(AxError::from(format!(
                 "unimplemented mnemonic {{:?}}",
@@ -259,11 +274,41 @@ impl Axecutor {{
 }}
 """
 
+    code += """
+#[wasm_bindgen(js_name = Mnemonic)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum SupportedMnemonic {
+"""
+    for (mnemonic, num) in mnems:
+        code += f"    {mnemonic} = {num},\n"
 
-    # Write to file switch.rs
-    with open("src/instructions/switch.rs", "w", encoding='utf8') as f:
+    code += """}
+
+impl SupportedMnemonic {
+    pub fn name(&self) -> String {
+        format!("{:?}", self)
+    }
+}
+
+impl From<Mnemonic> for SupportedMnemonic {
+    fn from(mnemonic: Mnemonic) -> Self {
+        match mnemonic {
+"""
+
+    for (mnemonic, num) in mnems:
+        code += f"            {mnemonic} => SupportedMnemonic::{mnemonic},\n"
+
+    code += """            _ => panic!("unimplemented mnemonic {:?}", mnemonic),
+        }
+    }
+}
+"""
+
+
+    # Write to file generated.rs
+    with open("src/instructions/generated.rs", "w", encoding='utf8') as f:
         f.write(code)
-    subprocess.run(["rustfmt", "src/instructions/switch.rs"])
+    subprocess.run(["rustfmt", "src/instructions/generated.rs"])
 
 
 if __name__ == '__main__':
@@ -272,7 +317,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         mnemonics_to_generate = sys.argv[1]
 
-    if mnemonics_to_generate == "switch":
+    if mnemonics_to_generate == "generate":
         generate_all_switch()
         exit(0)
 
@@ -281,4 +326,4 @@ if __name__ == '__main__':
             generate_mnemonic_file(mnemonic)
     else:
         generate_mnemonic_file(mnemonics_to_generate)
-        print(f"Generated file for new mnemonic. To integrate this mnemonic into the project, run `make switch`")
+        print(f"Generated file for new mnemonic. To integrate this mnemonic into the project, run `make generate`")

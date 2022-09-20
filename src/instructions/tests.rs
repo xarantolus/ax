@@ -1,4 +1,5 @@
 #[macro_export]
+#[cfg(test)]
 macro_rules! ax_test {
     [$test_name:ident; $($bytes:expr),*; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
         // Call the other macro with empty setup code
@@ -7,34 +8,41 @@ macro_rules! ax_test {
     [$test_name:ident; $($bytes:expr),*; $setup:expr; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
 		#[test]
 		fn $test_name () {
-            use rand::Rng;
+            smol::block_on(async {
+                use rand::Rng;
+                use crate::instructions::errors::AxError;
 
-			let bytes = &[$($bytes),*];
+                let bytes = &[$($bytes),*];
 
-            // Always use a random rip
-            let random_rip = rand::thread_rng().gen::<u64>() & 0x0000_ffff_ffff_ffff;
+                // Always use a random rip
+                let random_rip = rand::thread_rng().gen::<u64>() & 0x0000_ffff_ffff_ffff;
 
-            let mut ax = Axecutor::new(bytes, random_rip, random_rip).expect("Failed to create axecutor");
+                let mut ax = Axecutor::new(bytes, random_rip, random_rip).expect("Failed to create axecutor");
 
-            $setup(&mut ax);
+                $setup(&mut ax);
 
-            ax.execute().expect("Error during code execution");
-            let flags = ax.state.rflags;
+                match ax.execute().await {
+                    Err(e) => panic!("Failed to execute: {:?}", AxError::from(e)),
+                    _ => {}
+                };
 
-            $asserts(ax);
+                let flags = ax.state.rflags;
 
-            // Check flags
-            use crate::instructions::flags::*;
-            for flag in FLAG_LIST {
-                // If the flag should be set, it must be != 0
-                if $flags_to_set & flag != 0 {
-                    assert!(flags & flag != 0, "FLAG_{} should be set, but wasn't", FLAG_TO_NAMES.get(&flag).expect("Flag not found"));
+                $asserts(ax);
+
+                // Check flags
+                use crate::instructions::flags::*;
+                for flag in FLAG_LIST {
+                    // If the flag should be set, it must be != 0
+                    if $flags_to_set & flag != 0 {
+                        assert!(flags & flag != 0, "FLAG_{} should be set, but wasn't", FLAG_TO_NAMES.get(&flag).expect("Flag not found"));
+                    }
+
+                    if $flags_not_to_set & flag != 0 {
+                        assert!(flags & flag == 0, "FLAG_{} should not be set, but was", FLAG_TO_NAMES.get(&flag).expect("Flag not found"));
+                    }
                 }
-
-                if $flags_not_to_set & flag != 0 {
-                    assert!(flags & flag == 0, "FLAG_{} should not be set, but was", FLAG_TO_NAMES.get(&flag).expect("Flag not found"));
-                }
-            }
+            });
 		}
     };
     [$test_name:ident; $($bytes:expr),*; $asserts:expr] => {
@@ -48,6 +56,7 @@ macro_rules! ax_test {
 }
 
 #[macro_export]
+#[cfg(test)]
 macro_rules! assert_reg_value {
     [b; $axecutor:expr; $reg:expr; $value:expr] => {
         let wrap = RegisterWrapper::from($reg);
@@ -92,6 +101,7 @@ macro_rules! assert_reg_value {
 }
 
 #[macro_export]
+#[cfg(test)]
 macro_rules! write_reg_value {
     (b; $axecutor:expr; $reg:expr; $value:expr) => {
         let wrap = RegisterWrapper::from($reg);

@@ -1,13 +1,14 @@
 extern crate lazy_static;
 use js_sys::{self, Array, Function};
 
-use std::{collections::HashMap, fmt::Formatter, hash::Hash};
+use std::{collections::HashMap, fmt::Formatter};
 use wasm_bindgen::{prelude::*, JsCast};
 use wasm_bindgen_futures::JsFuture;
 
-use iced_x86::Mnemonic;
 use std::fmt::Debug;
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
+
+use crate::instructions::generated::SupportedMnemonic;
 
 use super::{axecutor::Axecutor, errors::AxError};
 
@@ -25,19 +26,28 @@ impl Hook {
         }
     }
 
-    pub fn run_before(&self, ax: &mut Axecutor, mnemonic: MnemonicWrapper) -> Result<(), AxError> {
-        // for js_fn in self.before {
+    pub async fn run_before(
+        &self,
+        ax: &mut Axecutor,
+        mnemonic: SupportedMnemonic,
+    ) -> Result<(), AxError> {
+        for js_fn in &self.before {
+            run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
+        }
 
-        // }
-
-        todo!("run_before");
+        Ok(())
     }
 
-    pub fn run_after(&self, ax: &mut Axecutor, mnemonic: MnemonicWrapper) -> Result<(), AxError> {
-        // for js_fn in self.after {
-        // }
+    pub async fn run_after(
+        &self,
+        ax: &mut Axecutor,
+        mnemonic: SupportedMnemonic,
+    ) -> Result<(), AxError> {
+        for js_fn in &self.after {
+            run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
+        }
 
-        todo!("run_after");
+        Ok(())
     }
 }
 
@@ -52,7 +62,7 @@ impl Debug for Hook {
 
 #[derive(Debug)]
 pub(crate) struct HookProcessor {
-    pub(crate) mnemonic_hooks: HashMap<Mnemonic, Hook>,
+    pub(crate) mnemonic_hooks: HashMap<SupportedMnemonic, Hook>,
 }
 
 impl HookProcessor {
@@ -63,50 +73,30 @@ impl HookProcessor {
     }
 }
 
-#[wasm_bindgen(js_name = Mnemonic)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct MnemonicWrapper(Mnemonic);
-
-impl From<Mnemonic> for MnemonicWrapper {
-    fn from(register: Mnemonic) -> Self {
-        MnemonicWrapper(register)
-    }
-}
-impl From<&Mnemonic> for MnemonicWrapper {
-    fn from(register: &Mnemonic) -> Self {
-        MnemonicWrapper(*register)
-    }
-}
-
-#[wasm_bindgen]
-impl MnemonicWrapper {
-    pub fn name(&self) -> String {
-        format!("{:?}", self.0)
-    }
-}
-
 #[wasm_bindgen]
 impl Axecutor {
-    pub fn hook_before_mnemonic(&mut self, mnemonic: MnemonicWrapper, cb: JsValue) {
+    pub fn hook_before_mnemonic(&mut self, mnemonic: SupportedMnemonic, cb: JsValue) {
         self.hooks
             .mnemonic_hooks
-            .entry(mnemonic.0)
+            .entry(mnemonic)
             .or_insert_with(Hook::new)
             .before
             .push(cb);
     }
 
-    pub fn hook_after_mnemonic(&mut self, mnemonic: MnemonicWrapper, cb: JsValue) {
+    pub fn hook_after_mnemonic(&mut self, mnemonic: SupportedMnemonic, cb: JsValue) {
         self.hooks
             .mnemonic_hooks
-            .entry(mnemonic.0)
+            .entry(mnemonic)
             .or_insert_with(Hook::new)
             .after
             .push(cb);
     }
+}
 
-    pub(crate) fn mnemonic_hooks(&self, mnemonic: MnemonicWrapper) -> Option<Hook> {
-        self.hooks.mnemonic_hooks.get(&mnemonic.0).cloned()
+impl Axecutor {
+    pub(crate) fn mnemonic_hooks(&self, mnemonic: SupportedMnemonic) -> Option<Hook> {
+        self.hooks.mnemonic_hooks.get(&mnemonic).cloned()
     }
 }
 
@@ -114,25 +104,26 @@ impl Axecutor {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_hook_before() {
-        let mut ax = Axecutor::new(
-            // mov rax, 5
-            &[0x48, 0xc7, 0xc0, 0x5, 0x0, 0x0, 0x0],
-            0x1000,
-            0x1000,
-        )
-        .expect("failed to create axecutor");
-        let mut called = false;
-        // ax.hook_before_mnemonic(Mnemonic::Mov.into(), |_, _| {
-        //     called = true;
-        //     Ok(())
-        // });
+    // TODO: Test
+    // #[test]
+    // fn test_hook_before() {
+    //     let mut ax = Axecutor::new(
+    //         // mov rax, 5
+    //         &[0x48, 0xc7, 0xc0, 0x5, 0x0, 0x0, 0x0],
+    //         0x1000,
+    //         0x1000,
+    //     )
+    //     .expect("failed to create axecutor");
+    //     let mut called = false;
+    //     // ax.hook_before_mnemonic(Mnemonic::Mov.into(), |_, _| {
+    //     //     called = true;
+    //     //     Ok(())
+    //     // });
 
-        ax.execute().expect("failed to execute");
+    //     ax.execute().await.expect("failed to execute");
 
-        assert!(called, "hook_before_mnemonic was not called");
-    }
+    //     assert!(called, "hook_before_mnemonic was not called");
+    // }
 }
 
 async fn run_promise(promise_arg: JsValue) -> Result<JsValue, JsValue> {
