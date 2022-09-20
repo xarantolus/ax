@@ -10,6 +10,9 @@ use super::hooks::HookProcessor;
 use super::memory::MemoryArea;
 use super::registers::{randomized_register_set, SupportedRegister};
 
+extern crate console_error_panic_hook;
+use std::panic;
+
 #[wasm_bindgen]
 #[derive(Debug)]
 pub struct Axecutor {
@@ -97,6 +100,9 @@ impl MachineState {
 impl Axecutor {
     #[wasm_bindgen(constructor)]
     pub fn new(code: &[u8], code_start_addr: u64, initial_rip: u64) -> Result<Axecutor, AxError> {
+        // In case of panics, we want more info in console.error
+        console_error_panic_hook::set_once();
+
         let instructions = decode_all(code, code_start_addr)?;
 
         let mut rti = HashMap::new();

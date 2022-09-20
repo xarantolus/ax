@@ -175,7 +175,6 @@ macro_rules! set_flags {
 	};
 }
 
-#[wasm_bindgen]
 impl Axecutor {
     pub fn set_flags_u8(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u8) {
         set_flags!(u8; 8)(self, flags_to_set, flags_to_clear, result);

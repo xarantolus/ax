@@ -57,6 +57,19 @@ macro_rules! ax_test {
 
 #[macro_export]
 #[cfg(test)]
+macro_rules! test_async {
+    ($test_name:ident; $test:expr) => {
+        #[test]
+        fn $test_name () {
+            smol::block_on(async {
+                $test.await;
+            });
+        }
+    };
+}
+
+#[macro_export]
+#[cfg(test)]
 macro_rules! assert_reg_value {
     [b; $axecutor:expr; $reg:expr; $value:expr] => {
         let wrap = SupportedRegister::from($reg);

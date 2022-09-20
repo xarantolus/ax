@@ -1,5 +1,5 @@
-use core::panic;
-use std::fmt;
+ use core::panic;
+use std::fmt::{self, format};
 
 use wasm_bindgen::{JsError, JsValue};
 
@@ -32,6 +32,14 @@ impl From<JsError> for AxError {
         }
     }
 }
+impl From<JsValue> for AxError {
+    fn from(err: JsValue) -> Self {
+        Self {
+            message: None,
+            js: Some(err),
+        }
+    }
+}
 
 impl From<AxError> for JsValue {
     fn from(err: AxError) -> Self {
@@ -48,7 +56,7 @@ impl From<AxError> for JsValue {
 impl From<AxError> for JsError {
     fn from(err: AxError) -> Self {
         JsError::new(if let Some(v) = err.js {
-            v.as_string().unwrap_or("Only strings are supported for JS error values, so you get this message because a non-string message was thrown".to_string())
+            format!("{:?}", v)
         } else if let Some(m) = err.message {
             m
         } else {
@@ -66,7 +74,7 @@ impl fmt::Display for AxError {
             if let Some(ref m) = self.message {
                 m.to_owned()
             } else if let Some(ref v) = self.js {
-                v.as_string().unwrap_or("Only strings are supported for JS error values, so you get this message because a non-string message was thrown".to_string())
+                format!("{:?}", v)
             } else {
                 panic!("AxError is empty")
             }
@@ -83,7 +91,7 @@ impl fmt::Debug for AxError {
             if let Some(ref m) = self.message {
                 m.to_owned()
             } else if let Some(ref v) = self.js {
-                v.as_string().unwrap_or("Only strings are supported for JS error values, so you get this message because a non-string message was thrown".to_string())
+                format!("{:?}", v)
             } else {
                 panic!("AxError is empty")
             }

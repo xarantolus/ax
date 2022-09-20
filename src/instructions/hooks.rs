@@ -33,7 +33,11 @@ impl Hook {
     ) -> Result<(), AxError> {
         for js_fn in &self.before {
             // TODO: Handle errors, the function stopping the emulator etc
-            run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
+            let res =
+                run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
+            if let Err(e) = res {
+                return Err(e.into());
+            }
         }
 
         Ok(())
@@ -46,7 +50,11 @@ impl Hook {
     ) -> Result<(), AxError> {
         for js_fn in &self.after {
             // TODO: Handle errors, the function stopping the emulator etc
-            run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
+            let res =
+                run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
+            if let Err(e) = res {
+                return Err(e.into());
+            }
         }
 
         Ok(())
@@ -102,31 +110,6 @@ impl Axecutor {
     }
 }
 
-#[cfg(test)]
-mod tests {
-
-    // TODO: Test
-    // #[test]
-    // fn test_hook_before() {
-    //     let mut ax = Axecutor::new(
-    //         // mov rax, 5
-    //         &[0x48, 0xc7, 0xc0, 0x5, 0x0, 0x0, 0x0],
-    //         0x1000,
-    //         0x1000,
-    //     )
-    //     .expect("failed to create axecutor");
-    //     let mut called = false;
-    //     // ax.hook_before_mnemonic(Mnemonic::Mov.into(), |_, _| {
-    //     //     called = true;
-    //     //     Ok(())
-    //     // });
-
-    //     ax.execute().await.expect("failed to execute");
-
-    //     assert!(called, "hook_before_mnemonic was not called");
-    // }
-}
-
 async fn run_promise(promise_arg: JsValue) -> Result<JsValue, JsValue> {
     let promise = js_sys::Promise::from(promise_arg);
     let future = JsFuture::from(promise);
@@ -134,7 +117,7 @@ async fn run_promise(promise_arg: JsValue) -> Result<JsValue, JsValue> {
 }
 
 fn run_function(
-    _ax: &mut Axecutor,
+    ax: &mut Axecutor,
     function_arg: JsValue,
     arguments: Vec<JsValue>,
 ) -> Result<JsValue, JsValue> {
@@ -143,6 +126,8 @@ fn run_function(
         args.push(&arg);
     }
     let function = function_arg.dyn_into::<Function>()?;
+
+    // TODO: https://github.com/rustwasm/wasm-bindgen/issues/2422
     function.apply(&JsValue::NULL, &args)
 }
 
