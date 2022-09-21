@@ -4,6 +4,7 @@ use iced_x86::{Register, Register::*};
 
 use lazy_static::lazy_static;
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -106,7 +107,7 @@ pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<SupportedRegist
 
     for register in registers {
         let value = rng.gen::<u64>();
-        map.insert(SupportedRegister::from(register), value);
+        map.insert(SupportedRegister::from(register), value & 0xffff_ffff);
     }
 
     map.insert(SupportedRegister::from(Register::RIP), rip_value);
@@ -115,7 +116,7 @@ pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<SupportedRegist
 }
 
 #[wasm_bindgen(js_name = Register)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SupportedRegister {
     // 64-bit registers
     RIP,
@@ -362,7 +363,7 @@ impl SupportedRegister {
 impl Axecutor {
     pub fn reg_write_8(&mut self, reg: SupportedRegister, value: u8) {
         let r: Register = reg.into();
-        assert!(r.is_gpr8());
+        assert!(r.is_gpr8(), "{:?} is not a valid 8-bit register", r);
 
         // Map 8-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -382,7 +383,7 @@ impl Axecutor {
 
     pub fn reg_write_16(&mut self, reg: SupportedRegister, value: u16) {
         let r: Register = reg.into();
-        assert!(r.is_gpr16());
+        assert!(r.is_gpr16(), "{:?} is not a valid 16-bit register", r);
 
         // Map 16-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -395,7 +396,7 @@ impl Axecutor {
 
     pub fn reg_write_32(&mut self, reg: SupportedRegister, value: u32) {
         let r: Register = reg.into();
-        assert!(r.is_gpr32());
+        assert!(r.is_gpr32(), "{:?} is not a valid 32-bit register", r);
 
         // Map 32-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -407,14 +408,14 @@ impl Axecutor {
 
     pub fn reg_write_64(&mut self, reg: SupportedRegister, value: u64) {
         let r: Register = reg.into();
-        assert!(r.is_gpr64() || r.is_ip());
+        assert!(r.is_gpr64() || r.is_ip(), "{:?} is not a valid 64-bit register", r);
 
         self.state.registers.insert(reg, value);
     }
 
     pub fn reg_read_8(&self, reg: SupportedRegister) -> u8 {
         let r: Register = reg.into();
-        assert!(r.is_gpr8());
+        assert!(r.is_gpr8(), "{:?} is not a valid 8-bit register", r);
 
         // Map 8-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -434,7 +435,7 @@ impl Axecutor {
 
     pub fn reg_read_16(&self, reg: SupportedRegister) -> u16 {
         let r: Register = reg.into();
-        assert!(r.is_gpr16());
+        assert!(r.is_gpr16(), "{:?} is not a valid 16-bit register", r);
 
         // Map 16-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -447,7 +448,7 @@ impl Axecutor {
 
     pub fn reg_read_32(&self, reg: SupportedRegister) -> u32 {
         let r: Register = reg.into();
-        assert!(r.is_gpr32());
+        assert!(r.is_gpr32(), "{:?} is not a valid 32-bit register", r);
 
         // Map 32-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -460,7 +461,7 @@ impl Axecutor {
 
     pub fn reg_read_64(&self, reg: SupportedRegister) -> u64 {
         let r: Register = reg.into();
-        assert!(r.is_gpr64() || r.is_ip());
+        assert!(r.is_gpr64() || r.is_ip(), "{:?} is not a valid 64-bit register", r);
 
         let reg_value = self.state.registers.get(&reg).unwrap().clone();
         return reg_value;

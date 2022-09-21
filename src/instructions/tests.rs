@@ -60,7 +60,7 @@ macro_rules! ax_test {
 macro_rules! test_async {
     ($test_name:ident; $test:expr) => {
         #[test]
-        fn $test_name () {
+        fn $test_name() {
             smol::block_on(async {
                 $test.await;
             });

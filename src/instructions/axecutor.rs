@@ -1,6 +1,8 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use iced_x86::{Decoder, DecoderOptions, Instruction};
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use crate::instructions::flags::FLAG_TO_NAMES;
@@ -14,7 +16,7 @@ extern crate console_error_panic_hook;
 use std::panic;
 
 #[wasm_bindgen]
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Axecutor {
     pub(crate) finished: bool,
 
@@ -23,11 +25,12 @@ pub struct Axecutor {
 
     pub(crate) state: MachineState,
 
+    #[serde(skip)]
     pub(crate) hooks: HookProcessor,
 }
 
 #[wasm_bindgen]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct MachineState {
     // TODO: memory could better be modeled with some kind of interval tree that allows storing additional data with each interval
     pub(crate) memory: Vec<MemoryArea>,
@@ -114,7 +117,7 @@ impl Axecutor {
             finished: false,
             instructions,
             rip_to_index: rti,
-            hooks: HookProcessor::new(),
+            hooks: HookProcessor::default(),
             state: MachineState {
                 memory: Vec::new(),
                 registers: randomized_register_set(initial_rip),
@@ -154,6 +157,19 @@ impl Axecutor {
         }
 
         result
+    }
+
+    pub(crate) fn as_js_value(&self) -> Result<JsValue, JsValue> {
+        let s = serde_wasm_bindgen::Serializer::new().serialize_large_number_types_as_bigints(true);
+
+        self.state
+            .serialize(&s)
+            .map_err(|e| JsValue::from_str(&format!("serializing Axecutor: {:?}", e)))
+    }
+
+    pub(crate) fn from_js_value(value: JsValue) -> Result<Self, JsValue> {
+        serde_wasm_bindgen::from_value(value)
+            .map_err(|e| JsValue::from_str(&format!("deserializing Axecutor: {}", e.to_string())))
     }
 }
 

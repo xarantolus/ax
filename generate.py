@@ -256,6 +256,7 @@ use iced_x86::{{
     Mnemonic::{{self, *}},
 }};
 use wasm_bindgen::{{prelude::wasm_bindgen}};
+use serde::{{Serialize, Deserialize}};
 
 impl Axecutor {{
     pub fn switch_instruction_mnemonic(&mut self, i: Instruction) -> Result<(), AxError> {{
@@ -276,7 +277,7 @@ impl Axecutor {{
 
     code += """
 #[wasm_bindgen(js_name = Mnemonic)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SupportedMnemonic {
 """
     for (mnemonic, num) in mnems:

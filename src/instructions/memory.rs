@@ -1,8 +1,11 @@
+use serde::{Serialize, Deserialize};
+use wasm_bindgen::prelude::wasm_bindgen;
+
 use super::{axecutor::Axecutor, errors::AxError};
 
 use std::convert::TryInto;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct MemoryArea {
     start: u64,
     length: u64,
@@ -41,6 +44,7 @@ impl MemoryArea {
     }
 }
 
+#[wasm_bindgen]
 impl Axecutor {
     // TODO: Currently cannot read consecutive sections of memory
     pub fn mem_read_bytes(&self, address: u64, length: u64) -> Result<Vec<u8>, AxError> {

@@ -8,3 +8,7 @@
 * Most instructions aren't implemented, especially
   * Anything with SSE registers
   * Anything I found too legacy
+
+
+### Ideas
+* Look into parsing ELF files directly using something like https://crates.io/crates/object

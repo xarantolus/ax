@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-wasm-bindgen = "0.2.63"
+wasm-bindgen = {version = "0.2.63", features = ["serde-serialize"]}
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
@@ -28,13 +28,14 @@ wasm-bindgen-futures = "0.4.33"
 lazy_static = "1.4.0"
 rand = { version = "0.7.3", features = ["wasm-bindgen"] }
 serde = { version = "1.0", features = ["derive"] }
+serde_derive = "1.0.144"
 serde-wasm-bindgen = "0.4"
 
 [dependencies.iced-x86]
 version = "1.17.0"
 default-features = false
 # See below for all features
-features = ["std", "decoder", "nasm", "instr_info"]
+features = ["std", "decoder", "nasm", "instr_info", "serde"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.13"

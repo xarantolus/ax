@@ -1,5 +1,6 @@
 extern crate lazy_static;
 use js_sys::{self, Array, Function};
+use serde::{Deserialize, Serialize};
 
 use std::{collections::HashMap, fmt::Formatter};
 use wasm_bindgen::{prelude::*, JsCast};
@@ -14,8 +15,8 @@ use super::{axecutor::Axecutor, errors::AxError};
 
 #[derive(Clone)]
 pub(crate) struct Hook {
-    before: Vec<JsValue>,
-    after: Vec<JsValue>,
+    before: Vec<js_sys::Function>,
+    after: Vec<js_sys::Function>,
 }
 
 impl Hook {
@@ -32,7 +33,7 @@ impl Hook {
         mnemonic: SupportedMnemonic,
     ) -> Result<(), AxError> {
         for js_fn in &self.before {
-            // TODO: Handle errors, the function stopping the emulator etc
+            // TODO: Handle the function stopping the emulator etc
             let res =
                 run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
             if let Err(e) = res {
@@ -49,7 +50,7 @@ impl Hook {
         mnemonic: SupportedMnemonic,
     ) -> Result<(), AxError> {
         for js_fn in &self.after {
-            // TODO: Handle errors, the function stopping the emulator etc
+            // TODO: Handle the function stopping the emulator etc
             let res =
                 run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
             if let Err(e) = res {
@@ -70,13 +71,13 @@ impl Debug for Hook {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Default)]
 pub(crate) struct HookProcessor {
     pub(crate) mnemonic_hooks: HashMap<SupportedMnemonic, Hook>,
 }
 
 impl HookProcessor {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn default() -> Self {
         Self {
             mnemonic_hooks: HashMap::new(),
         }
@@ -85,22 +86,53 @@ impl HookProcessor {
 
 #[wasm_bindgen]
 impl Axecutor {
-    pub fn hook_before_mnemonic(&mut self, mnemonic: SupportedMnemonic, cb: JsValue) {
-        self.hooks
-            .mnemonic_hooks
-            .entry(mnemonic)
-            .or_insert_with(Hook::new)
-            .before
-            .push(cb);
+    pub fn hook_before_mnemonic(
+        &mut self,
+        mnemonic: SupportedMnemonic,
+        cb: JsValue,
+    ) -> Result<(), JsError> {
+        if cb.has_type::<js_sys::Function>() {
+            let function = cb.dyn_into::<Function>().map_err(|_| {
+                JsError::new("The provided callback is not a function. Please provide a function.")
+            })?;
+
+            self.hooks
+                .mnemonic_hooks
+                .entry(mnemonic)
+                .or_insert_with(Hook::new)
+                .before
+                .push(function);
+            Ok(())
+        } else {
+            Err(JsError::new(&*format!(
+                "hook_before_mnemonic: expected function or async function argument, but got {:?}",
+                cb
+            )))
+        }
     }
 
-    pub fn hook_after_mnemonic(&mut self, mnemonic: SupportedMnemonic, cb: JsValue) {
-        self.hooks
-            .mnemonic_hooks
-            .entry(mnemonic)
-            .or_insert_with(Hook::new)
-            .after
-            .push(cb);
+    pub fn hook_after_mnemonic(
+        &mut self,
+        mnemonic: SupportedMnemonic,
+        cb: JsValue,
+    ) -> Result<(), JsError> {
+        if cb.has_type::<js_sys::Function>() {
+            let function = cb.dyn_into::<Function>().map_err(|_| {
+                JsError::new("The provided callback is not a function. Please provide a function.")
+            })?;
+            self.hooks
+                .mnemonic_hooks
+                .entry(mnemonic)
+                .or_insert_with(Hook::new)
+                .after
+                .push(function);
+            Ok(())
+        } else {
+            Err(JsError::new(&*format!(
+                "hook_after_mnemonic: expected function or async function argument, but got {:?}",
+                cb
+            )))
+        }
     }
 }
 
@@ -118,37 +150,43 @@ async fn run_promise(promise_arg: JsValue) -> Result<JsValue, JsValue> {
 
 fn run_function(
     ax: &mut Axecutor,
-    function_arg: JsValue,
+    function: js_sys::Function,
     arguments: Vec<JsValue>,
 ) -> Result<JsValue, JsValue> {
     let args = Array::new();
+
+    let old_hooks = ax.hooks.clone();
+
+    let clone = ax.clone();
+
+    // This seems to be the only way this works
+    args.push(&JsValue::from(clone));
+
     for arg in arguments {
         args.push(&arg);
     }
-    let function = function_arg.dyn_into::<Function>()?;
+    let result = function.apply(&JsValue::NULL, &args)?;
 
-    // TODO: https://github.com/rustwasm/wasm-bindgen/issues/2422
-    function.apply(&JsValue::NULL, &args)
+    // Make sure register state etc. is updated in original Axecutor
+    // ax.clone_from(&Axecutor::from_js_value(args.get(0))?);
+
+    // Since hooks skip serializations, we need to restore them
+    ax.hooks = old_hooks;
+
+    Ok(result)
 }
 
 pub(crate) async fn run_any_function(
     ax: &mut Axecutor,
-    function_or_promise: JsValue,
+    function_or_promise: js_sys::Function,
     arguments: Vec<JsValue>,
 ) -> Result<JsValue, JsValue> {
-    if function_or_promise.has_type::<js_sys::Function>() {
-        let result = run_function(ax, function_or_promise, arguments)?;
+    let result = run_function(ax, function_or_promise, arguments)?;
 
-        // Handle functions defined like "async function(args) {}"
-        if result.has_type::<js_sys::Promise>() {
-            return run_promise(result).await;
-        } else {
-            Ok(result)
-        }
+    // Handle functions defined like "async function(args) {}"
+    if result.has_type::<js_sys::Promise>() {
+        return run_promise(result).await;
     } else {
-        Err(JsValue::from(JsError::new(&*format!(
-            "run_any_function: expected function or async function argument, but got {:?}",
-            function_or_promise
-        ))))
+        Ok(result)
     }
 }

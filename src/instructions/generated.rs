@@ -6,6 +6,7 @@ use iced_x86::{
     Instruction,
     Mnemonic::{self, *},
 };
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 impl Axecutor {
@@ -32,7 +33,7 @@ impl Axecutor {
 }
 
 #[wasm_bindgen(js_name = Mnemonic)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SupportedMnemonic {
     Add = 7,
     Cmp = 93,
