@@ -181,10 +181,9 @@ macro_rules! jmp_test {
 
                 assert_reg_value!(q; ax; RIP; $initial_rip);
 
-                match ax.execute().await {
-                    Err(e) => panic!("Failed to execute: {:?}", AxError::from(e)),
-                    _ => {}
-                };
+                if let Err(e) = ax.execute().await {
+                    panic!("Failed to execute: {:?}", AxError::from(e));
+                }
 
                 assert_reg_value!(q; ax; RIP; $final_rip);
 

@@ -153,6 +153,18 @@ class JumpTestCase:
     ({flags_to_str(self.set_flags, self.flags_not_set)})
 ];"""
 
+    def no_setup_only_asserts(self):
+        return f"""jmp_test![{test_id(self.initial_code + "_" + self.final_code, self.set_flags)};
+    start: {hex(self.initial_rip)}; end: {hex(self.final_rip)};
+    {', '.join(self.initial_bytes)}; // {self.initial_code}
+    {self.padding}; // {self.padding} bytes of 0x90 (nop) as padding
+    {', '.join(self.final_bytes)}; // {self.final_code}
+    |a: Axecutor| {{
+        todo!("Write more assertions. RIP and flags are already covered");
+    }};
+    ({flags_to_str(self.set_flags, self.flags_not_set)})
+];"""
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
@@ -177,10 +189,12 @@ if __name__ == '__main__':
     testcase = JumpTestCase.create(code_start, padding, code_end)
 
     # ask user which variant they want
-    setup = input("Include setup/assert code? y/N")
+    setup = input("Include setup+assert, only asserts or only rip+flag test code? [s/a/r] ").strip().lower()
 
-    if setup.lower() == "y":
+    if setup.lower() == "s":
         tc_str = testcase.with_setup_asserts()
+    elif setup.lower() == "a":
+        tc_str = testcase.no_setup_only_asserts()
     else:
         tc_str = testcase.no_setup_asserts()
 
