@@ -17,14 +17,18 @@ await (async function x() {
 
     console.log("Before mnemonic", ax, mnemonic);
     console.log(ax.reg_read_64(Register.RAX));
+
+    return ax.commit();
   });
 
   ex.hook_after_mnemonic(Mnemonic.Sub, (ax: Axecutor, mnemonic: number) => {
     console.log("After mnemonic", ax, mnemonic);
     console.log(ax.reg_read_64(Register.RAX));
 
-    ax.mem_write_64(0x1n, 0x1n);
+    ax.reg_write_64(Register.RAX, 15n);
     console.log("wrote to rax");
+
+    return ax.commit();
   });
 
   console.log(ex.toString());

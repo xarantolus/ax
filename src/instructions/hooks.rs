@@ -31,15 +31,18 @@ impl Hook {
         ax: &mut Axecutor,
         mnemonic: SupportedMnemonic,
     ) -> Result<(), AxError> {
+        ax.hooks.running = true;
+
         for js_fn in &self.before {
             // TODO: Handle the function stopping the emulator etc
-            let res =
-                run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
+            let res = run_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
             if let Err(e) = res {
+                ax.hooks.running = false;
                 return Err(e.into());
             }
         }
 
+        ax.hooks.running = false;
         Ok(())
     }
 
@@ -48,14 +51,16 @@ impl Hook {
         ax: &mut Axecutor,
         mnemonic: SupportedMnemonic,
     ) -> Result<(), AxError> {
+        ax.hooks.running = true;
         for js_fn in &self.after {
             // TODO: Handle the function stopping the emulator etc
-            let res =
-                run_any_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
+            let res = run_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
             if let Err(e) = res {
+                ax.hooks.running = false;
                 return Err(e.into());
             }
         }
+        ax.hooks.running = false;
 
         Ok(())
     }
@@ -73,12 +78,15 @@ impl Debug for Hook {
 #[derive(Debug, Clone, Default)]
 pub(crate) struct HookProcessor {
     pub(crate) mnemonic_hooks: HashMap<SupportedMnemonic, Hook>,
+
+    pub(crate) running: bool,
 }
 
 impl HookProcessor {
     pub(crate) fn default() -> Self {
         Self {
             mnemonic_hooks: HashMap::new(),
+            running: false,
         }
     }
 }
@@ -90,6 +98,12 @@ impl Axecutor {
         mnemonic: SupportedMnemonic,
         cb: JsValue,
     ) -> Result<(), JsError> {
+        if self.hooks.running {
+            return Err(JsError::new(
+                "Cannot add hooks while another hook is running",
+            ));
+        }
+
         if cb.has_type::<js_sys::Function>() {
             let function = cb.dyn_into::<Function>().map_err(|_| {
                 JsError::new("The provided callback is not a function. Please provide a function.")
@@ -115,6 +129,12 @@ impl Axecutor {
         mnemonic: SupportedMnemonic,
         cb: JsValue,
     ) -> Result<(), JsError> {
+        if self.hooks.running {
+            return Err(JsError::new(
+                "Cannot add hooks while another hook is running",
+            ));
+        }
+
         if cb.has_type::<js_sys::Function>() {
             let function = cb.dyn_into::<Function>().map_err(|_| {
                 JsError::new("The provided callback is not a function. Please provide a function.")
@@ -147,14 +167,14 @@ async fn run_promise(promise_arg: JsValue) -> Result<JsValue, JsValue> {
     future.await
 }
 
-fn run_function(
+async fn run_function(
     ax: &mut Axecutor,
     function: js_sys::Function,
     arguments: Vec<JsValue>,
 ) -> Result<JsValue, JsValue> {
     let args = Array::new();
 
-    let old_hooks = ax.hooks.clone();
+    let _old_hooks = ax.hooks.clone();
 
     let clone = ax.clone();
 
@@ -164,28 +184,17 @@ fn run_function(
     for arg in arguments {
         args.push(&arg);
     }
-    let result = function.apply(&JsValue::NULL, &args)?;
 
-    // Make sure register state etc. is updated in original Axecutor
-    // ax.clone_from(&Axecutor::from_js_value(args.get(0))?);
+    let mut result = function.apply(&JsValue::NULL, &args)?;
 
-    // Since hooks skip serializations, we need to restore them
-    ax.hooks = old_hooks;
-
-    Ok(result)
-}
-
-pub(crate) async fn run_any_function(
-    ax: &mut Axecutor,
-    function_or_promise: js_sys::Function,
-    arguments: Vec<JsValue>,
-) -> Result<JsValue, JsValue> {
-    let result = run_function(ax, function_or_promise, arguments)?;
-
-    // Handle functions defined like "async function(args) {}"
+    // async funtions return promises
     if result.has_type::<js_sys::Promise>() {
-        return run_promise(result).await;
-    } else {
-        Ok(result)
+        result = run_promise(result).await?;
     }
+
+    if !result.is_null() {
+        ax.state_from_committed(result)?;
+    }
+
+    Ok(JsValue::UNDEFINED)
 }

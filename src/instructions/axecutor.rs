@@ -158,16 +158,39 @@ impl Axecutor {
         result
     }
 
-    pub(crate) fn as_js_value(&self) -> Result<JsValue, JsValue> {
+    #[wasm_bindgen]
+    pub fn commit(&self) -> Result<JsValue, JsError> {
+        if !self.hooks.running {
+            return Err(JsError::new("Cannot call commit() outside of a hook"));
+        }
+
         let s = serde_wasm_bindgen::Serializer::new().serialize_large_number_types_as_bigints(true);
 
-        self.serialize(&s)
-            .map_err(|e| JsValue::from_str(&format!("serializing Axecutor: {:?}", e)))
+        self.state
+            .serialize(&s)
+            .map_err(|e| JsError::new(&*format!("Failed to serialize: {}", e)))
     }
 
-    pub(crate) fn from_js_value(value: JsValue) -> Result<Self, JsValue> {
-        serde_wasm_bindgen::from_value(value)
-            .map_err(|e| JsValue::from_str(&format!("deserializing Axecutor: {}", e.to_string())))
+    pub(crate) fn state_from_committed(&mut self, value: JsValue) -> Result<(), JsError> {
+        if !self.hooks.running {
+            return Err(JsError::new(
+                "Cannot call state_from_committed() outside of a hook",
+            ));
+        }
+
+        if value.is_falsy() {
+            return Err(JsError::new("Cannot call state_from_committed() with falsy value. Note that you *must* return either null or Axecutor.commit() from your hook"));
+        }
+
+        let state: MachineState = serde_wasm_bindgen::from_value(value).map_err(|e| {
+            JsError::new(&*format!(
+                "state_from_committed: failed to deserialize state: {}\nNote that you *must* return either null or Axecutor.commit() from your hook",
+                e,
+            ))
+        })?;
+
+        self.state = state;
+        Ok(())
     }
 }
 
