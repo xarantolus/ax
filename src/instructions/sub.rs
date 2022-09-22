@@ -352,7 +352,7 @@ mod tests {
         assert_reg_value, ax_test, instructions::registers::SupportedRegister, write_reg_value,
     };
     use iced_x86::Register::*;
-    // sub al, 0x5
+
     // sub al, 0x5
     ax_test![sub_al_0x5; 0x2c, 0x5;
         |a: &mut Axecutor| {

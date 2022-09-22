@@ -16,7 +16,7 @@ final_rip: .space 8
 .text
 .global _start
 _start:
-mov rax, 0x00000002
+mov rax, 0x00000000
 push rax
 POPFQ
 # save current address (should be equal to rip?) - "." means current address in gnu assembler

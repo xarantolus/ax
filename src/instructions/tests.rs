@@ -8,7 +8,7 @@ macro_rules! ax_test {
     [$test_name:ident; $($bytes:expr),*; $setup:expr; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
 		#[test]
 		fn $test_name () {
-            smol::block_on(async {
+            async_std::task::block_on(async {
                 use rand::Rng;
                 use crate::instructions::errors::AxError;
 
@@ -61,7 +61,7 @@ macro_rules! test_async {
     ($test_name:ident; $test:expr) => {
         #[test]
         fn $test_name() {
-            smol::block_on(async {
+            async_std::task::block_on(async {
                 $test.await;
             });
         }
@@ -170,7 +170,7 @@ macro_rules! jmp_test {
     [$name:ident; start: $initial_rip:expr; end: $final_rip:expr; $($bytes_start:expr),*; $count:expr; $($bytes_end:expr),*; $setup:expr; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
         #[test]
         fn $name() {
-            smol::block_on(async {
+            async_std::task::block_on(async {
                 use crate::instructions::errors::AxError;
                 use crate::code_with_nops;
 

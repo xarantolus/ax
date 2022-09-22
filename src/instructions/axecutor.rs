@@ -114,8 +114,9 @@ impl Axecutor {
             state: MachineState {
                 memory: Vec::new(),
                 registers: randomized_register_set(initial_rip),
-                // Intel SDM 3.4.3 EFLAGS Register mentions this default value:
-                rflags: 0x00000002,
+                // Intel SDM 3.4.3 EFLAGS Register mentions "0x00000002" as default value, but this conflicts with some test cases.
+                // Also the initial value shouldn't matter much
+                rflags: 0,
             },
         })
     }

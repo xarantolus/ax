@@ -107,7 +107,7 @@ def learn_flags(assembly_code: str, hex_val: str):
                 .text
                 .global _start
                 _start:
-                mov rax, 0x00000002
+                mov rax, 0x00000000
                 push rax
                 POPFQ
 
