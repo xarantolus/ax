@@ -192,7 +192,7 @@ mod tests {
     use iced_x86::Register::*;
     use super::super::axecutor::Axecutor;
     use crate::{
-        assert_reg_value, ax_test, instructions::registers::SupportedRegister, write_reg_value,
+        assert_reg_value, jmp_test, ax_test, instructions::registers::SupportedRegister, write_reg_value,
     };
 
 }
@@ -234,7 +234,7 @@ def generate_mnemonic_file(mnemonic: str):
             f.writelines(mod_rs)
 
     # run rustfmt on files
-    subprocess.run(["rustfmt", mnemonic_path, mod_path])
+    subprocess.run(["rustfmt", "--edition=2021", mnemonic_path, mod_path])
 
 def generate_all_switch():
     mnemonics = read_mnemonics(True)
@@ -309,7 +309,7 @@ impl From<Mnemonic> for SupportedMnemonic {
     # Write to file generated.rs
     with open("src/instructions/generated.rs", "w", encoding='utf8') as f:
         f.write(code)
-    subprocess.run(["rustfmt", "src/instructions/generated.rs"])
+    subprocess.run(["rustfmt", "--edition=2021", "src/instructions/generated.rs"])
 
 
 if __name__ == '__main__':

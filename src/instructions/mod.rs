@@ -7,6 +7,7 @@ pub mod flags;
 pub mod generated;
 pub mod hooks;
 mod integration_tests;
+pub mod je;
 pub mod jmp;
 pub mod lea;
 mod macros;

@@ -137,3 +137,74 @@ macro_rules! write_reg_value {
         $axecutor.reg_write_64(wrap, $value);
     };
 }
+
+#[macro_export]
+#[cfg(test)]
+macro_rules! code_with_nops {
+    ($($bytes:expr),*; $count:expr; $($bytes2:expr),*) => {
+        {
+            // Concatenate bytes, then add count times 0x90 (nop), then the rest of bytes 2
+            let mut bytes = vec![$($bytes),*];
+            bytes.extend(vec![0x90; $count]);
+            bytes.extend(vec![$($bytes2),*]);
+            bytes
+        }
+    };
+}
+
+#[macro_export]
+#[cfg(test)]
+macro_rules! jmp_test {
+    [$name:ident; start: $initial_rip:expr; end: $final_rip:expr; $($bytes_start:expr),*; $count:expr; $($bytes_end:expr),*; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
+        jmp_test![$name; start: $initial_rip; end: $final_rip;
+        $($bytes_start),*; $count; $($bytes_end),*;
+        |_ax| {}; |_ax| {};
+        ($flags_to_set; $flags_not_to_set)];
+    };
+    [$name:ident; start: $initial_rip:expr; end: $final_rip:expr; $($bytes_start:expr),*; $count:expr; $($bytes_end:expr),*; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
+        jmp_test![$name; start: $initial_rip; end: $final_rip;
+        $($bytes_start),*; $count; $($bytes_end),*;
+        |_ax| {}; $asserts;
+        ($flags_to_set; $flags_not_to_set)];
+    };
+    [$name:ident; start: $initial_rip:expr; end: $final_rip:expr; $($bytes_start:expr),*; $count:expr; $($bytes_end:expr),*; $setup:expr; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
+        #[test]
+        fn $name() {
+            smol::block_on(async {
+                use crate::instructions::errors::AxError;
+                use crate::code_with_nops;
+
+                let bytes = code_with_nops!($($bytes_start),*; $count; $($bytes_end),*);
+
+                let mut ax = Axecutor::new(&bytes, $initial_rip, $initial_rip).expect("Failed to create axecutor");
+                $setup(&mut ax);
+
+                assert_reg_value!(q; ax; RIP; $initial_rip);
+
+                match ax.execute().await {
+                    Err(e) => panic!("Failed to execute: {:?}", AxError::from(e)),
+                    _ => {}
+                };
+
+                assert_reg_value!(q; ax; RIP; $final_rip);
+
+                let flags = ax.state.rflags;
+
+                $asserts(ax);
+
+                // Check flags
+                use crate::instructions::flags::*;
+                for flag in FLAG_LIST {
+                    // If the flag should be set, it must be != 0
+                    if $flags_to_set & flag != 0 {
+                        assert!(flags & flag != 0, "FLAG_{} should be set, but wasn't", FLAG_TO_NAMES.get(&flag).expect("Flag not found"));
+                    }
+
+                    if $flags_not_to_set & flag != 0 {
+                        assert!(flags & flag == 0, "FLAG_{} should not be set, but was", FLAG_TO_NAMES.get(&flag).expect("Flag not found"));
+                    }
+                }
+            });
+        }
+    };
+}

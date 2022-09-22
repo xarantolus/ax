@@ -14,6 +14,7 @@ impl Axecutor {
         match i.mnemonic() {
             Add => self.mnemonic_add(i),
             Cmp => self.mnemonic_cmp(i),
+            Je => self.mnemonic_je(i),
             Jmp => self.mnemonic_jmp(i),
             Lea => self.mnemonic_lea(i),
             Mov => self.mnemonic_mov(i),
@@ -37,6 +38,7 @@ impl Axecutor {
 pub enum SupportedMnemonic {
     Add = 7,
     Cmp = 93,
+    Je = 302,
     Jmp = 308,
     Lea = 374,
     Mov = 414,
@@ -60,6 +62,7 @@ impl From<Mnemonic> for SupportedMnemonic {
         match mnemonic {
             Add => SupportedMnemonic::Add,
             Cmp => SupportedMnemonic::Cmp,
+            Je => SupportedMnemonic::Je,
             Jmp => SupportedMnemonic::Jmp,
             Lea => SupportedMnemonic::Lea,
             Mov => SupportedMnemonic::Mov,
