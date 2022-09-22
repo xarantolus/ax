@@ -12,7 +12,6 @@ use super::memory::MemoryArea;
 use super::registers::{randomized_register_set, SupportedRegister};
 
 extern crate console_error_panic_hook;
-use std::panic;
 
 #[wasm_bindgen]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -39,11 +38,6 @@ pub(crate) struct MachineState {
 
 #[wasm_bindgen]
 impl MachineState {
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
-        self.to_string_ident(0)
-    }
-
     #[wasm_bindgen(js_name = toStringIdent)]
     pub fn to_string_ident(&self, i: usize) -> String {
         let mut s = String::new();
