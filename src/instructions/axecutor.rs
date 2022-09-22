@@ -162,8 +162,7 @@ impl Axecutor {
     pub(crate) fn as_js_value(&self) -> Result<JsValue, JsValue> {
         let s = serde_wasm_bindgen::Serializer::new().serialize_large_number_types_as_bigints(true);
 
-        self.state
-            .serialize(&s)
+        self.serialize(&s)
             .map_err(|e| JsValue::from_str(&format!("serializing Axecutor: {:?}", e)))
     }
 
@@ -221,3 +220,4 @@ mod tests {
         assert_eq!(ax.reg_read_64(Register::RIP.into()), 0x1000);
     }
 }
+

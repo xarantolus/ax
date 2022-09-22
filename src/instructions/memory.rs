@@ -38,7 +38,7 @@ impl MemoryArea {
         }
 
         s.push_str("],\n");
-        s.push_str(&format!("{}    }}", " ".repeat(i * 4)));
+        s.push_str(&format!("{}}}", " ".repeat(i * 4)));
 
         s
     }
