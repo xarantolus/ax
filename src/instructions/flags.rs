@@ -3,8 +3,6 @@ use std::collections::HashMap;
 extern crate lazy_static;
 use lazy_static::lazy_static;
 
-use wasm_bindgen::prelude::wasm_bindgen;
-
 use crate::instructions::axecutor::Axecutor;
 
 // See Figure 3-8. EFLAGS Register in Intel SDM

@@ -1,6 +1,5 @@
 extern crate lazy_static;
 use js_sys::{self, Array, Function};
-use serde::{Deserialize, Serialize};
 
 use std::{collections::HashMap, fmt::Formatter};
 use wasm_bindgen::{prelude::*, JsCast};

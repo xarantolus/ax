@@ -408,7 +408,11 @@ impl Axecutor {
 
     pub fn reg_write_64(&mut self, reg: SupportedRegister, value: u64) {
         let r: Register = reg.into();
-        assert!(r.is_gpr64() || r.is_ip(), "{:?} is not a valid 64-bit register", r);
+        assert!(
+            r.is_gpr64() || r.is_ip(),
+            "{:?} is not a valid 64-bit register",
+            r
+        );
 
         self.state.registers.insert(reg, value);
     }
@@ -461,7 +465,11 @@ impl Axecutor {
 
     pub fn reg_read_64(&self, reg: SupportedRegister) -> u64 {
         let r: Register = reg.into();
-        assert!(r.is_gpr64() || r.is_ip(), "{:?} is not a valid 64-bit register", r);
+        assert!(
+            r.is_gpr64() || r.is_ip(),
+            "{:?} is not a valid 64-bit register",
+            r
+        );
 
         let reg_value = self.state.registers.get(&reg).unwrap().clone();
         return reg_value;

@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::rc::Rc;
 
 use iced_x86::{Decoder, DecoderOptions, Instruction};
 use serde::{Deserialize, Serialize};
@@ -220,4 +219,3 @@ mod tests {
         assert_eq!(ax.reg_read_64(Register::RIP.into()), 0x1000);
     }
 }
-

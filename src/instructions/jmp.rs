@@ -181,7 +181,8 @@ impl Axecutor {
 mod tests {
     use super::super::axecutor::Axecutor;
     use crate::{
-        assert_reg_value, jmp_test, ax_test, instructions::registers::SupportedRegister, write_reg_value,
+        assert_reg_value, ax_test, instructions::registers::SupportedRegister, jmp_test,
+        write_reg_value,
     };
     use iced_x86::Register::*;
 

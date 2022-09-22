@@ -1,5 +1,5 @@
- use core::panic;
-use std::fmt::{self, format};
+use core::panic;
+use std::fmt::{self};
 
 use wasm_bindgen::{JsError, JsValue};
 
@@ -55,13 +55,16 @@ impl From<AxError> for JsValue {
 
 impl From<AxError> for JsError {
     fn from(err: AxError) -> Self {
-        JsError::new(if let Some(v) = err.js {
-            format!("{:?}", v)
-        } else if let Some(m) = err.message {
-            m
-        } else {
-            panic!("AxError is empty")
-        }.as_str())
+        JsError::new(
+            if let Some(v) = err.js {
+                format!("{:?}", v)
+            } else if let Some(m) = err.message {
+                m
+            } else {
+                panic!("AxError is empty")
+            }
+            .as_str(),
+        )
     }
 }
 
