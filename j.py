@@ -179,6 +179,10 @@ if __name__ == '__main__':
     code_start = sys.argv[1]
     # Second argument is padding
     padding = int(sys.argv[2], base=0)
+    if padding <= 0:
+        print("Padding must be a positive integer")
+        sys.exit(1)
+
     # Third argument is x86-64 assembly code
     code_end = sys.argv[3]
 
