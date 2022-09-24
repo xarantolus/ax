@@ -9,6 +9,8 @@ pub mod hooks;
 mod integration_tests;
 pub mod ja;
 pub mod jae;
+pub mod jb;
+pub mod jbe;
 pub mod jcxz;
 pub mod je;
 pub mod jecxz;

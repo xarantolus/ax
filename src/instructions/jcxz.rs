@@ -1,13 +1,9 @@
 use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Jcxz;
-use iced_x86::OpKind;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
-use crate::instructions::flags::*;
-use crate::instructions::registers::SupportedRegister;
-use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
 
 impl Axecutor {
     pub fn mnemonic_jcxz(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -40,11 +36,4 @@ impl Axecutor {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{
-        assert_reg_value, ax_test, instructions::registers::SupportedRegister, jmp_test,
-        write_reg_value,
-    };
-    use iced_x86::Register::*;
-}
+mod tests {}
