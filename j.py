@@ -133,7 +133,7 @@ class JumpTestCase:
         return f"""jmp_test![{test_id(self.initial_code + "_" + self.final_code, self.set_flags)};
     start: {hex(self.initial_rip)}; end: {hex(self.final_rip)};
     {', '.join(self.initial_bytes)}; // {self.initial_code}
-    {self.padding}; // {self.padding} bytes of 0x90 (nop) as padding
+    {self.padding}; // {self.padding} {'byte' if self.padding == 1 else 'bytes'} of 0x90 (nop) as padding
     {', '.join(self.final_bytes)}; // {self.final_code}
     |a: &mut Axecutor| {{
         todo!("write setup code");
@@ -193,12 +193,14 @@ if __name__ == '__main__':
     testcase = JumpTestCase.create(code_start, padding, code_end)
 
     # ask user which variant they want
-    setup = input("Include setup+assert, only asserts or only rip+flag test code? [s/a/r] ").strip().lower()
+    setup = input("Include setup+assert, only asserts or only rip+flag test code? [s/a/r/c] ").strip().lower()
 
     if setup.lower() == "s":
         tc_str = testcase.with_setup_asserts()
     elif setup.lower() == "a":
         tc_str = testcase.no_setup_only_asserts()
+    elif setup.lower() == "c":
+        tc_str = generate_assembly(testcase.initial_code, testcase.padding, testcase.final_code)
     else:
         tc_str = testcase.no_setup_asserts()
 

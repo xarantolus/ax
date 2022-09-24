@@ -7,6 +7,8 @@ pub mod flags;
 pub mod generated;
 pub mod hooks;
 mod integration_tests;
+pub mod ja;
+pub mod jae;
 pub mod jcxz;
 pub mod je;
 pub mod jecxz;

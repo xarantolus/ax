@@ -14,6 +14,8 @@ impl Axecutor {
         match i.mnemonic() {
             Add => self.mnemonic_add(i),
             Cmp => self.mnemonic_cmp(i),
+            Ja => self.mnemonic_ja(i),
+            Jae => self.mnemonic_jae(i),
             Jcxz => self.mnemonic_jcxz(i),
             Je => self.mnemonic_je(i),
             Jecxz => self.mnemonic_jecxz(i),
@@ -41,6 +43,8 @@ impl Axecutor {
 pub enum SupportedMnemonic {
     Add = 7,
     Cmp = 93,
+    Ja = 297,
+    Jae = 298,
     Jcxz = 301,
     Je = 302,
     Jecxz = 303,
@@ -68,6 +72,8 @@ impl From<Mnemonic> for SupportedMnemonic {
         match mnemonic {
             Add => SupportedMnemonic::Add,
             Cmp => SupportedMnemonic::Cmp,
+            Ja => SupportedMnemonic::Ja,
+            Jae => SupportedMnemonic::Jae,
             Jcxz => SupportedMnemonic::Jcxz,
             Je => SupportedMnemonic::Je,
             Jecxz => SupportedMnemonic::Jecxz,

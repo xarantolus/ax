@@ -145,7 +145,9 @@ macro_rules! code_with_nops {
         {
             // Concatenate bytes, then add count times 0x90 (nop), then the rest of bytes 2
             let mut bytes = vec![$($bytes),*];
-            bytes.extend(vec![0x90; $count]);
+            for _ in 0..$count {
+                bytes.push(0x90);
+            }
             bytes.extend(vec![$($bytes2),*]);
             bytes
         }
