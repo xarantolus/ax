@@ -68,7 +68,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     jmp_test![mov_rax_0_mov_rcx_100_loop_jrcxz_end_add_rax_2_sub_rcx_1_jmp_loop_end_nop_pf_zf;
@@ -80,6 +80,6 @@ mod tests {
             assert_reg_value!(q; a; RAX; 200);
             assert_reg_value!(q; a; RCX; 0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 }

@@ -44,7 +44,7 @@ ax_test![add_al_byte_ptr_rbx_cf;
     };
     // On the left side of `;` are the flags that must be set after the instruction ran,
     // on the right are flags that must not be set
-    (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+    (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
 ];
 ```
 
@@ -62,6 +62,7 @@ An example for using this WebAssembly module from JavaScript can be found in the
 
 ### Limitations
 * No support for invalid instructions in the instruction stream
+* Only the Signed, Carry, Overflow, Zero and Parity status flags are supported
 * Most instructions aren't implemented, especially
   * Anything with SSE registers
   * Anything I found too legacy

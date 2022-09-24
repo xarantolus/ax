@@ -48,7 +48,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i16 ^ s as i16) & (d as i16 ^ result as i16) & 0x80) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i16 | 0x100).wrapping_sub(s as i16)) & 0x100 == 0 { FLAG_CF } else { 0 }
             )
@@ -66,7 +65,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i32 ^ s as i32) & (d as i32 ^ result as i32) & 0x8000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i32 | 0x10000).wrapping_sub(s as i32)) & 0x10000 == 0 { FLAG_CF } else { 0 }
             )
@@ -84,7 +82,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i64 ^ s as i64) & (d as i64 ^ result as i64) & 0x80000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i64 | 0x100000000).wrapping_sub(s as i64)) & 0x100000000 == 0 { FLAG_CF } else { 0 }
             )
@@ -102,7 +99,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i128 ^ s as i128) & (d as i128 ^ result as i128) & 0x8000000000000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i128 | 0x10000000000000000).wrapping_sub(s as i128)) & 0x10000000000000000 == 0 { FLAG_CF } else { 0 }
             )
@@ -120,7 +116,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i16 ^ s as i16) & (d as i16 ^ result as i16) & 0x80) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i16 | 0x100).wrapping_sub(s as i16)) & 0x100 == 0 { FLAG_CF } else { 0 }
             )
@@ -138,7 +133,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i32 ^ s as i32) & (d as i32 ^ result as i32) & 0x8000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i32 | 0x10000).wrapping_sub(s as i32)) & 0x10000 == 0 { FLAG_CF } else { 0 }
             )
@@ -156,7 +150,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i64 ^ s as i64) & (d as i64 ^ result as i64) & 0x80000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i64 | 0x100000000).wrapping_sub(s as i64)) & 0x100000000 == 0 { FLAG_CF } else { 0 }
             )
@@ -174,7 +167,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i128 ^ s as i128) & (d as i128 ^ result as i128) & 0x8000000000000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i128 | 0x10000000000000000).wrapping_sub(s as i128)) & 0x10000000000000000 == 0 { FLAG_CF } else { 0 }
             )
@@ -226,7 +218,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i16 ^ s as i16) & (d as i16 ^ result as i16) & 0x80) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i16 | 0x100).wrapping_sub(s as i16)) & 0x100 == 0 { FLAG_CF } else { 0 }
             )
@@ -242,7 +233,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i32 ^ s as i32) & (d as i32 ^ result as i32) & 0x8000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i32 | 0x10000).wrapping_sub(s as i32)) & 0x10000 == 0 { FLAG_CF } else { 0 }
             )
@@ -258,7 +248,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i64 ^ s as i64) & (d as i64 ^ result as i64) & 0x80000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i64 | 0x100000000).wrapping_sub(s as i64)) & 0x100000000 == 0 { FLAG_CF } else { 0 }
             )
@@ -274,7 +263,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i128 ^ s as i128) & (d as i128 ^ result as i128) & 0x8000000000000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i128 | 0x10000000000000000).wrapping_sub(s as i128)) & 0x10000000000000000 == 0 { FLAG_CF } else { 0 }
             )
@@ -301,7 +289,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i32 ^ s as i32) & (d as i32 ^ result as i32) & 0x8000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i32 | 0x10000).wrapping_sub(s as i32)) & 0x10000 == 0 { FLAG_CF } else { 0 }
             )
@@ -319,7 +306,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i64 ^ s as i64) & (d as i64 ^ result as i64) & 0x80000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i64 | 0x100000000).wrapping_sub(s as i64)) & 0x100000000 == 0 { FLAG_CF } else { 0 }
             )
@@ -337,7 +323,6 @@ impl Axecutor {
 
             (
                 result,
-                if ((d & 0xf | 0x10) - (s & 0xf)) & 0x10 == 0 { FLAG_AF } else { 0 } |
                 if ((d as i128 ^ s as i128) & (d as i128 ^ result as i128) & 0x8000000000000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i128 | 0x10000000000000000).wrapping_sub(s as i128)) & 0x10000000000000000 == 0 { FLAG_CF } else { 0 }
             )
@@ -361,7 +346,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x2);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, 0x5
@@ -372,7 +357,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xb);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, 0x5
@@ -383,7 +368,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xfc);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5
@@ -394,7 +379,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xfb);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5
@@ -405,7 +390,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x7c);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, 0x5
@@ -416,7 +401,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x3);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, 0x5
@@ -427,7 +412,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xc);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, 0x5
@@ -438,7 +423,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x7b);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, 0x5
@@ -449,7 +434,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xfa);
         };
-        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5
@@ -460,7 +445,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x8b);
         };
-        (FLAG_PF | FLAG_SF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_OF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5
@@ -471,7 +456,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, 0x5
@@ -482,7 +467,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x80);
         };
-        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5
@@ -493,7 +478,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x8c);
         };
-        (FLAG_SF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -504,7 +489,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x1);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -515,7 +500,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x4);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -526,7 +511,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xb2);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -537,7 +522,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xa3);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -548,7 +533,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xc2);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -559,7 +544,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xa4);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -570,7 +555,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x31);
         };
-        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, 0x5d
@@ -581,7 +566,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x23);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, 0x5d
@@ -592,7 +577,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x22);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -603,7 +588,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x3);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -614,7 +599,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x30);
         };
-        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, 0x5d
@@ -625,7 +610,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x24);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, 0x5d
@@ -636,7 +621,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x81);
         };
-        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -647,7 +632,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x84);
         };
-        (FLAG_PF | FLAG_SF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_OF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -658,7 +643,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -669,7 +654,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xa2);
         };
-        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, 0x5d
@@ -680,7 +665,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x83);
         };
-        (FLAG_SF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -692,7 +677,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x1);
             assert_reg_value!(b; a; BL; 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
     // sub al, bl
     ax_test![sub_al_bl_af; 0x28, 0xd8; |a: &mut Axecutor| {
@@ -703,7 +688,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x8);
             assert_reg_value!(b; a; BL; 0x8);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -715,7 +700,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x70);
             assert_reg_value!(b; a; BL; 0x90);
         };
-        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -727,7 +712,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x1);
             assert_reg_value!(b; a; BL; 0xff);
         };
-        (FLAG_CF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -739,7 +724,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x60);
             assert_reg_value!(b; a; BL; 0xa0);
         };
-        (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -751,7 +736,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x7e);
             assert_reg_value!(b; a; BL; 0x82);
         };
-        (FLAG_CF | FLAG_PF | FLAG_AF; FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -763,7 +748,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xf0);
             assert_reg_value!(b; a; BL; 0x10);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -775,7 +760,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xff);
             assert_reg_value!(b; a; BL; 0x1);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -787,7 +772,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x81);
             assert_reg_value!(b; a; BL; 0x80);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
 
     // sub al, bl
@@ -799,7 +784,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x8e);
             assert_reg_value!(b; a; BL; 0x82);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF | FLAG_AF; FLAG_ZF)
+        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
 
     // sub al, bl
@@ -811,7 +796,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xe0);
             assert_reg_value!(b; a; BL; 0x20);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -823,7 +808,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xf8);
             assert_reg_value!(b; a; BL; 0x8);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -835,7 +820,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x80);
             assert_reg_value!(b; a; BL; 0x80);
         };
-        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
 
     // sub al, bl
@@ -847,7 +832,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x8f);
             assert_reg_value!(b; a; BL; 0x81);
         };
-        (FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF; FLAG_PF | FLAG_ZF)
+        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
 
     // sub al, bl
@@ -859,7 +844,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x70);
             assert_reg_value!(b; a; BL; 0x10);
         };
-        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, bl
@@ -871,7 +856,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x7f);
             assert_reg_value!(b; a; BL; 0x1);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, bl
@@ -883,7 +868,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x6);
             assert_reg_value!(b; a; BL; 0x1);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -895,7 +880,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xf);
             assert_reg_value!(b; a; BL; 0x1);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -907,7 +892,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x60);
             assert_reg_value!(b; a; BL; 0x20);
         };
-        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, bl
@@ -919,7 +904,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x78);
             assert_reg_value!(b; a; BL; 0x8);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, bl
@@ -931,7 +916,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xff);
             assert_reg_value!(b; a; BL; 0x0);
         };
-        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -943,7 +928,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x88);
             assert_reg_value!(b; a; BL; 0x8);
         };
-        (FLAG_PF | FLAG_SF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_OF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -955,7 +940,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x0);
             assert_reg_value!(b; a; BL; 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -967,7 +952,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x80);
             assert_reg_value!(b; a; BL; 0x0);
         };
-        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, bl
@@ -979,7 +964,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x8f);
             assert_reg_value!(b; a; BL; 0x1);
         };
-        (FLAG_SF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub bx, r11w
@@ -991,7 +976,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0x1);
             assert_reg_value!(w; a; R11W; 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub bx, r11w
@@ -1003,7 +988,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0x8);
             assert_reg_value!(w; a; R11W; 0x8);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub bx, r11w
@@ -1015,7 +1000,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0xfff0);
             assert_reg_value!(w; a; R11W; 0x10);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub bx, r11w
@@ -1027,7 +1012,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0xffff);
             assert_reg_value!(w; a; R11W; 0x1);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub bx, r11w
@@ -1039,7 +1024,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0x8000);
             assert_reg_value!(w; a; R11W; 0x8000);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
 
     // sub bx, r11w
@@ -1051,7 +1036,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0xffe0);
             assert_reg_value!(w; a; R11W; 0x20);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub bx, r11w
@@ -1063,7 +1048,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0xfff8);
             assert_reg_value!(w; a; R11W; 0x8);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub bx, r11w
@@ -1075,7 +1060,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0x8001);
             assert_reg_value!(w; a; R11W; 0x8000);
         };
-        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
 
     // sub bx, r11w
@@ -1087,7 +1072,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0x7fe0);
             assert_reg_value!(w; a; R11W; 0x20);
         };
-        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub bx, r11w
@@ -1099,7 +1084,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0x7ff8);
             assert_reg_value!(w; a; R11W; 0x8);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub bx, r11w
@@ -1111,7 +1096,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0x6);
             assert_reg_value!(w; a; R11W; 0x1);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub bx, r11w
@@ -1123,7 +1108,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0xf);
             assert_reg_value!(w; a; R11W; 0x1);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub bx, r11w
@@ -1135,7 +1120,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0x7ff0);
             assert_reg_value!(w; a; R11W; 0x10);
         };
-        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub bx, r11w
@@ -1147,7 +1132,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0x7fff);
             assert_reg_value!(w; a; R11W; 0x1);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub bx, r11w
@@ -1159,7 +1144,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0x8000);
             assert_reg_value!(w; a; R11W; 0x0);
         };
-        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub bx, r11w
@@ -1171,7 +1156,7 @@ mod tests {
             assert_reg_value!(w; a; BX; 0x0);
             assert_reg_value!(w; a; R11W; 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ebx, r12d
@@ -1183,7 +1168,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0x1);
             assert_reg_value!(d; a; R12D; 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ebx, r12d
@@ -1195,7 +1180,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0x8);
             assert_reg_value!(d; a; R12D; 0x8);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ebx, r12d
@@ -1207,7 +1192,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0xfffffff0u32);
             assert_reg_value!(d; a; R12D; 0x10);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub ebx, r12d
@@ -1219,7 +1204,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0xffffffffu32);
             assert_reg_value!(d; a; R12D; 0x1);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub ebx, r12d
@@ -1231,7 +1216,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0x80000000u32);
             assert_reg_value!(d; a; R12D; 0x80000000u32);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
 
     // sub ebx, r12d
@@ -1243,7 +1228,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0xffffffe0u32);
             assert_reg_value!(d; a; R12D; 0x20);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub ebx, r12d
@@ -1255,7 +1240,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0xfffffff8u32);
             assert_reg_value!(d; a; R12D; 0x8);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub ebx, r12d
@@ -1267,7 +1252,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0x80000001u32);
             assert_reg_value!(d; a; R12D; 0x80000000u32);
         };
-        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
 
     // sub ebx, r12d
@@ -1279,7 +1264,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0x7fffffe0);
             assert_reg_value!(d; a; R12D; 0x20);
         };
-        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub ebx, r12d
@@ -1291,7 +1276,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0x7ffffff8);
             assert_reg_value!(d; a; R12D; 0x8);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub ebx, r12d
@@ -1303,7 +1288,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0x6);
             assert_reg_value!(d; a; R12D; 0x1);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ebx, r12d
@@ -1315,7 +1300,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0xf);
             assert_reg_value!(d; a; R12D; 0x1);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ebx, r12d
@@ -1327,7 +1312,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0x7ffffff0);
             assert_reg_value!(d; a; R12D; 0x10);
         };
-        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub ebx, r12d
@@ -1339,7 +1324,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0x7fffffffu32);
             assert_reg_value!(d; a; R12D; 0x1);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub ebx, r12d
@@ -1351,7 +1336,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0x80000000u32);
             assert_reg_value!(d; a; R12D; 0x0);
         };
-        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub ebx, r12d
@@ -1363,7 +1348,7 @@ mod tests {
             assert_reg_value!(d; a; EBX; 0x0);
             assert_reg_value!(d; a; R12D; 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1378,7 +1363,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x0);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1393,7 +1378,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x8);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x8);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1408,7 +1393,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x91cd4a18fad40360u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x6e32b5e7052bfca1u64);
         };
-        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1423,7 +1408,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0xdaa5b64c30262321u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x255a49b3cfd9dcdfu64);
         };
-        (FLAG_CF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1438,7 +1423,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0xbe2001ffcd2422c7u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x41dffe0032dbdd78u64);
         };
-        (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1453,7 +1438,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0xa8d77020859f619fu64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x57288fdf7a609e71u64);
         };
-        (FLAG_CF | FLAG_PF | FLAG_AF; FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1468,7 +1453,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x10);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xfffffffffffffff0u64);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1483,7 +1468,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xffffffffffffffffu64);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1498,7 +1483,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x8000000000000000u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x8000000000000000u64);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1513,7 +1498,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x20);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xffffffffffffffe0u64);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1528,7 +1513,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x8);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xfffffffffffffff8u64);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1543,7 +1528,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x8000000000000000u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x8000000000000001u64);
         };
-        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1558,7 +1543,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x6);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1573,7 +1558,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xf);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rbx], rax
@@ -1588,7 +1573,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x0);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1603,7 +1588,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x1);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1618,7 +1603,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x8);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x8);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1633,7 +1618,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x10);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xff);
         };
-        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1648,7 +1633,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x1);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xff);
         };
-        (FLAG_CF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1663,7 +1648,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x9);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xff);
         };
-        (FLAG_CF | FLAG_PF | FLAG_AF; FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1678,7 +1663,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xf0);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x10);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1693,7 +1678,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xff);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1708,7 +1693,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x81);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1723,7 +1708,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xe0);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x20);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1738,7 +1723,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xf8);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x8);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1753,7 +1738,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x80);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
         };
-        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1768,7 +1753,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x70);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x10);
         };
-        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1783,7 +1768,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x7f);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1798,7 +1783,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x6);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1813,7 +1798,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xf);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1828,7 +1813,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x60);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x20);
         };
-        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1843,7 +1828,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x78);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x8);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1858,7 +1843,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xff);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1873,7 +1858,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x0);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub al, byte ptr [rbx]
@@ -1888,7 +1873,7 @@ mod tests {
             assert_reg_value!(b; a; AL; 0x80);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
         };
-        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -1903,7 +1888,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0x1);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -1918,7 +1903,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0x8);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -1933,7 +1918,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0xfff0);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x10);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -1948,7 +1933,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0xffff);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -1963,7 +1948,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0x8000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8000);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -1978,7 +1963,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0xffe0);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x20);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -1993,7 +1978,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0xfff8);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -2008,7 +1993,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0x8001);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8000);
         };
-        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -2023,7 +2008,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0x7fe0);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x20);
         };
-        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -2038,7 +2023,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0x7ff8);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -2053,7 +2038,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0x6);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -2068,7 +2053,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0xf);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -2083,7 +2068,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0x7ff0);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x10);
         };
-        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -2098,7 +2083,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0x7fff);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -2113,7 +2098,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0x8000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub cx, word ptr [rbx]
@@ -2128,7 +2113,7 @@ mod tests {
             assert_reg_value!(w; a; CX; 0x0);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2143,7 +2128,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0x1);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2158,7 +2143,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0x8);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x8);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2173,7 +2158,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0xfffffff0u32);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x10);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2188,7 +2173,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0xffffffffu32);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x1);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2203,7 +2188,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0x80000000u32);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u32);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2218,7 +2203,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0xffffffe0u32);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x20);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2233,7 +2218,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0xfffffff8u32);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x8);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2248,7 +2233,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0x80000001u32);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u32);
         };
-        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF | FLAG_AF)
+        (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2263,7 +2248,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0x7fffffe0);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x20);
         };
-        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2278,7 +2263,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0x7ffffff8);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x8);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2293,7 +2278,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0x6);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x1);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2308,7 +2293,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0xf);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x1);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2323,7 +2308,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0x7ffffff0);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x10);
         };
-        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2338,7 +2323,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0x7fffffffu32);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x1);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2353,7 +2338,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0x80000000u32);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub ecx, dword ptr [rbx]
@@ -2368,7 +2353,7 @@ mod tests {
             assert_reg_value!(d; a; ECX; 0x0);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2383,7 +2368,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0x1);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2398,7 +2383,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0x8);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x8);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2413,7 +2398,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0xfffffffffffffff0u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x10);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2428,7 +2413,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0xffffffffffffffffu64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2443,7 +2428,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0xffffffffffffffe0u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x20);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2458,7 +2443,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0xfffffffffffffff8u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x8);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2473,7 +2458,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0x7fffffffffffffe0u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x20);
         };
-        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2488,7 +2473,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0x7ffffffffffffff8u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x8);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2503,7 +2488,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0x6);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2518,7 +2503,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0xf);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2533,7 +2518,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0x7ffffffffffffff0u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x10);
         };
-        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_AF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2548,7 +2533,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0x7fffffffffffffffu64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2563,7 +2548,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0x8000000000000000u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2578,7 +2563,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0xcf6d86fccfbbd26cu64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1f);
         };
-        (FLAG_PF | FLAG_SF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_OF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2593,7 +2578,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0x0);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2608,7 +2593,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0xc4142648cbf91776u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x10);
         };
-        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub r11, qword ptr [rbx]
@@ -2623,7 +2608,7 @@ mod tests {
             assert_reg_value!(q; a; R11; 0xef3e2c7ce6fa54b5u64);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x7f);
         };
-        (FLAG_SF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub ax, 0x1358
@@ -2634,7 +2619,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x6ca7);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ax, 0x1358
@@ -2645,7 +2630,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xca8);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub ax, 0x1358
@@ -2656,7 +2641,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xecb7);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub ax, 0x1358
@@ -2667,7 +2652,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xeca9);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub ax, 0x1358
@@ -2678,7 +2663,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xecb0);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub ax, 0x1358
@@ -2689,7 +2674,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xeca8);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub ax, 0x1358
@@ -2700,7 +2685,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x6ca8);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub eax, 0x1358
@@ -2711,7 +2696,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x6ca7);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub eax, 0x1358
@@ -2722,7 +2707,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x6ca8);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub eax, 0x1358
@@ -2733,7 +2718,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xffffecb7u32);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub eax, 0x1358
@@ -2744,7 +2729,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xffffeca9u32);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub eax, 0x1358
@@ -2755,7 +2740,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xffffecb0u32);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub eax, 0x1358
@@ -2766,7 +2751,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xffffeca8u32);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub eax, 0x1358
@@ -2777,7 +2762,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x7fffeca8);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub rax, 0x31531135
@@ -2788,7 +2773,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x2125a5882b18bee5u64);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub rax, 0x31531135
@@ -2799,7 +2784,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x4eaceecb);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub rax, 0x31531135
@@ -2810,7 +2795,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xffffffffceaceed2u64);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub rax, 0x31531135
@@ -2821,7 +2806,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xffffffffceaceeccu64);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub rax, 0x31531135
@@ -2832,7 +2817,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xffffffffceaceed3u64);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub rax, 0x31531135
@@ -2843,7 +2828,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xffffffffceaceecbu64);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub rax, 0x31531135
@@ -2854,7 +2839,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x7fffffffceaceecbu64);
         };
-        (FLAG_OF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
+        (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub rax, 0x31531135
@@ -2865,7 +2850,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x4eaceeca);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub rax, 0x31531135
@@ -2876,7 +2861,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x275471f00048f27du64);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub rax, 0x31531135
@@ -2887,7 +2872,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xa6dde50906056f33u64);
         };
-        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub rax, 0x31531135
@@ -2898,7 +2883,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xf3d087a837ceea5fu64);
         };
-        (FLAG_PF | FLAG_SF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_OF)
+        (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub rax, 0x31531135
@@ -2909,7 +2894,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xc8389d6b2cb4bd86u64);
         };
-        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub rax, 0x31531135
@@ -2920,7 +2905,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xc36e5031b523f14cu64);
         };
-        (FLAG_SF | FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub word ptr [rax], 0x31
@@ -2934,7 +2919,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0xe);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub word ptr [rax], 0x31
@@ -2948,7 +2933,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x4f);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub word ptr [rax], 0x31
@@ -2962,7 +2947,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0xffd7);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub word ptr [rax], 0x31
@@ -2976,7 +2961,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0xffcf);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub word ptr [rax], 0x31
@@ -2990,7 +2975,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0xffd0);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub word ptr [rax], 0x31
@@ -3004,7 +2989,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0xffdf);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub word ptr [rax], 0x31
@@ -3018,7 +3003,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x4e);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub word ptr [rax], 0x31
@@ -3032,7 +3017,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0xf);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub word ptr [rax], 0x31
@@ -3046,7 +3031,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x7fcf);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub word ptr [rax], 0x31
@@ -3060,7 +3045,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub dword ptr [rax], 0x31
@@ -3074,7 +3059,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0xe);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub dword ptr [rax], 0x31
@@ -3088,7 +3073,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x4f);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub dword ptr [rax], 0x31
@@ -3102,7 +3087,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0xffffffd7u32);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub dword ptr [rax], 0x31
@@ -3116,7 +3101,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0xffffffcfu32);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub dword ptr [rax], 0x31
@@ -3130,7 +3115,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0xffffffd0u32);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub dword ptr [rax], 0x31
@@ -3144,7 +3129,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0xffffffdfu32);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub dword ptr [rax], 0x31
@@ -3158,7 +3143,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x4e);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub dword ptr [rax], 0x31
@@ -3172,7 +3157,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0xf);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub dword ptr [rax], 0x31
@@ -3186,7 +3171,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7fffffcf);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub dword ptr [rax], 0x31
@@ -3200,7 +3185,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rax], 0x35
@@ -3214,7 +3199,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x4a);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rax], 0x35
@@ -3228,7 +3213,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xb);
         };
-        (FLAG_AF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rax], 0x35
@@ -3242,7 +3227,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xffffffffffffffd2u64);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub qword ptr [rax], 0x35
@@ -3256,7 +3241,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xffffffffffffffccu64);
         };
-        (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_AF; FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
 
     // sub qword ptr [rax], 0x35
@@ -3270,7 +3255,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xffffffffffffffd3u64);
         };
-        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF | FLAG_AF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub qword ptr [rax], 0x35
@@ -3284,7 +3269,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xffffffffffffffcbu64);
         };
-        (FLAG_CF | FLAG_SF | FLAG_AF; FLAG_PF | FLAG_ZF | FLAG_OF)
+        (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // sub qword ptr [rax], 0x35
@@ -3298,7 +3283,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xa);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rax], 0x35
@@ -3312,7 +3297,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xc);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub qword ptr [rax], 0x35
@@ -3326,7 +3311,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     // sub byte ptr [rax], 0xf
@@ -3340,7 +3325,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x10);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // sub word ptr [rax], 0x13b
@@ -3354,7 +3339,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x7ec5);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub dword ptr [rax], 0x4c8ab
@@ -3368,7 +3353,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7ffb3755);
         };
-        (FLAG_PF | FLAG_OF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF)
+        (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
 
     // sub qword ptr [rax], 0x1de62ef
@@ -3382,6 +3367,6 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x219d11);
         };
-        (FLAG_PF | FLAG_AF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 }

@@ -79,6 +79,6 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 }

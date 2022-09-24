@@ -112,7 +112,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 42);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     jmp_test![mov_rax_3_cmp_rax_3_je_end_mov_rax_42_end_nop_pf_zf_small_jump;
@@ -123,7 +123,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 3);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     jmp_test![mov_rax_3_cmp_rax_3_je_end_mov_rax_42_end_nop_pf_zf;
@@ -134,7 +134,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 3);
         };
-        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
 
     jmp_test![mov_rax_4_cmp_rax_3_je_end_mov_rax_42_end_nop;
@@ -145,6 +145,6 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 42);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 }
