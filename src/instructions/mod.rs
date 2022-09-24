@@ -13,6 +13,8 @@ pub mod jb;
 pub mod jbe;
 pub mod je;
 pub mod jecxz;
+pub mod jg;
+pub mod jge;
 pub mod jmp;
 pub mod jrcxz;
 pub mod lea;

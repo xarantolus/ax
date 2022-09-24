@@ -87,7 +87,7 @@ impl Axecutor {
         if self.state.rflags & FLAG_CF == 0 && self.state.rflags & FLAG_ZF == 0 {
             match i.op0_kind() {
                 OpKind::NearBranch64 => {
-                    let offset = i.near_branch32() as i64 as u64;
+                    let offset = i.near_branch64() as i64 as u64;
                     self.reg_write_64(RIP, offset);
                 }
                 _ => panic!("Invalid op0_kind {:?} for JA rel32_64", i.op0_kind()),
