@@ -18,6 +18,7 @@ pub mod jge;
 pub mod jl;
 pub mod jle;
 pub mod jmp;
+pub mod jne;
 pub mod jrcxz;
 pub mod lea;
 mod macros;
