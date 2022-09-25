@@ -1,5 +1,6 @@
 pub mod add;
 pub mod axecutor;
+pub mod call;
 pub mod cmp;
 pub mod errors;
 pub mod execute;
@@ -35,6 +36,7 @@ pub mod operand;
 pub mod pop;
 pub mod push;
 pub mod registers;
+pub mod ret;
 pub mod shl;
 pub mod sub;
 pub mod test;

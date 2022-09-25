@@ -96,7 +96,7 @@ def learn_flags(assembly_code: str, hex_val: str):
         register = find_register(assembly_code)
 
         # write assembly code to file
-        assembly_path = os.path.join(tmpdir, "a.asm")
+        assembly_path = os.path.join(tmpdir, "a.S")
 
         with open(assembly_path, "w", encoding='utf8') as f:
             f.write(
@@ -138,14 +138,10 @@ def learn_flags(assembly_code: str, hex_val: str):
                 syscall
                 """)
 
-        # assemble with as
-        object_path = os.path.join(tmpdir, "a.o")
-        subprocess.run(["as", "-o", object_path, assembly_path])
-
         # turn into executable with gcc, symbol _start
         executable_path = os.path.join(tmpdir, "a")
         subprocess.run(["gcc", "-m64", "-nostdlib", "-static",
-                       "-o", executable_path, object_path])
+                       "-o", executable_path, assembly_path])
 
         # run executable and capture 16 bytes of output
         output = subprocess.run(
@@ -173,7 +169,7 @@ def assembled_bytes(assembly_code: str):
     # create temporary directory
     with tempfile.TemporaryDirectory() as tmpdir:
         # write assembly code to file
-        assembly_path = os.path.join(tmpdir, "a.asm")
+        assembly_path = os.path.join(tmpdir, "a.S")
         with open(assembly_path, "w", encoding='utf8') as f:
             f.write(f""".intel_syntax noprefix
 			main:
@@ -198,7 +194,9 @@ def assembled_bytes(assembly_code: str):
 
         # assemble to binary
         binary_path = os.path.join(tmpdir, "a.bin")
-        subprocess.run(["as", "-o", binary_path, assembly_path])
+
+        subprocess.run(["gcc", "-c", "-m64", "-nostdlib", "-static",
+                        "-o", binary_path, assembly_path])
 
         with open(binary_path, "rb") as f:
             binary = f.read()

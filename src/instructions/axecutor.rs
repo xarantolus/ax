@@ -97,11 +97,14 @@ impl Axecutor {
     #[wasm_bindgen(constructor)]
     pub fn new(code: &[u8], code_start_addr: u64, initial_rip: u64) -> Result<Axecutor, AxError> {
         // In case of panics, we want more info in console.error
-        console_error_panic_hook::set_once();
+        #[cfg(all(target_arch = "wasm32", not(test)))]
+        {
+            console_error_panic_hook::set_once();
+        }
 
         let instructions = decode_all(code, code_start_addr)?;
 
-        let mut rti = HashMap::new();
+        let mut rti = HashMap::with_capacity(instructions.len());
         for (idx, instr) in instructions.iter().enumerate() {
             rti.insert(instr.ip(), idx);
         }

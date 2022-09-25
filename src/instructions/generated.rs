@@ -13,6 +13,7 @@ impl Axecutor {
     pub fn switch_instruction_mnemonic(&mut self, i: Instruction) -> Result<(), AxError> {
         match i.mnemonic() {
             Add => self.mnemonic_add(i),
+            Call => self.mnemonic_call(i),
             Cmp => self.mnemonic_cmp(i),
             Ja => self.mnemonic_ja(i),
             Jae => self.mnemonic_jae(i),
@@ -38,6 +39,7 @@ impl Axecutor {
             Nop => self.mnemonic_nop(i),
             Pop => self.mnemonic_pop(i),
             Push => self.mnemonic_push(i),
+            Ret => self.mnemonic_ret(i),
             Shl => self.mnemonic_shl(i),
             Sub => self.mnemonic_sub(i),
             Test => self.mnemonic_test(i),
@@ -54,6 +56,7 @@ impl Axecutor {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SupportedMnemonic {
     Add = 7,
+    Call = 59,
     Cmp = 93,
     Ja = 297,
     Jae = 298,
@@ -79,6 +82,7 @@ pub enum SupportedMnemonic {
     Nop = 465,
     Pop = 590,
     Push = 640,
+    Ret = 662,
     Shl = 712,
     Sub = 740,
     Test = 751,
@@ -95,6 +99,7 @@ impl From<Mnemonic> for SupportedMnemonic {
     fn from(mnemonic: Mnemonic) -> Self {
         match mnemonic {
             Add => SupportedMnemonic::Add,
+            Call => SupportedMnemonic::Call,
             Cmp => SupportedMnemonic::Cmp,
             Ja => SupportedMnemonic::Ja,
             Jae => SupportedMnemonic::Jae,
@@ -120,6 +125,7 @@ impl From<Mnemonic> for SupportedMnemonic {
             Nop => SupportedMnemonic::Nop,
             Pop => SupportedMnemonic::Pop,
             Push => SupportedMnemonic::Push,
+            Ret => SupportedMnemonic::Ret,
             Shl => SupportedMnemonic::Shl,
             Sub => SupportedMnemonic::Sub,
             Test => SupportedMnemonic::Test,

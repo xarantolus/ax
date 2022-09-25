@@ -73,18 +73,14 @@ class JumpTestCase:
     def create(initial: str, padding: int, final: str):
         with tempfile.TemporaryDirectory(prefix="ax_jumper_", dir="/dev/shm") as tmpdir:
             # write assembly code to file
-            assembly_path = os.path.join(tmpdir, "a.asm")
+            assembly_path = os.path.join(tmpdir, "a.S")
             with open(assembly_path, "w", encoding='utf8') as f:
                 f.write(generate_assembly(initial, padding, final))
-
-            # assemble with as
-            object_path = os.path.join(tmpdir, "a.o")
-            subprocess.run(["as", "-o", object_path, assembly_path])
 
             # turn into executable with gcc, symbol _start
             executable_path = os.path.join(tmpdir, "a")
             subprocess.run(["gcc", "-m64", "-nostdlib", "-static",
-                            "-o", executable_path, object_path])
+                        "-o", executable_path, assembly_path])
 
             # run executable and capture 24 bytes of output
             output = subprocess.run(
@@ -190,17 +186,17 @@ if __name__ == '__main__':
         print("Error: Final code cannot be a label, as otherwise the test case won't work. You should insert e.g. a NOP")
         sys.exit(1)
 
-    testcase = JumpTestCase.create(code_start, padding, code_end)
-
     # ask user which variant they want
     setup = input("Include setup+assert, only asserts or only rip+flag test code? [s/a/r/c] ").strip().lower()
 
     if setup.lower() == "s":
+        testcase = JumpTestCase.create(code_start, padding, code_end)
         tc_str = testcase.with_setup_asserts()
     elif setup.lower() == "a":
+        testcase = JumpTestCase.create(code_start, padding, code_end)
         tc_str = testcase.no_setup_only_asserts()
     elif setup.lower() == "c":
-        tc_str = generate_assembly(testcase.initial_code, testcase.padding, testcase.final_code)
+        tc_str = generate_assembly(code_start, padding, code_end)
     else:
         tc_str = testcase.no_setup_asserts()
 
