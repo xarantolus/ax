@@ -122,4 +122,19 @@ mod test {
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
+
+    // JMP .Lstart; fn_add: add rax, rbx; ret; .Lstart: mov rax, 1; mov rbx, 2; call fn_add
+    ax_test![jmp_lstart_fnadd_add_rax_rbx_ret_lstart_mov_rax_1_mov_rbx_2_call_fnadd; 0xeb, 0x4, 0x48, 0x1, 0xd8, 0xc3, 0x48, 0xc7, 0xc0, 0x1, 0x0, 0x0, 0x0, 0x48, 0xc7, 0xc3, 0x2, 0x0, 0x0, 0x0, 0xe8, 0xe9, 0xff, 0xff, 0xff;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x50f01be8d7485109u64);
+
+            // Setup stack for address
+            a.reg_write_64(RSP.into(), 0x1000);
+            a.mem_init_zero(0x1000, 8).expect("Failed to initialize memory");
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x3);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
 }
