@@ -1131,3 +1131,127 @@ macro_rules! calculate_rm_imm {
         }
     };
 }
+
+#[macro_export]
+macro_rules! calculate_rm {
+    [u8f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
+        {
+            use crate::instructions::operand::Operand;
+
+            let dest = $self.instruction_operand($i, 0)?;
+            match dest {
+                Operand::Register(r) => {
+                    let src_val = $self.reg_read_8(r);
+                    let (result, flags) = $op(src_val);
+                    debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                    $self.set_flags_u8($flags_to_set | flags, $flags_to_clear, result);
+                    if ($flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                        $self.reg_write_8(r, result);
+                    }
+                    Ok(())
+                },
+                Operand::Memory(m) => {
+                    let src_val = $self.mem_read_8($self.mem_addr(m))?;
+                    let (result, flags) = $op(src_val);
+                    debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                    $self.set_flags_u8($flags_to_set | flags, $flags_to_clear, result);
+                    if ($flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                        $self.mem_write_8($self.mem_addr(m), result)?;
+                    }
+                    Ok(())
+                },
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            }
+        }
+    };
+    [u16f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
+        {
+            use crate::instructions::operand::Operand;
+
+            let dest = $self.instruction_operand($i, 0)?;
+            match dest {
+                Operand::Register(r) => {
+                    let src_val = $self.reg_read_16(r);
+                    let (result, flags) = $op(src_val);
+                    debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                    $self.set_flags_u16($flags_to_set | flags, $flags_to_clear, result);
+                    if ($flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                        $self.reg_write_16(r, result);
+                    }
+                    Ok(())
+                },
+                Operand::Memory(m) => {
+                    let src_val = $self.mem_read_16($self.mem_addr(m))?;
+                    let (result, flags) = $op(src_val);
+                    debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                    $self.set_flags_u16($flags_to_set | flags, $flags_to_clear, result);
+                    if ($flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                        $self.mem_write_16($self.mem_addr(m), result)?;
+                    }
+                    Ok(())
+                },
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            }
+        }
+    };
+    [u32f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
+        {
+            use crate::instructions::operand::Operand;
+
+            let dest = $self.instruction_operand($i, 0)?;
+            match dest {
+                Operand::Register(r) => {
+                    let src_val = $self.reg_read_32(r);
+                    let (result, flags) = $op(src_val);
+                    debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                    $self.set_flags_u32($flags_to_set | flags, $flags_to_clear, result);
+                    if ($flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                        $self.reg_write_32(r, result);
+                    }
+                    Ok(())
+                },
+                Operand::Memory(m) => {
+                    let src_val = $self.mem_read_32($self.mem_addr(m))?;
+                    let (result, flags) = $op(src_val);
+                    debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                    $self.set_flags_u32($flags_to_set | flags, $flags_to_clear, result);
+                    if ($flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                        $self.mem_write_32($self.mem_addr(m), result)?;
+                    }
+                    Ok(())
+                },
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            }
+        }
+    };
+    [u64f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
+        {
+            use crate::instructions::operand::Operand;
+
+            let dest = $self.instruction_operand($i, 0)?;
+            match dest {
+                Operand::Register(r) => {
+                    let src_val = $self.reg_read_64(r);
+                    let (result, flags) = $op(src_val);
+                    debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                    $self.set_flags_u64($flags_to_set | flags, $flags_to_clear, result);
+                    if ($flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                        $self.reg_write_64(r, result);
+                    }
+                    Ok(())
+                },
+                Operand::Memory(m) => {
+                    let src_val = $self.mem_read_64($self.mem_addr(m))?;
+                    let (result, flags) = $op(src_val);
+                    debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                    $self.set_flags_u64($flags_to_set | flags, $flags_to_clear, result);
+                    if ($flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                        $self.mem_write_64($self.mem_addr(m), result)?;
+                    }
+                    Ok(())
+                },
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            }
+        }
+    };
+}
