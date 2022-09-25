@@ -21,6 +21,7 @@ pub mod jmp;
 pub mod jne;
 pub mod jno;
 pub mod jnp;
+pub mod jns;
 pub mod jrcxz;
 pub mod lea;
 mod macros;
