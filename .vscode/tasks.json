@@ -7,7 +7,7 @@
             "label": "Run tarpaulin cargo tests",
             "isBackground": true,
             "type": "shell",
-            "command": "cargo watch --why --clear --exec 'tarpaulin --out Lcov --skip-clean' --ignore lcov.info",
+            "command": "make watch-tests",
             // Run in background: https://stackoverflow.com/a/54017304
             "problemMatcher": [
                 {
