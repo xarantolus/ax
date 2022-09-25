@@ -174,8 +174,6 @@ async fn run_function(
 ) -> Result<JsValue, JsValue> {
     let args = Array::new();
 
-    let _old_hooks = ax.hooks.clone();
-
     let clone = ax.clone();
 
     // This seems to be the only way this works

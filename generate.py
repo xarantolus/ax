@@ -153,7 +153,7 @@ use iced_x86::OpKind;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
-use crate::instructions::registers::SupportedRegister;
+use crate::instructions::registers::SupportedRegister::*;
 use crate::{{calculate_r_rm, calculate_rm_imm, calculate_rm_r}};
 
 

@@ -31,14 +31,12 @@ FLAG_PF: int = 0x0004
 FLAG_ZF: int = 0x0040
 FLAG_SF: int = 0x0080
 FLAG_OF: int = 0x0800
-FLAG_AF: int = 0x0010
 FLAGS = [
     (FLAG_CF, "CF"),
     (FLAG_PF, "PF"),
     (FLAG_ZF, "ZF"),
     (FLAG_SF, "SF"),
     (FLAG_OF, "OF"),
-    (FLAG_AF, "AF"),
 ]
 
 

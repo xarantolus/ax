@@ -5,9 +5,8 @@ use iced_x86::OpKind;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
-use crate::instructions::flags::*;
+
 use crate::instructions::registers::SupportedRegister;
-use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
 
 impl Axecutor {
     pub fn mnemonic_jecxz(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -65,10 +64,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::super::axecutor::Axecutor;
-    use crate::{
-        assert_reg_value, ax_test, instructions::registers::SupportedRegister, jmp_test,
-        write_reg_value,
-    };
+    use crate::{assert_reg_value, instructions::registers::SupportedRegister, jmp_test};
     use iced_x86::Register::*;
 
     jmp_test![mov_ecx_0_jecxz_end_mov_ecx_42_end_nop;
@@ -79,6 +75,6 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 }

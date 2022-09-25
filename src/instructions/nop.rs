@@ -86,7 +86,7 @@ mod tests {
 
     // nop
     ax_test![nopd; 0x90; |_: Axecutor| {};
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // nop rax
@@ -97,7 +97,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // nop eax
@@ -108,7 +108,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // nop ax
@@ -119,7 +119,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // nop word ptr [rax]
@@ -133,7 +133,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x1000);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // xchg ax, ax
@@ -145,7 +145,7 @@ mod tests {
             assert_reg_value!(w; a; AX; 0x0);
             assert_reg_value!(w; a; AX; 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
     // xchg rax, rax
     // interestingly, "xchg eax, eax" is en/decoded to an xchg instruction instead of nop, but rax is nop
@@ -157,32 +157,32 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x0);
             assert_reg_value!(q; a; RAX; 0x0);
         };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     // Tests for "Table 4-12. Recommended Multi-Byte Sequence of NOP Instruction" (Intel Manual)
     ax_test![nop_2byte; 0x66, 0x90; |_: Axecutor| {};
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
     ax_test![nop_3byte; 0x0f, 0x1f, 0x0; |_: Axecutor| {};
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
     ax_test![nop_4byte; 0x0f, 0x1f, 0x40, 0x0; |_: Axecutor| {};
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
     ax_test![nop_5byte; 0xf, 0x1f, 0x44, 0x0, 0x0; |_: Axecutor| {};
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
     ax_test![nop_6byte; 0x66, 0x0f, 0x1f, 0x44, 0x0, 0x0; |_: Axecutor| {};
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
     ax_test![nop_7byte; 0x0f, 0x1f, 0x80, 0x0, 0x0, 0x0, 0x0; |_: Axecutor| {};
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
     ax_test![nop_8byte; 0x0f, 0x1f, 0x84, 0x0, 0x0, 0x0, 0x0, 0x0; |_: Axecutor| {};
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
     ax_test![nop_9byte; 0x66, 0x0f, 0x1f, 0x84, 0x0, 0x0, 0x0, 0x0, 0x0; |_: Axecutor| {};
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 }

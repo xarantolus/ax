@@ -209,7 +209,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x6);
         };
-        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     jmp_test![mov_rax_5_jmp_label_label_sub_rax_1;
@@ -217,7 +217,7 @@ mod tests {
         0x48, 0xc7, 0xc0, 0x5, 0x0, 0x0, 0x0, 0xeb, 0x32; // mov rax, 5; JMP .label
         50; // 50 bytes of 0x90 (nop) as padding
         0x48, 0x83, 0xe8, 0x1; // .label: sub rax, 1
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     jmp_test![jmp_lend_lend_nop_8;
@@ -225,7 +225,7 @@ mod tests {
         0xeb, 0x5; // JMP .Lend
         5; // 5 bytes of 0x90 (nop) as padding
         0x90; // .Lend: nop
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 
     jmp_test![jmp_lend_lend_nop_32;
@@ -233,6 +233,6 @@ mod tests {
         0xe9, 0x32, 0xe0, 0x4, 0x0; // JMP .Lend
         319538; // 319538 bytes of 0x90 (nop) as padding
         0x90; // .Lend: nop
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF | FLAG_AF)
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 }

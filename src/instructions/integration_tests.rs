@@ -110,4 +110,16 @@ mod test {
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
+
+    // mov rax, 4; cmp rax, 3; je .end; nop; mov rax, 42; .end: nop
+    ax_test![mov_rax_4_cmp_rax_3_je_end_nop_mov_rax_42_end_nop;
+        0x48, 0xc7, 0xc0, 0x4, 0x0, 0x0, 0x0, 0x48, 0x83, 0xf8, 0x3, 0x74, 0x8, 0x90, 0x48, 0xc7, 0xc0, 0x2a, 0x0, 0x0, 0x0, 0x90;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x4686d92fabdcc717u64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x2a);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
 }

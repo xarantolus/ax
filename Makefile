@@ -1,4 +1,4 @@
-.PHONY: build normal watch test clean generate
+.PHONY: build normal watch test clean generate coverage fmt
 
 build:
 	wasm-pack build --target web --release
@@ -14,7 +14,13 @@ watch:
 	cargo watch -s "make normal"
 
 watch-tests:
-	cargo watch --why --clear --exec 'tarpaulin --out Lcov --skip-clean' --ignore lcov.info
+	cargo watch --why --no-restart --clear --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
+
+fmt:
+	cargo fix --allow-staged && cargo fmt
+
+coverage:
+	cargo tarpaulin --out Lcov --skip-clean
 
 test:
 	cargo test

@@ -20,10 +20,11 @@ gdb.execute('set disassembly-flavor intel')
 
 # Always try to set breakpoint at appropriate entry point
 try:
-    gdb.execute('b main')
+    gdb.execute('b main', to_string=True)
+    gdb.execute('b _start', to_string=True)
 except:
     try:
-        gdb.execute('b _start')
+        gdb.execute('b _start', to_string=True)
     except:
         pass
 
