@@ -20,6 +20,7 @@ pub mod jle;
 pub mod jmp;
 pub mod jne;
 pub mod jno;
+pub mod jnp;
 pub mod jrcxz;
 pub mod lea;
 mod macros;
