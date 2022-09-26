@@ -7,6 +7,7 @@ pub mod cmp;
 pub mod cqo;
 pub mod cwd;
 pub mod dec;
+pub mod div;
 pub mod errors;
 pub mod execute;
 pub mod flags;

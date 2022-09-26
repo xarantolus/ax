@@ -369,7 +369,7 @@ impl Axecutor {
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
 
         // Depending on the register, we either set the lowest or second lowest byte
-        let is_high = HIGHER_BYTE_REGISTERS.contains(&qword_register);
+        let is_high = HIGHER_BYTE_REGISTERS.contains(&reg);
         let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
 
         let result_value: u64 = if is_high {
@@ -425,7 +425,7 @@ impl Axecutor {
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
 
         // Depending on the register, we either get the lowest or second lowest byte
-        let is_high = HIGHER_BYTE_REGISTERS.contains(&qword_register);
+        let is_high = HIGHER_BYTE_REGISTERS.contains(&reg);
         let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
 
         let result_value: u8 = if is_high {
