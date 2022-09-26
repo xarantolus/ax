@@ -34,6 +34,7 @@ mod macros;
 pub mod memory;
 pub mod mov;
 pub mod nop;
+pub mod not;
 pub mod operand;
 pub mod pop;
 pub mod push;
