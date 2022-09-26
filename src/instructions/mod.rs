@@ -37,6 +37,7 @@ pub mod lea;
 mod macros;
 pub mod memory;
 pub mod mov;
+pub mod mul;
 pub mod nop;
 pub mod not;
 pub mod operand;
