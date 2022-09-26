@@ -13,6 +13,7 @@ impl Axecutor {
     pub fn switch_instruction_mnemonic(&mut self, i: Instruction) -> Result<(), AxError> {
         match i.mnemonic() {
             Add => self.mnemonic_add(i),
+            And => self.mnemonic_and(i),
             Call => self.mnemonic_call(i),
             Cmp => self.mnemonic_cmp(i),
             Dec => self.mnemonic_dec(i),
@@ -59,6 +60,7 @@ impl Axecutor {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SupportedMnemonic {
     Add = 7,
+    And = 21,
     Call = 59,
     Cmp = 93,
     Dec = 137,
@@ -105,6 +107,7 @@ impl From<Mnemonic> for SupportedMnemonic {
     fn from(mnemonic: Mnemonic) -> Self {
         match mnemonic {
             Add => SupportedMnemonic::Add,
+            And => SupportedMnemonic::And,
             Call => SupportedMnemonic::Call,
             Cmp => SupportedMnemonic::Cmp,
             Dec => SupportedMnemonic::Dec,

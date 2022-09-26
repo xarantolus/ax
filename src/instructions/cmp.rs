@@ -6,7 +6,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
 use crate::instructions::macros::NO_WRITEBACK;
-use crate::instructions::registers::SupportedRegister;
+
 use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
 
 impl Axecutor {

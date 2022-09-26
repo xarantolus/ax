@@ -369,6 +369,7 @@ macro_rules! calculate_r_rm {
     [u8f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
 			use crate::instructions::operand::Operand;
+			use crate::instructions::registers::SupportedRegister;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let dest_reg : SupportedRegister = dest.into();
@@ -401,7 +402,8 @@ macro_rules! calculate_r_rm {
     };
     [u16f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-            use crate::instructions::operand::Operand;
+			use crate::instructions::operand::Operand;
+			use crate::instructions::registers::SupportedRegister;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let dest_reg : SupportedRegister = dest.into();
@@ -434,8 +436,8 @@ macro_rules! calculate_r_rm {
     };
     [u32f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-
-            use crate::instructions::operand::Operand;
+			use crate::instructions::operand::Operand;
+			use crate::instructions::registers::SupportedRegister;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let dest_reg : SupportedRegister = dest.into();
@@ -468,8 +470,8 @@ macro_rules! calculate_r_rm {
     };
     [u64f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-
-            use crate::instructions::operand::Operand;
+			use crate::instructions::operand::Operand;
+			use crate::instructions::registers::SupportedRegister;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let dest_reg : SupportedRegister = dest.into();
