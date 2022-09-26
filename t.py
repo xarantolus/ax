@@ -1,4 +1,5 @@
 from ctypes import memset
+from lib2to3.pgen2.token import OP
 from multiprocessing.dummy import Pool
 import re
 import pyperclip
@@ -42,7 +43,7 @@ FLAGS = [
 
 class Operand(abc.ABC):
     @abc.abstractclassmethod
-    def size() -> int:
+    def size(self) -> int:
         pass
 
     def size_letter(self):
@@ -56,7 +57,8 @@ class Operand(abc.ABC):
         elif size == 8:
             return "q"
         else:
-            raise Exception("Invalid size")
+            # illegal argument
+            raise ValueError("size must be 1, 2, 4 or 8")
 
 
 class RegisterOperand(Operand):
@@ -75,7 +77,7 @@ class RegisterOperand(Operand):
         elif self.name in byte_registers:
             return 1
         else:
-            raise Exception("Unknown register: " + str(self.name))
+            raise ValueError("Unknown register: " + str(self.name))
 
     def __eq__(self, other):
         return self.name == other.name
@@ -92,7 +94,7 @@ class ImmediateOperand(Operand):
 
     def hexify(self, target: Operand):
         if pow(2, target.size() * 8) <= self.number:
-            raise Exception(
+            raise ValueError(
                 f"Number {hex(self.number)} too big for target register {target.name}")
 
         if self.number >= (2147483647):
@@ -103,7 +105,7 @@ class ImmediateOperand(Operand):
             return hex(self.number)
 
     def size(self):
-        raise Exception("ImmediateOperand has no size")
+        raise ValueError("ImmediateOperand has no size")
 
     def __eq__(self, other):
         return self.number == other.number
@@ -156,7 +158,7 @@ class MemoryOperand(Operand):
                 else:
                     return f"{size_prefix}[{self.base_register.name}+{self.index_register.name}]"
             else:
-                raise "cannot have offset and index register"
+                raise ValueError("cannot have offset and index register")
 
     @staticmethod
     def parse(argument: str, other_operand: Operand | None):
@@ -242,18 +244,23 @@ class MemoryOperand(Operand):
             index_register = None
 
         if len(argument) > 0:
-            raise Exception("Could not parse memory argument: " + original_argument + "(rest is " + argument + ")"
-                            "\nNote that the parser is very basic and cares about order")
+            raise ValueError("Could not parse memory argument: " + original_argument + "(rest is " + argument + ")"
+                             "\nNote that the parser is very basic and cares about order")
 
         return MemoryOperand(base_register, offset, scale, index_register, size)
 
 
 class Instruction:
-    def __init__(self, mnemonic: str, arguments: List[Operand]):
+    def __init__(self, mnemonic: str, arguments: List[Operand], implicit: List[Operand] = []):
         self.mnemonic = mnemonic.lower()
         self.arguments = arguments
+        self.implicit_arguments = implicit
         # currently only 0-2 operands are supported
-        assert len(self.arguments) <= 2
+        assert len(self.arguments) + len(self.implicit_arguments) <= 2
+
+    def set_implicit(self, implicit: List[Operand]):
+        self.implicit_arguments = implicit
+        assert len(self.arguments) + len(self.implicit_arguments) <= 2
 
     @staticmethod
     def parse_operand(argument: str, other_operand: Operand | None):
@@ -275,7 +282,7 @@ class Instruction:
         except:
             pass
 
-        raise Exception("Could not parse operand: " + argument)
+        raise ValueError("Could not parse operand: " + argument)
 
     @staticmethod
     def parse(argument: str):
@@ -341,7 +348,7 @@ class Instruction:
         elif len(self.arguments) == 2:
             return f"{self.mnemonic} {self.arguments[0]}, {self.arguments[1]}"
         else:
-            raise Exception(
+            raise ValueError(
                 "str not implement for Instruction with more than 2 operands")
 
 
@@ -485,13 +492,18 @@ def assemble(instruction: Instruction | str):
 
         return hex_arr
 
-def test_id(instruction, flags_set):
+
+def test_id(instruction: Instruction, flags_set, inputs=None):
     def map_flags(f):
-            # remove the FLAG_ prefix from each flag
-            return [x[5:] for x in f]
+        # remove the FLAG_ prefix from each flag
+        return [x[5:] for x in f]
 
     # generate name from instruction string and flags set, but replaces spaces and commas with _
-    test_name = f"{instruction}_{'_'.join(map_flags(flags_set))}";
+
+    test_name = f"{instruction}_{'_'.join(map_flags(flags_set))}"
+
+    if len(instruction.implicit_arguments) > 0 and inputs is not None:
+        test_name += f"_{'_'.join([f'{op}_{inputs[i+len(instruction.arguments)]}' for i, op in enumerate(instruction.implicit_arguments)])}"
 
     # only keep alphanumerial characters
     test_name = re.sub(r'\W+', '_', test_name)
@@ -500,6 +512,7 @@ def test_id(instruction, flags_set):
     test_name = re.sub(r'_+', '_', test_name)
 
     return test_name.strip("_").lower()
+
 
 def flags_to_str(set, notset):
     def joinflags(flags):
@@ -557,20 +570,21 @@ class TestCase:
 
     @staticmethod
     def dynamic_operands(i: Instruction) -> List[Operand]:
-        return list(filter(lambda o: not isinstance(o, ImmediateOperand), i.arguments))
+        return list(filter(lambda o: not isinstance(o, ImmediateOperand), i.arguments + i.implicit_arguments))
 
     @staticmethod
-    def auto_learn_flags(i: Instruction) -> List:
+    def auto_learn_flags(i: Instruction, result_only: bool) -> List:
         dynamic_operands = len(TestCase.dynamic_operands(i))
         if dynamic_operands == 0:
-            return TestCase.learn_flags(i, [[]])
+            return TestCase.learn_flags(i, [[]], result_only)
         elif dynamic_operands == 1:
             return TestCase.learn_flags(i,
                                         [[v]
                                             for v in TestCase.GOOD_TEST_VALUES]
                                         + [i for i in range(0, 1024)]
                                         + [[random.randint(0, 2**64)]
-                                           for _ in range(50)]
+                                           for _ in range(50)],
+                                        result_only
                                         )
         elif dynamic_operands == 2:
             return TestCase.learn_flags(i,
@@ -583,7 +597,8 @@ class TestCase:
                                             for v in TestCase.GOOD_TEST_VALUES]
                                         # 50 random combinations
                                         + [[random.randint(0, 2**64), random.randint(0, 2**64)]
-                                            for _ in range(50)]
+                                            for _ in range(50)],
+                                        result_only
                                         )
         else:
             raise NotImplementedError()
@@ -615,7 +630,7 @@ class TestCase:
                         f"mov {arg}, {operand_values[idx]}")
                     idx += 1
                 else:
-                    raise Exception("invalid operand" + arg)
+                    raise ValueError("invalid operand" + arg)
 
             assert idx == len(
                 dynamic_operands), "Not all setup operand values were used"
@@ -755,18 +770,21 @@ class TestCase:
                     [output_op_val1, output_op_val2],
                 )
             else:
-                raise Exception(
+                raise ValueError(
                     "invalid number of dynamic operands")
-        except Exception as e:
+        except Exception:
             return None
 
     @staticmethod
-    def learn_flags(instruction: Instruction, operand_values_arg: List[List[int]]):
+    def learn_flags(instruction: Instruction, operand_values_arg: List[List[int]], result_only: bool):
         results: List[TestCase] = []
 
         assembled = assemble(instruction)
 
         def is_new(flags_set, flags_not_set):
+            if result_only:
+                return True
+
             for ts in results:
                 if ts.flags_set == flags_set and ts.flags_not_set == flags_not_set:
                     return False
@@ -793,12 +811,12 @@ class TestCase:
                     results.append(r)
 
             if len(results) == 0:
-                raise Exception(
+                raise ValueError(
                     f"Could not learn any flags for instruction {instruction}, likely due to some bug with with the flag learner")
         return results
 
     def test_id(self):
-        return test_id(self.instruction, self.flags_set);
+        return test_id(self.instruction, self.flags_set, self.operand_values)
 
     def __str__(self):
         dynamic_operands = self.dynamic_operands(self.instruction)
@@ -839,7 +857,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
             else:
-                raise Exception("invalid dynamic operand")
+                raise ValueError("invalid dynamic operand")
 
         elif len(dynamic_operands) == 2:
             if isinstance(dynamic_operands[0], RegisterOperand) and isinstance(dynamic_operands[1], RegisterOperand):
@@ -889,7 +907,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
         else:
-            raise Exception("invalid number of dynamic operands")
+            raise ValueError("invalid number of dynamic operands")
 
 
 if __name__ == '__main__':
@@ -902,13 +920,17 @@ if __name__ == '__main__':
         '-f', '--flags', help='Select flags to test for', action='store', dest='flags',)
     parser.add_argument('-e',                       '--extreme',
                         help='Run more tests (default for < 2 dynamic arguments)', action='store_true', dest='extreme',)
+    parser.add_argument("-i", "--implicit-operands",
+                        help="Test implicit operands", action="store", dest="implicit_operands")
+    parser.add_argument("-r", "--result", help="Deduplicate by result of test, not by flags set",
+                        action="store_true", dest="result")
 
     parser.add_argument('rest', nargs=argparse.REMAINDER, action='store')
 
     args = parser.parse_args()
 
     # Arguments of this script are joined together
-    assembly_code = "sub dl, byte ptr [rbp+4*rcx]" if len(
+    assembly_code = "add dl, byte ptr [rbp+4*rcx]" if len(
         args.rest) == 0 else " ".join(args.rest)
     instruction = Instruction.parse(assembly_code)
 
@@ -922,11 +944,17 @@ if __name__ == '__main__':
         valid = all(map(lambda f: any(map(lambda t: t[1] == f, FLAGS)), flags))
 
         if not valid:
-            raise Exception(
+            raise ValueError(
                 f"Invalid flags: {args.flags}, valid flags are {FLAGS}")
         FLAGS = list(filter(lambda t: t[1] in flags, FLAGS))
 
         print(f"Testing flags: {FLAGS}")
+
+    # Implicit operands, such as RAX:RDX in CQO
+    if args.implicit_operands:
+        parsed = [Instruction.parse_operand(
+            s.strip(), None) for s in args.implicit_operands.split(',')]
+        instruction.set_implicit(list(parsed))
 
     if args.extreme or len(TestCase.dynamic_operands(instruction)) < 2:
         TestCase.GOOD_TEST_VALUES += [i for i in range(0, 256)]
@@ -934,7 +962,7 @@ if __name__ == '__main__':
     print(
         f"Testing instruction {instruction} with more than {len(TestCase.GOOD_TEST_VALUES)} values (all combinations)")
 
-    test_cases = TestCase.auto_learn_flags(instruction)
+    test_cases = TestCase.auto_learn_flags(instruction, args.result)
 
     test_cases.sort(key=lambda t: t.test_id())
 
@@ -943,9 +971,16 @@ if __name__ == '__main__':
         try:
             test_cases_str.append(str(test_case))
         except Exception as e:
+            print(f"Failed to generate test case {test_case}: {e}")
             pass
 
     print(f"Found {len(test_cases_str)} test cases for {assembly_code}")
+
+    too_many = False
+    if len(test_cases_str) > 50:
+        print("Too many test cases, only a sample of 50 will be returned")
+        test_cases_str = random.sample(test_cases_str, 50)
+        too_many = True
 
     tests = "\n\n".join(test_cases_str)
     pyperclip.copy(tests)
@@ -953,3 +988,5 @@ if __name__ == '__main__':
     print(tests)
 
     print(f"Copied {len(test_cases_str)} tests to clipboard")
+    if too_many:
+        print("Note that too many test cases were generated, so only a sample of 50 was returned")
