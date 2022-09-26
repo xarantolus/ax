@@ -1051,4 +1051,262 @@ mod tests {
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
+
+    // and ax, 0x3
+    ax_test![and_ax_0x3; 0x66, 0x83, 0xe0, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0x1);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 0x1);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and ax, 0x3
+    ax_test![and_ax_0x3_pf; 0x66, 0x83, 0xe0, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0x7);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 0x3);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and ax, 0x3
+    ax_test![and_ax_0x3_pf_zf; 0x66, 0x83, 0xe0, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 0x0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and ax, 0x7cd1
+    ax_test![and_ax_0x7cd1; 0x66, 0x25, 0xd1, 0x7c;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0x1);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 0x1);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and ax, 0x7cd1
+    ax_test![and_ax_0x7cd1_pf; 0x66, 0x25, 0xd1, 0x7c;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0x11);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 0x11);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and ax, 0x7cd1
+    ax_test![and_ax_0x7cd1_pf_zf; 0x66, 0x25, 0xd1, 0x7c;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 0x0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and eax, 0x4d2
+    ax_test![and_eax_0x4d2; 0x25, 0xd2, 0x4, 0x0, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EAX; 0x7);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EAX; 0x2);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and eax, 0x4d2
+    ax_test![and_eax_0x4d2_pf; 0x25, 0xd2, 0x4, 0x0, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EAX; 0x1f);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EAX; 0x12);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and eax, 0x4d2
+    ax_test![and_eax_0x4d2_pf_zf; 0x25, 0xd2, 0x4, 0x0, 0x0;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EAX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EAX; 0x0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and rax, 0x499602d2
+    ax_test![and_rax_0x499602d2; 0x48, 0x25, 0xd2, 0x2, 0x96, 0x49;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x7);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x2);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and rax, 0x499602d2
+    ax_test![and_rax_0x499602d2_pf; 0x48, 0x25, 0xd2, 0x2, 0x96, 0x49;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x1f);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x12);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and rax, 0x499602d2
+    ax_test![and_rax_0x499602d2_pf_zf; 0x48, 0x25, 0xd2, 0x2, 0x96, 0x49;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and byte ptr [rax], 0x7b
+    ax_test![and_byte_ptr_rax_0x7b; 0x80, 0x20, 0x7b;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x1).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x1000);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and byte ptr [rax], 0x7b
+    ax_test![and_byte_ptr_rax_0x7b_pf; 0x80, 0x20, 0x7b;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x7).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x1000);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x3);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and byte ptr [rax], 0x7b
+    ax_test![and_byte_ptr_rax_0x7b_pf_zf; 0x80, 0x20, 0x7b;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x1000);
+            a.mem_init_zero(0x1000, 1).unwrap();
+            a.mem_write_8(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x1000);
+            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and word ptr [rax], 0x302b
+    ax_test![and_word_ptr_rax_0x302b; 0x66, 0x81, 0x20, 0x2b, 0x30;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x1).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x1000);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and word ptr [rax], 0x302b
+    ax_test![and_word_ptr_rax_0x302b_pf; 0x66, 0x81, 0x20, 0x2b, 0x30;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x7).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x1000);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x3);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and word ptr [rax], 0x302b
+    ax_test![and_word_ptr_rax_0x302b_pf_zf; 0x66, 0x81, 0x20, 0x2b, 0x30;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x1000);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and dword ptr [rax], 0x7599daf
+    ax_test![and_dword_ptr_rax_0x7599daf; 0x81, 0x20, 0xaf, 0x9d, 0x59, 0x7;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x1).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x1);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and dword ptr [rax], 0x7599daf
+    ax_test![and_dword_ptr_rax_0x7599daf_pf; 0x81, 0x20, 0xaf, 0x9d, 0x59, 0x7;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0xf).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0xf);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // and dword ptr [rax], 0x7599daf
+    ax_test![and_dword_ptr_rax_0x7599daf_pf_zf; 0x81, 0x20, 0xaf, 0x9d, 0x59, 0x7;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RAX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RAX; 0x1000);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
+    ];
 }
