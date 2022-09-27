@@ -1,14 +1,12 @@
 use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Div;
-use iced_x86::OpKind;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
-use crate::instructions::flags::*;
+
 use crate::instructions::operand::Operand;
 use crate::instructions::registers::SupportedRegister::*;
-use crate::{calculate_r_rm, calculate_rm, calculate_rm_imm, calculate_rm_r};
 
 impl Axecutor {
     pub fn mnemonic_div(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -64,7 +62,7 @@ impl Axecutor {
         let src_val = match op {
             Operand::Register(r) => self.reg_read_16(r),
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Mul_rm16", op),
+            _ => panic!("Invalid operand {:?} for Div_rm16", op),
         } as u32;
 
         if src_val == 0 {
@@ -95,7 +93,7 @@ impl Axecutor {
         let src_val = match op {
             Operand::Register(r) => self.reg_read_32(r),
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Mul_rm32", op),
+            _ => panic!("Invalid operand {:?} for Div_rm32", op),
         } as u64;
 
         if src_val == 0 {
@@ -126,7 +124,7 @@ impl Axecutor {
         let src_val = match op {
             Operand::Register(r) => self.reg_read_64(r),
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Mul_rm64", op),
+            _ => panic!("Invalid operand {:?} for Div_rm64", op),
         } as u128;
 
         if src_val == 0 {
@@ -151,12 +149,9 @@ impl Axecutor {
 mod tests {
     use super::super::axecutor::Axecutor;
     use crate::{
-        assert_reg_value, ax_test,
-        instructions::{errors::AxError, registers::SupportedRegister},
-        jmp_test, test_async, write_reg_value,
+        assert_reg_value, ax_test, instructions::registers::SupportedRegister, write_reg_value,
     };
     use iced_x86::Register::*;
-    use wasm_bindgen::JsValue;
 
     async fn assert_divide_by_zero_error(code: &[u8]) {
         let mut ax = Axecutor::new(code, 0x1000, 0x1000).expect("Failed to create Axecutor");
@@ -208,8 +203,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x40);
             assert_reg_value!(w; a; AX; 0x2000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div bl
@@ -220,8 +214,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x3f);
             assert_reg_value!(w; a; AX; 0x282);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div bl
@@ -232,8 +225,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0xf);
             assert_reg_value!(w; a; AX; 0x111);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div bl
@@ -244,8 +236,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x80);
             assert_reg_value!(w; a; AX; 0x80);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div bl
@@ -256,8 +247,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x10);
             assert_reg_value!(w; a; AX; 0x700);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div bl
@@ -268,8 +258,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x10);
             assert_reg_value!(w; a; AX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div bl
@@ -280,8 +269,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x10);
             assert_reg_value!(w; a; AX; 0xf07);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div bl
@@ -292,8 +280,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x11);
             assert_reg_value!(w; a; AX; 0x400);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -304,8 +291,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x1);
             assert_reg_value!(w; a; DX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -316,8 +302,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x2493);
             assert_reg_value!(w; a; DX; 0x2);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -328,8 +313,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x801);
             assert_reg_value!(w; a; DX; 0x800);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -340,8 +324,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xfe01);
             assert_reg_value!(w; a; DX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -352,8 +335,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x8081);
             assert_reg_value!(w; a; DX; 0x80);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -364,8 +346,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xf001);
             assert_reg_value!(w; a; DX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -376,8 +357,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xf0f1);
             assert_reg_value!(w; a; DX; 0x10);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -388,8 +368,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x8002);
             assert_reg_value!(w; a; DX; 0x1);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -400,8 +379,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x8c64);
             assert_reg_value!(w; a; DX; 0x3);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -412,8 +390,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x4925);
             assert_reg_value!(w; a; DX; 0x4);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -424,8 +401,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x1001);
             assert_reg_value!(w; a; DX; 0x1000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -436,8 +412,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xff01);
             assert_reg_value!(w; a; DX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -448,8 +423,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x201);
             assert_reg_value!(w; a; DX; 0x200);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -460,8 +434,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xf801);
             assert_reg_value!(w; a; DX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -472,8 +445,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xf83f);
             assert_reg_value!(w; a; DX; 0x2);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -484,8 +456,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xffff);
             assert_reg_value!(w; a; DX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -496,8 +467,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x8619);
             assert_reg_value!(w; a; DX; 0x18);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -508,8 +478,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x924a);
             assert_reg_value!(w; a; DX; 0x1);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -520,8 +489,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x2001);
             assert_reg_value!(w; a; DX; 0x2000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -532,8 +500,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x401);
             assert_reg_value!(w; a; DX; 0x400);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -544,8 +511,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xfc01);
             assert_reg_value!(w; a; DX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -556,8 +522,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xfc10);
             assert_reg_value!(w; a; DX; 0x31);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -568,8 +533,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x8307);
             assert_reg_value!(w; a; DX; 0x6);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -580,8 +544,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0xe001);
             assert_reg_value!(w; a; DX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -592,8 +555,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x8889);
             assert_reg_value!(w; a; DX; 0x8);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div ax
@@ -604,8 +566,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x4001);
             assert_reg_value!(w; a; DX; 0x4000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -616,8 +577,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x1);
             assert_reg_value!(d; a; EDX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -628,8 +588,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x24924925);
             assert_reg_value!(d; a; EDX; 0x4);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -640,8 +599,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x8001001);
             assert_reg_value!(d; a; EDX; 0x1000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -652,8 +610,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x200001);
             assert_reg_value!(d; a; EDX; 0x200000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -664,8 +621,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x80000002u32);
             assert_reg_value!(d; a; EDX; 0x1);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -676,8 +632,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xfe000001u32);
             assert_reg_value!(d; a; EDX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -688,8 +643,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x80808081u32);
             assert_reg_value!(d; a; EDX; 0x80);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -700,8 +654,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x40001);
             assert_reg_value!(d; a; EDX; 0x40000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -712,8 +665,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x10000001);
             assert_reg_value!(d; a; EDX; 0x10000000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -724,8 +676,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xf0000001u32);
             assert_reg_value!(d; a; EDX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -736,8 +687,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xf0f0f0f1u32);
             assert_reg_value!(d; a; EDX; 0x10);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -748,8 +698,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x80010003u32);
             assert_reg_value!(d; a; EDX; 0x2);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -760,8 +709,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x2000001);
             assert_reg_value!(d; a; EDX; 0x2000000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -772,8 +720,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x8c6318c7u32);
             assert_reg_value!(d; a; EDX; 0x6);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -784,8 +731,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x4924924a);
             assert_reg_value!(d; a; EDX; 0x1);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -796,8 +742,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x10002001);
             assert_reg_value!(d; a; EDX; 0x2000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -808,8 +753,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x400001);
             assert_reg_value!(d; a; EDX; 0x400000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -820,8 +764,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xffffffffu32);
             assert_reg_value!(d; a; EDX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -832,8 +775,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xff000001u32);
             assert_reg_value!(d; a; EDX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -844,8 +786,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x2000401);
             assert_reg_value!(d; a; EDX; 0x400);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -856,8 +797,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x80001);
             assert_reg_value!(d; a; EDX; 0x80000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -868,8 +808,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x20000001);
             assert_reg_value!(d; a; EDX; 0x20000000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -880,8 +819,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xf8000001u32);
             assert_reg_value!(d; a; EDX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -892,8 +830,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xf83e0f84u32);
             assert_reg_value!(d; a; EDX; 0x1d);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -904,8 +841,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xfffe0001u32);
             assert_reg_value!(d; a; EDX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -916,8 +852,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x80000001u32);
             assert_reg_value!(d; a; EDX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -928,8 +863,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x86186187u32);
             assert_reg_value!(d; a; EDX; 0x6);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -940,8 +874,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x4000001);
             assert_reg_value!(d; a; EDX; 0x4000000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -952,8 +885,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x92492493u32);
             assert_reg_value!(d; a; EDX; 0x2);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -964,8 +896,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x20004001);
             assert_reg_value!(d; a; EDX; 0x4000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -976,8 +907,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x800001);
             assert_reg_value!(d; a; EDX; 0x800000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -988,8 +918,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x4000801);
             assert_reg_value!(d; a; EDX; 0x800);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -1000,8 +929,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x100001);
             assert_reg_value!(d; a; EDX; 0x100000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -1012,8 +940,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x40000001);
             assert_reg_value!(d; a; EDX; 0x40000000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -1024,8 +951,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xfc000001u32);
             assert_reg_value!(d; a; EDX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -1036,8 +962,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xfc0fc0fdu32);
             assert_reg_value!(d; a; EDX; 0x4);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -1048,8 +973,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x83060c19u32);
             assert_reg_value!(d; a; EDX; 0x18);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -1060,8 +984,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x20001);
             assert_reg_value!(d; a; EDX; 0x20000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -1072,8 +995,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x8000001);
             assert_reg_value!(d; a; EDX; 0x8000000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -1084,8 +1006,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0xe0000001u32);
             assert_reg_value!(d; a; EDX; 0x0);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -1096,8 +1017,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x88888889u32);
             assert_reg_value!(d; a; EDX; 0x8);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -1108,8 +1028,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x40008002);
             assert_reg_value!(d; a; EDX; 0x1);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div eax
@@ -1120,8 +1039,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x1000001);
             assert_reg_value!(d; a; EDX; 0x1000000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div rax
@@ -1132,8 +1050,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000200040008002u64);
             assert_reg_value!(q; a; RDX; 0x1);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div rax
@@ -1144,8 +1061,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x54eab45306e2c3a6u64);
             assert_reg_value!(q; a; RDX; 0x8cfe7f1b2f9dfd5du64);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div rax
@@ -1156,8 +1072,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x200000000000001u64);
             assert_reg_value!(q; a; RDX; 0x200000000000000u64);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div rax
@@ -1168,8 +1083,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x2000000000000001u64);
             assert_reg_value!(q; a; RDX; 0x2000000000000000u64);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div rax
@@ -1180,8 +1094,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x4000000001u64);
             assert_reg_value!(q; a; RDX; 0x4000000000u64);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div rax
@@ -1192,8 +1105,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x8001000200040009u64);
             assert_reg_value!(q; a; RDX; 0x8);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div rax
@@ -1204,8 +1116,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x7db922011f384866u64);
             assert_reg_value!(q; a; RDX; 0x742c9272593a1d72u64);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div rax
@@ -1216,8 +1127,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x4000000000001u64);
             assert_reg_value!(q; a; RDX; 0x4000000000000u64);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 
     // div rax
@@ -1228,7 +1138,6 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x100000002000001u64);
             assert_reg_value!(q; a; RDX; 0x2000000);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+        }
     ];
 }

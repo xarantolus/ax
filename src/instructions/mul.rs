@@ -1,14 +1,12 @@
 use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Mul;
-use iced_x86::OpKind;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
 use crate::instructions::operand::Operand;
 use crate::instructions::registers::SupportedRegister::*;
-use crate::{calculate_r_rm, calculate_rm, calculate_rm_imm, calculate_rm_r};
 
 impl Axecutor {
     pub fn mnemonic_mul(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -155,8 +153,7 @@ impl Axecutor {
 mod tests {
     use super::super::axecutor::Axecutor;
     use crate::{
-        assert_reg_value, ax_test, instructions::registers::SupportedRegister, jmp_test,
-        write_reg_value,
+        assert_reg_value, ax_test, instructions::registers::SupportedRegister, write_reg_value,
     };
     use iced_x86::Register::*;
 

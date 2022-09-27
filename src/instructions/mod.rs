@@ -13,6 +13,7 @@ pub mod execute;
 pub mod flags;
 pub mod generated;
 pub mod hooks;
+pub mod idiv;
 pub mod inc;
 mod integration_tests;
 pub mod ja;
