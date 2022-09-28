@@ -251,12 +251,14 @@ class MemoryOperand(Operand):
 
 
 class Instruction:
-    def __init__(self, mnemonic: str, arguments: List[Operand], implicit: List[Operand] = []):
+    def __init__(self, mnemonic: str, arguments: List[Operand], additional_imm: ImmediateOperand | None, implicit: List[Operand] = []):
         self.mnemonic = mnemonic.lower()
         self.arguments = arguments
         self.implicit_arguments = implicit
         # currently only 0-2 operands are supported
         assert len(self.arguments) + len(self.implicit_arguments) <= 2
+        self.additional_imm = additional_imm
+
 
     def set_implicit(self, implicit: List[Operand]):
         self.implicit_arguments = implicit
@@ -319,6 +321,7 @@ class Instruction:
         operands.append(current_argument.strip())
 
         parsed_operands = []
+        additional_immediate = None
         if len(operands) == 1:
             parsed_operands.append(
                 Instruction.parse_operand(operands[0], None))
@@ -334,19 +337,40 @@ class Instruction:
 
             parsed_operands.append(first_operand)
             parsed_operands.append(second_operand)
+        elif len(operands) == 3:
+            try:
+                first_operand = Instruction.parse_operand(operands[0], None)
+                second_operand = Instruction.parse_operand(
+                    operands[1], first_operand)
+            except:
+                second_operand = Instruction.parse_operand(operands[1], None)
+                first_operand = Instruction.parse_operand(
+                    operands[0], second_operand)
 
-        return Instruction(mnemonic, parsed_operands)
+            additional_immediate = ImmediateOperand(operands[2])
+
+            parsed_operands.append(first_operand)
+            parsed_operands.append(second_operand)
+        else:
+            raise ValueError("Too many operands")
+
+        return Instruction(mnemonic, parsed_operands, additional_immediate)
 
     def __eq__(self, other):
         return self.mnemonic == other.mnemonic and self.arguments == other.arguments
 
     def __str__(self):
         if len(self.arguments) == 0:
+            assert self.additional_imm is None
             return self.mnemonic
         elif len(self.arguments) == 1:
+            assert self.additional_imm is None
             return f"{self.mnemonic} {self.arguments[0]}"
         elif len(self.arguments) == 2:
-            return f"{self.mnemonic} {self.arguments[0]}, {self.arguments[1]}"
+            if self.additional_imm is None:
+                return f"{self.mnemonic} {self.arguments[0]}, {self.arguments[1]}"
+            else:
+                return f"{self.mnemonic} {self.arguments[0]}, {self.arguments[1]}, {self.additional_imm}"
         else:
             raise ValueError(
                 "str not implement for Instruction with more than 2 operands")
@@ -930,7 +954,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Arguments of this script are joined together
-    assembly_code = "add dl, byte ptr [rbp+4*rcx]" if len(
+    assembly_code = "imul ax,bx,0x5" if len(
         args.rest) == 0 else " ".join(args.rest)
     instruction = Instruction.parse(assembly_code)
 

@@ -36,7 +36,31 @@ impl Axecutor {
     fn instr_imul_r16_rm16_imm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Imul_r16_rm16_imm16);
 
-        todo!("instr_imul_r16_rm16_imm16 for Imul")
+        let (dest_op, src_op) = self.instruction_operands_2(i)?;
+        let imm_op = self.instruction_operand(i, 2)?;
+
+        let src_value = match src_op {
+            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
+            _ => panic!("Invalid operand for IMUL r16, r/m16, imm16"),
+        } as i16;
+
+        let imm_value = match imm_op {
+            Operand::Immediate { data, size: _ } => data as i16,
+            _ => panic!("Invalid operand for IMUL r16, r/m16, imm16; expected immediate value"),
+        };
+
+        let (result, overflow) = src_value.overflowing_mul(imm_value);
+
+        self.reg_write_16(dest_op.into(), result as u16);
+
+        if overflow {
+            self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
+        } else {
+            self.set_flags_u8(0, FLAG_CF | FLAG_OF, 0);
+        }
+
+        Ok(())
     }
 
     /// IMUL r32, r/m32, imm32
@@ -45,7 +69,31 @@ impl Axecutor {
     fn instr_imul_r32_rm32_imm32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Imul_r32_rm32_imm32);
 
-        todo!("instr_imul_r32_rm32_imm32 for Imul")
+        let (dest_op, src_op) = self.instruction_operands_2(i)?;
+        let imm_op = self.instruction_operand(i, 2)?;
+
+        let src_value = match src_op {
+            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
+            _ => panic!("Invalid operand for IMUL r32, r/m32, imm32"),
+        } as i32;
+
+        let imm_value = match imm_op {
+            Operand::Immediate { data, size: _ } => data as i32,
+            _ => panic!("Invalid operand for IMUL r32, r/m32, imm32; expected immediate value"),
+        };
+
+        let (result, overflow) = src_value.overflowing_mul(imm_value);
+
+        self.reg_write_32(dest_op.into(), result as u32);
+
+        if overflow {
+            self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
+        } else {
+            self.set_flags_u8(0, FLAG_CF | FLAG_OF, 0);
+        }
+
+        Ok(())
     }
 
     /// IMUL r64, r/m64, imm32
@@ -54,7 +102,31 @@ impl Axecutor {
     fn instr_imul_r64_rm64_imm32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Imul_r64_rm64_imm32);
 
-        todo!("instr_imul_r64_rm64_imm32 for Imul")
+        let (dest_op, src_op) = self.instruction_operands_2(i)?;
+        let imm_op = self.instruction_operand(i, 2)?;
+
+        let src_value = match src_op {
+            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
+            _ => panic!("Invalid operand for IMUL r64, r/m64, imm32"),
+        } as i64;
+
+        let imm_value = match imm_op {
+            Operand::Immediate { data, size: _ } => data as i64,
+            _ => panic!("Invalid operand for IMUL r64, r/m64, imm32; expected immediate value"),
+        };
+
+        let (result, overflow) = src_value.overflowing_mul(imm_value);
+
+        self.reg_write_64(dest_op.into(), result as u64);
+
+        if overflow {
+            self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
+        } else {
+            self.set_flags_u8(0, FLAG_CF | FLAG_OF, 0);
+        }
+
+        Ok(())
     }
 
     /// IMUL r16, r/m16, imm8
@@ -63,7 +135,31 @@ impl Axecutor {
     fn instr_imul_r16_rm16_imm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Imul_r16_rm16_imm8);
 
-        todo!("instr_imul_r16_rm16_imm8 for Imul")
+        let (dest_op, src_op) = self.instruction_operands_2(i)?;
+        let imm_op = self.instruction_operand(i, 2)?;
+
+        let src_value = match src_op {
+            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
+            _ => panic!("Invalid operand for IMUL r16, r/m16, imm8"),
+        } as i16;
+
+        let imm_value = match imm_op {
+            Operand::Immediate { data, size: _ } => data as i16,
+            _ => panic!("Invalid operand for IMUL r16, r/m16, imm8; expected immediate value"),
+        };
+
+        let (result, overflow) = src_value.overflowing_mul(imm_value);
+
+        self.reg_write_16(dest_op.into(), result as u16);
+
+        if overflow {
+            self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
+        } else {
+            self.set_flags_u8(0, FLAG_CF | FLAG_OF, 0);
+        }
+
+        Ok(())
     }
 
     /// IMUL r32, r/m32, imm8
@@ -72,7 +168,31 @@ impl Axecutor {
     fn instr_imul_r32_rm32_imm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Imul_r32_rm32_imm8);
 
-        todo!("instr_imul_r32_rm32_imm8 for Imul")
+        let (dest_op, src_op) = self.instruction_operands_2(i)?;
+        let imm_op = self.instruction_operand(i, 2)?;
+
+        let src_value = match src_op {
+            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
+            _ => panic!("Invalid operand for IMUL r32, r/m32, imm8"),
+        } as i32;
+
+        let imm_value = match imm_op {
+            Operand::Immediate { data, size: _ } => data as i32,
+            _ => panic!("Invalid operand for IMUL r32, r/m32, imm8; expected immediate value"),
+        };
+
+        let (result, overflow) = src_value.overflowing_mul(imm_value);
+
+        self.reg_write_32(dest_op.into(), result as u32);
+
+        if overflow {
+            self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
+        } else {
+            self.set_flags_u8(0, FLAG_CF | FLAG_OF, 0);
+        }
+
+        Ok(())
     }
 
     /// IMUL r64, r/m64, imm8
@@ -81,7 +201,31 @@ impl Axecutor {
     fn instr_imul_r64_rm64_imm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Imul_r64_rm64_imm8);
 
-        todo!("instr_imul_r64_rm64_imm8 for Imul")
+        let (dest_op, src_op) = self.instruction_operands_2(i)?;
+        let imm_op = self.instruction_operand(i, 2)?;
+
+        let src_value = match src_op {
+            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
+            _ => panic!("Invalid operand for IMUL r64, r/m64, imm8"),
+        } as i64;
+
+        let imm_value = match imm_op {
+            Operand::Immediate { data, size: _ } => data as i64,
+            _ => panic!("Invalid operand for IMUL r64, r/m64, imm8; expected immediate value"),
+        };
+
+        let (result, overflow) = src_value.overflowing_mul(imm_value);
+
+        self.reg_write_64(dest_op.into(), result as u64);
+
+        if overflow {
+            self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
+        } else {
+            self.set_flags_u8(0, FLAG_CF | FLAG_OF, 0);
+        }
+
+        Ok(())
     }
 
     /// IMUL r/m8
@@ -2280,6 +2424,186 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x7ffffffffffffff9u64);
             assert_reg_value!(q; a; RBX; 0x7fffffffffffffffu64);
+        };
+        (FLAG_CF | FLAG_OF; 0)
+    ];
+
+    // imul eax, 0x5 -- this is encoded as imul eax,eax,0x5
+    ax_test![imul_eax_0x5; 0x6b, 0xc0, 0x5;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EAX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EAX; 0x0);
+        };
+        (0; FLAG_CF | FLAG_OF)
+    ];
+
+    // imul eax, 0x5 -- this is encoded as imul eax,eax,0x5
+    ax_test![imul_eax_0x5_2; 0x6b, 0xc0, 0x5;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EAX; 0x5);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EAX; 0x19);
+        };
+        (0; FLAG_CF | FLAG_OF)
+    ];
+
+    // imul eax, 0x5 -- this is encoded as imul eax,eax,0x5
+    ax_test![imul_eax_0x5_negative; 0x6b, 0xc0, 0x5;
+        |a: &mut Axecutor| {
+            // -20
+            write_reg_value!(d; a; EAX; 0xffffffec);
+        };
+        |a: Axecutor| {
+            // -20 * 5 = -100
+            assert_reg_value!(d; a; EAX; 0xffffff9cu32);
+        };
+        (0; FLAG_CF | FLAG_OF)
+    ];
+
+    // imul eax, 0x5 -- this is encoded as imul eax,eax,0x5
+    ax_test![imul_eax_0x5_cf_of; 0x6b, 0xc0, 0x5;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EAX; 0x7fffffffu32);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EAX; 0x7ffffffb);
+        };
+        (FLAG_CF | FLAG_OF; 0)
+    ];
+
+    // imul rbx, 0x3
+    ax_test![imul_rbx_0x3; 0x48, 0x6b, 0xdb, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x0);
+        };
+        (0; FLAG_CF | FLAG_OF)
+    ];
+
+    // imul rbx, 0x3
+    ax_test![imul_rbx_0x3_cf_of; 0x48, 0x6b, 0xdb, 0x3;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x7fffffffffffffffu64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x7ffffffffffffffdu64);
+        };
+        (FLAG_CF | FLAG_OF; 0)
+    ];
+
+    // imul rbx, -0x35
+    ax_test![imul_rbx_0x35; 0x48, 0x6b, 0xdb, 0xcb;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x0);
+        };
+        (0; FLAG_CF | FLAG_OF)
+    ];
+
+    // imul rbx, -0x35
+    ax_test![imul_rbx_0x35_cf_of; 0x48, 0x6b, 0xdb, 0xcb;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x7fffffffffffffffu64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x8000000000000035u64);
+        };
+        (FLAG_CF | FLAG_OF; 0)
+    ];
+
+    // imul cx, -0x14d7
+    ax_test![imul_cx_0x14d7; 0x66, 0x69, 0xc9, 0x29, 0xeb;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; CX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; CX; 0x0);
+        };
+        (0; FLAG_CF | FLAG_OF)
+    ];
+
+    // imul cx, -0x14d7
+    ax_test![imul_cx_0x14d7_cf_of; 0x66, 0x69, 0xc9, 0x29, 0xeb;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; CX; 0x7);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; CX; 0x6e1f);
+        };
+        (FLAG_CF | FLAG_OF; 0)
+    ];
+
+    // imul ebx, -0x8241f
+    ax_test![imul_ebx_0x8241f; 0x69, 0xdb, 0xe1, 0xdb, 0xf7, 0xff;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EBX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EBX; 0x0);
+        };
+        (0; FLAG_CF | FLAG_OF)
+    ];
+
+    // imul ebx, -0x8241f
+    ax_test![imul_ebx_0x8241f_cf_of; 0x69, 0xdb, 0xe1, 0xdb, 0xf7, 0xff;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EBX; 0x7fff);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EBX; 0xedf8a41fu32);
+        };
+        (FLAG_CF | FLAG_OF; 0)
+    ];
+
+    // imul rbx, -0x8241f
+    ax_test![imul_rbx_0x8241f; 0x48, 0x69, 0xdb, 0xe1, 0xdb, 0xf7, 0xff;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x0);
+        };
+        (0; FLAG_CF | FLAG_OF)
+    ];
+
+    // imul rbx, -0x8241f
+    ax_test![imul_rbx_0x8241f_cf_of; 0x48, 0x69, 0xdb, 0xe1, 0xdb, 0xf7, 0xff;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBX; 0x7fffffffffffffffu64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x800000000008241fu64);
+        };
+        (FLAG_CF | FLAG_OF; 0)
+    ];
+
+    // imul edx, ebx, 0x5
+    ax_test![imul_edx_ebx_0x5; 0x6b, 0xd3, 0x5; |a: &mut Axecutor| {
+            write_reg_value!(d; a; EDX; 0x0);
+            write_reg_value!(d; a; EBX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EDX; 0x0);
+            assert_reg_value!(d; a; EBX; 0x0);
+        };
+        (0; FLAG_CF | FLAG_OF)
+    ];
+
+    // imul edx, ebx, 0x5
+    ax_test![imul_edx_ebx_0x5_cf_of; 0x6b, 0xd3, 0x5; |a: &mut Axecutor| {
+            write_reg_value!(d; a; EDX; 0x0);
+            write_reg_value!(d; a; EBX; 0x7fffffffu32);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EDX; 0x7ffffffb);
+            assert_reg_value!(d; a; EBX; 0x7fffffffu32);
         };
         (FLAG_CF | FLAG_OF; 0)
     ];
