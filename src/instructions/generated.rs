@@ -24,6 +24,8 @@ impl Axecutor {
             Idiv => self.mnemonic_idiv(i),
             Imul => self.mnemonic_imul(i),
             Inc => self.mnemonic_inc(i),
+            Int => self.mnemonic_int(i),
+            Int1 => self.mnemonic_int1(i),
             Ja => self.mnemonic_ja(i),
             Jae => self.mnemonic_jae(i),
             Jb => self.mnemonic_jb(i),
@@ -56,6 +58,7 @@ impl Axecutor {
             Syscall => self.mnemonic_syscall(i),
             Test => self.mnemonic_test(i),
             Xor => self.mnemonic_xor(i),
+            Int3 => self.mnemonic_int3(i),
             _ => Err(AxError::from(format!(
                 "unimplemented mnemonic {:?}",
                 i.mnemonic()
@@ -79,6 +82,8 @@ pub enum SupportedMnemonic {
     Idiv = 276,
     Imul = 277,
     Inc = 279,
+    Int = 287,
+    Int1 = 288,
     Ja = 297,
     Jae = 298,
     Jb = 299,
@@ -111,6 +116,7 @@ pub enum SupportedMnemonic {
     Syscall = 746,
     Test = 751,
     Xor = 1518,
+    Int3 = 1620,
 }
 
 impl SupportedMnemonic {
@@ -134,6 +140,8 @@ impl From<Mnemonic> for SupportedMnemonic {
             Idiv => SupportedMnemonic::Idiv,
             Imul => SupportedMnemonic::Imul,
             Inc => SupportedMnemonic::Inc,
+            Int => SupportedMnemonic::Int,
+            Int1 => SupportedMnemonic::Int1,
             Ja => SupportedMnemonic::Ja,
             Jae => SupportedMnemonic::Jae,
             Jb => SupportedMnemonic::Jb,
@@ -166,6 +174,7 @@ impl From<Mnemonic> for SupportedMnemonic {
             Syscall => SupportedMnemonic::Syscall,
             Test => SupportedMnemonic::Test,
             Xor => SupportedMnemonic::Xor,
+            Int3 => SupportedMnemonic::Int3,
             _ => panic!("unimplemented mnemonic {:?}", mnemonic),
         }
     }
