@@ -124,20 +124,27 @@ impl Axecutor {
         self.mem_write_bytes(address, &[data])
     }
 
-    pub fn mem_init_area(&mut self, start: u64, length: u64, data: Vec<u8>) -> Result<(), AxError> {
-        // Make sure there's no overlapping area already defined
+    pub fn mem_init_area(&mut self, start: u64, data: Vec<u8>) -> Result<(), AxError> {
+        // Make sure there's no overlapping area already defined, including code region
+        if start >= self.code_start_address && start < self.code_start_address + self.code_length {
+            return Err(AxError::from(format!(
+                "Cannot initialize memory area at {:#x} (len={}), as it overlaps with the code section starting at {:#x} (len={})",
+                start, data.len(), self.code_start_address, self.code_length
+            )));
+        }
+
         for area in &self.state.memory {
             if start >= area.start && start < area.start + area.length {
                 return Err(AxError::from(format!(
                     "cannot create memory area with start={:#x}, length={:#x}: overlaps with area with start={:#x}, length={:#x}",
-                    start, length, area.start, area.length
+                    start, data.len(), area.start, area.length
                 )));
             }
         }
 
         self.state.memory.push(MemoryArea {
             start,
-            length,
+            length: data.len() as u64,
             data,
         });
 
@@ -145,6 +152,6 @@ impl Axecutor {
     }
 
     pub fn mem_init_zero(&mut self, start: u64, length: u64) -> Result<(), AxError> {
-        self.mem_init_area(start, length, vec![0; length as usize])
+        self.mem_init_area(start, vec![0; length as usize])
     }
 }

@@ -16,6 +16,9 @@ extern crate console_error_panic_hook;
 #[wasm_bindgen]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Axecutor {
+    pub(crate) code_start_address: u64,
+    pub(crate) code_length: u64,
+
     pub(crate) finished: bool,
 
     pub(crate) instructions: Vec<Instruction>,
@@ -111,6 +114,8 @@ impl Axecutor {
 
         Ok(Self {
             finished: false,
+            code_start_address: code_start_addr,
+            code_length: code.len() as u64,
             instructions,
             rip_to_index: rti,
             hooks: HookProcessor::default(),
