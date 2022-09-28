@@ -50,6 +50,7 @@ pub mod registers;
 pub mod ret;
 pub mod shl;
 pub mod sub;
+pub mod syscall;
 pub mod test;
 mod tests;
 pub mod xor;

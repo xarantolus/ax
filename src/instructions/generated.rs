@@ -53,6 +53,7 @@ impl Axecutor {
             Ret => self.mnemonic_ret(i),
             Shl => self.mnemonic_shl(i),
             Sub => self.mnemonic_sub(i),
+            Syscall => self.mnemonic_syscall(i),
             Test => self.mnemonic_test(i),
             Xor => self.mnemonic_xor(i),
             _ => Err(AxError::from(format!(
@@ -107,6 +108,7 @@ pub enum SupportedMnemonic {
     Ret = 662,
     Shl = 712,
     Sub = 740,
+    Syscall = 746,
     Test = 751,
     Xor = 1518,
 }
@@ -161,6 +163,7 @@ impl From<Mnemonic> for SupportedMnemonic {
             Ret => SupportedMnemonic::Ret,
             Shl => SupportedMnemonic::Shl,
             Sub => SupportedMnemonic::Sub,
+            Syscall => SupportedMnemonic::Syscall,
             Test => SupportedMnemonic::Test,
             Xor => SupportedMnemonic::Xor,
             _ => panic!("unimplemented mnemonic {:?}", mnemonic),

@@ -1,5 +1,5 @@
 # ax
-Minimal x86-64 emulator for WebAssembly. Currently very WIP.
+Minimal x86-64 emulator(?) for WebAssembly. Currently very WIP.
 
 ### Development setup
 1. Make sure you have installed Rust/Cargo, Node.js and Make
@@ -67,6 +67,7 @@ An example for using this WebAssembly module from JavaScript can be found in the
   * Anything with SSE registers
   * Anything I found too legacy
   * Many instructions
+* Syscall and Interrupts are not implemented to spec. If you have registered hooks (using `hook_before_mnemonic` or `hook_after_mnemonic`) they are essentially a no-op with your handler executing, otherwise an error is returned/exception is thrown
 
 
 ### Ideas
