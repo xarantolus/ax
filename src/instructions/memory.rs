@@ -92,7 +92,6 @@ impl Axecutor {
     // TODO: Currently cannot write consecutive sections of memory
     // It would also make sense to give better error messages, e.g. if the write start address is within an area, but the data is too long
     pub fn mem_write_bytes(&mut self, address: u64, data: &[u8]) -> Result<(), AxError> {
-        // TODO: Make sure writing to code sections (that don't exist, but should check initial_rip + code length) fails
         for area in &mut self.state.memory {
             if address >= area.start && address + data.len() as u64 <= area.start + area.length {
                 let offset = (address - area.start) as usize;
