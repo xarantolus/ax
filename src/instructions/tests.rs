@@ -14,8 +14,8 @@ macro_rules! ax_test {
 
                 let bytes = &[$($bytes),*];
 
-                // Always use a random rip
-                let random_rip = rand::thread_rng().gen::<u64>() & 0x0000_ffff_ffff_ffff;
+                // Always use a random rip, but make sure it doesn't overlap with memory that is often allocated at 0x1000 in tests
+                let random_rip = rand::thread_rng().gen::<u64>() & 0x0000_ffff_ffff_ffff | 0xf0000;
 
                 let mut ax = Axecutor::new(bytes, random_rip, random_rip).expect("Failed to create axecutor");
 
