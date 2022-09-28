@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 
+use crate::instructions::registers::SupportedRegister;
+
 use super::{axecutor::Axecutor, errors::AxError};
 
 use std::convert::TryInto;
@@ -18,7 +20,7 @@ impl MemoryArea {
 
         s.push_str(&format!("MemoryArea {{\n"));
         s.push_str(&format!(
-            "{}    start: {},\n",
+            "{}    start: {:#x},\n",
             " ".repeat(i * 4),
             self.start
         ));
@@ -29,11 +31,15 @@ impl MemoryArea {
         ));
         s.push_str(&format!("{}    data: [", " ".repeat(i * 4)));
 
-        for (i, byte) in self.data.iter().enumerate() {
-            s.push_str(&format!("0x{:02x}", byte));
+        if self.data.len() > 255 {
+            s.push_str("<too long to display>");
+        } else {
+            for (i, byte) in self.data.iter().enumerate() {
+                s.push_str(&format!("0x{:02x}", byte));
 
-            if i != self.data.len() - 1 {
-                s.push_str(", ");
+                if i != self.data.len() - 1 {
+                    s.push_str(", ");
+                }
             }
         }
 
@@ -47,6 +53,7 @@ impl MemoryArea {
 #[wasm_bindgen]
 impl Axecutor {
     // TODO: Currently cannot read consecutive sections of memory
+    #[must_use]
     pub fn mem_read_bytes(&self, address: u64, length: u64) -> Result<Vec<u8>, AxError> {
         let mut result = Vec::new();
 
@@ -91,6 +98,7 @@ impl Axecutor {
 
     // TODO: Currently cannot write consecutive sections of memory
     // It would also make sense to give better error messages, e.g. if the write start address is within an area, but the data is too long
+    #[must_use]
     pub fn mem_write_bytes(&mut self, address: u64, data: &[u8]) -> Result<(), AxError> {
         for area in &mut self.state.memory {
             if address >= area.start && address + data.len() as u64 <= area.start + area.length {
@@ -152,5 +160,25 @@ impl Axecutor {
 
     pub fn mem_init_zero(&mut self, start: u64, length: u64) -> Result<(), AxError> {
         self.mem_init_area(start, vec![0; length as usize])
+    }
+
+    pub fn init_stack(&mut self, length: u64) -> Result<(), AxError> {
+        let mut stack_start: u64 = 0x1000;
+
+        loop {
+            if stack_start >= 0x7fff_ffff_ffff_ffff {
+                return Err(AxError::from(
+                    "Could not find a suitable stack start address",
+                ));
+            }
+
+            // TODO: Not entirely sure if this has the correct alignment etc.
+            if self.mem_init_zero(stack_start, length).is_ok() {
+                let initial_rsp = stack_start + length - 8;
+                self.reg_write_64(SupportedRegister::RSP, initial_rsp);
+                return Ok(());
+            }
+            stack_start <<= 1;
+        }
     }
 }

@@ -2,47 +2,90 @@
 import { default as init, Axecutor, Mnemonic, Register } from 'ax';
 
 await init();
-
-await (async function x() {
-  // mov rax, 5; sub rax, 5
-  let code = new Uint8Array([0x48, 0xc7, 0xc0, 0x5, 0x0, 0x0, 0x0, 0x48, 0x83, 0xe8, 0x5]);
-
-  let ex = new Axecutor(code, 0x1n, 0x1n);
-  ex.mem_init_zero(0x0n, 0x10n);
-
-  console.log(ex.toString());
-
-  ex.hook_before_mnemonic(Mnemonic.Sub, (ax: Axecutor, mnemonic: number) => {
-    // let ax = this as unknown as Axecutor;
-
-    console.log("Before mnemonic", ax, mnemonic);
-    console.log(ax.reg_read_64(Register.RAX));
-
-    return ax.commit();
-  });
-
-  ex.hook_after_mnemonic(Mnemonic.Sub, (ax: Axecutor, mnemonic: number) => {
-    console.log("After mnemonic", ax, mnemonic);
-    console.log(ax.reg_read_64(Register.RAX));
-
-    ax.reg_write_64(Register.RAX, 15n);
-    console.log("wrote to rax");
-
-    return ax.commit();
-  });
-
-  console.log(ex.toString());
-
-  while (await ex.step()) {
-    console.log(ex.toString());
-  }
-
-  console.log("Final state:\n" + ex.toString());
-
-  console.log("rax", ex.reg_read_64(Register.RAX));
-})();
 </script>
 
 <template>
-  <div>Test</div>
+  <h1>AX Test Site</h1>
+  <div>
+    <input type="file" ref="file">
+    <button @click="runFile">Run!</button>
+  </div>
+  <pre id="console">{{console_content}}</pre>
 </template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+  data() {
+    return {
+      console_content: "Content",
+    };
+  },
+  methods: {
+    async runFile() {
+      let ax;
+
+      try {
+        let files = (this.$refs.file as any).files as FileList;
+        console.log(files);
+
+        if (files.length != 1) {
+          alert("Please select exactly one file");
+          return;
+        }
+
+        let content = await files.item(0)?.arrayBuffer().then(buf => new Uint8Array(buf));
+        if (!content) {
+          alert("Failed to read file");
+          return;
+        }
+
+        ax = Axecutor.from_binary(content);
+        console.log("RIP: " + ax.reg_read_64(Register.RIP));
+
+        ax.init_stack(8n * 1024n);
+
+        ax.hook_before_mnemonic(Mnemonic.Ret, (ax: Axecutor) => {
+          console.log("before RET @ " + ax.reg_read_64(Register.RIP));
+        });
+
+        ax.hook_after_mnemonic(Mnemonic.Ret, (ax: Axecutor) => {
+          console.log("after RET @ " + ax.reg_read_64(Register.RIP));
+        });
+
+        ax.hook_before_mnemonic(Mnemonic.Syscall, (ax: Axecutor, mnemonic: number) => {
+          console.log("Syscall!");
+
+          let rax = ax.reg_read_64(Register.RAX);
+          if (rax != 1n) {
+            throw new Error("Unsupported RAX value in syscall, only write to stdout is supported in this demo");
+          }
+
+          let fd = ax.reg_read_64(Register.RDI);
+          if (fd != 0n && fd != 1n) {
+            throw new Error("Unsupported FD/RDI value in syscall, only write to stdout is supported in this demo");
+          }
+
+          let buf_ptr = ax.reg_read_64(Register.RSI);
+          let buf_len = ax.reg_read_64(Register.RDX);
+
+          let buf = ax.mem_read_bytes(buf_ptr, buf_len);
+          let result_str = new TextDecoder().decode(buf);
+
+          this.console_content += result_str;
+
+          // No modifications made to axecutor, so return null
+          return null;
+        });
+
+        await ax.execute();
+      } catch (e) {
+        alert("Error while running ELF file: " + e);
+        let axstate = (ax ?? "no axecutor state available").toString();
+        console.error(axstate)
+      }
+    }
+  }
+})
+</script>

@@ -8,6 +8,8 @@ pub mod cqo;
 pub mod cwd;
 pub mod dec;
 pub mod div;
+pub mod elf;
+pub mod endbr64;
 pub mod errors;
 pub mod execute;
 pub mod flags;

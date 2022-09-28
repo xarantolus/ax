@@ -48,7 +48,12 @@ impl Axecutor {
             h.run_before(self, mnem).await?;
         }
 
-        self.switch_instruction_mnemonic(instr)?;
+        self.switch_instruction_mnemonic(instr).map_err(|e| {
+            e.add_detail(format!(
+                "while executing instruction {:?}",
+                instr.mnemonic()
+            ))
+        })?;
 
         // If we reached the last instruction (and no jump has been performed etc.), we're done
         if self.reg_read_64(Register::RIP.into()) == self.instructions.last().unwrap().next_ip() {
