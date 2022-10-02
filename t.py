@@ -994,11 +994,17 @@ if __name__ == '__main__':
     tids = []
     for test_case in test_cases:
         try:
-            tid = test_case.test_id()
-            if tid in tids:
-                continue
+            prev_tid = tid = test_case.test_id()
+            ts = str(test_case)
+            ctr = 0
+            while tid in tids:
+                tid = tid + "_" + str(random.randint(0, 100))
+                ctr += 1
+                if ctr > 100:
+                    continue
+
+            test_cases_str.append(ts.replace(prev_tid, tid))
             tids.append(tid)
-            test_cases_str.append(str(test_case))
         except Exception as e:
             print(f"Failed to generate test case {test_case}: {e}")
             pass

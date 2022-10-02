@@ -618,6 +618,31 @@ macro_rules! calculate_r_rm {
     [u64; $self:expr; $i:expr; $op:expr] => {
         calculate_r_rm![u64; $self; $i; $op; (set: 0; clear: 0)]
     };
+    [u64; u32; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
+        {
+			use crate::instructions::operand::Operand;
+
+            let (dest, src) = $self.instruction_operands_2($i)?;
+            let src_val = match src {
+                Operand::Memory(m) => {
+                    $self.mem_read_32($self.mem_addr(m))?
+                }
+                Operand::Register(r) => {
+                    $self.reg_read_32(r)
+                }
+                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+            };
+
+            let dest = dest.into();
+            let dest_val = $self.reg_read_64(dest);
+            let result = $op(dest_val, src_val);
+            $self.set_flags_u64($flags_to_set, $flags_to_clear, result);
+            if ($flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                $self.reg_write_64(dest, result);
+            }
+            Ok(())
+        }
+    };
 }
 
 #[macro_export]

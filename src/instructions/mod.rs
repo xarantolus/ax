@@ -44,6 +44,7 @@ pub mod lea;
 mod macros;
 pub mod memory;
 pub mod mov;
+pub mod movsxd;
 pub mod mul;
 pub mod nop;
 pub mod not;

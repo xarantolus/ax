@@ -48,6 +48,7 @@ impl Axecutor {
             Js => self.mnemonic_js(i),
             Lea => self.mnemonic_lea(i),
             Mov => self.mnemonic_mov(i),
+            Movsxd => self.mnemonic_movsxd(i),
             Mul => self.mnemonic_mul(i),
             Nop => self.mnemonic_nop(i),
             Not => self.mnemonic_not(i),
