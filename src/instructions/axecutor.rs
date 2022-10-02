@@ -265,13 +265,4 @@ mod tests {
         }
         assert!(ax.finished);
     }];
-
-    test_async![top_lvl_return; async {
-        // ret
-        let code = [0xc3];
-        let mut ax = Axecutor::new(&code, 0x1000, 0x1000).unwrap();
-
-        let e = ax.execute().await;
-        assert!(e.is_err(), "Expected error for top-level return without stack setup, got {:?}", AxError::from(e));
-    }];
 }
