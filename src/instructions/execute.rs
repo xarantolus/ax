@@ -53,7 +53,10 @@ impl Axecutor {
             if e.signals_normal_finish {
                 self.finished = true;
             } else {
-                return Err(e.into());
+                return Err(e.add_detail(format!(
+                    "while executing instruction {:?}",
+                    instr.mnemonic()
+                )).into());
             }
         }
 

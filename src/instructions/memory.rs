@@ -20,7 +20,7 @@ impl MemoryArea {
 
         s.push_str(&format!("MemoryArea {{\n"));
         s.push_str(&format!(
-            "{}    start: {},\n",
+            "{}    start: {:#x},\n",
             " ".repeat(i * 4),
             self.start
         ));
@@ -31,11 +31,15 @@ impl MemoryArea {
         ));
         s.push_str(&format!("{}    data: [", " ".repeat(i * 4)));
 
-        for (i, byte) in self.data.iter().enumerate() {
-            s.push_str(&format!("0x{:02x}", byte));
+        if self.data.len() > 255 {
+            s.push_str("<too long to display>");
+        } else {
+            for (i, byte) in self.data.iter().enumerate() {
+                s.push_str(&format!("0x{:02x}", byte));
 
-            if i != self.data.len() - 1 {
-                s.push_str(", ");
+                if i != self.data.len() - 1 {
+                    s.push_str(", ");
+                }
             }
         }
 
@@ -49,6 +53,7 @@ impl MemoryArea {
 #[wasm_bindgen]
 impl Axecutor {
     // TODO: Currently cannot read consecutive sections of memory
+    #[must_use]
     pub fn mem_read_bytes(&self, address: u64, length: u64) -> Result<Vec<u8>, AxError> {
         let mut result = Vec::new();
 
@@ -93,6 +98,7 @@ impl Axecutor {
 
     // TODO: Currently cannot write consecutive sections of memory
     // It would also make sense to give better error messages, e.g. if the write start address is within an area, but the data is too long
+    #[must_use]
     pub fn mem_write_bytes(&mut self, address: u64, data: &[u8]) -> Result<(), AxError> {
         for area in &mut self.state.memory {
             if address >= area.start && address + data.len() as u64 <= area.start + area.length {
@@ -125,6 +131,7 @@ impl Axecutor {
         self.mem_write_bytes(address, &[data])
     }
 
+    #[must_use]
     pub fn mem_init_area(&mut self, start: u64, data: Vec<u8>) -> Result<(), AxError> {
         // Make sure there's no overlapping area already defined, including code region
         if start >= self.code_start_address && start < self.code_start_address + self.code_length {

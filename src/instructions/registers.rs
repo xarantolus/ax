@@ -110,7 +110,7 @@ pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<SupportedRegist
         map.insert(SupportedRegister::from(register), value & 0xffff_ffff);
     }
 
-    map.insert(SupportedRegister::from(Register::RIP), rip_value);
+    map.insert(SupportedRegister::RIP, rip_value);
 
     return map;
 }

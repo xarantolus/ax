@@ -4,6 +4,7 @@ use std::fmt::{self};
 use wasm_bindgen::{JsError, JsValue};
 
 pub struct AxError {
+    detail: Option<String>,
     message: Option<String>,
     js: Option<JsValue>,
 
@@ -16,6 +17,18 @@ impl AxError {
             message: self.message.clone(),
             js: self.js.clone(),
             signals_normal_finish: true,
+            detail: self.detail.clone(),
+        }
+    }
+}
+
+impl AxError {
+    pub(crate) fn add_detail(&self, s: String) -> AxError {
+        AxError {
+            detail: Some(s),
+            message: self.message.clone(),
+            js: self.js.clone(),
+            signals_normal_finish: self.signals_normal_finish,
         }
     }
 }
@@ -23,6 +36,7 @@ impl AxError {
 impl From<&str> for AxError {
     fn from(message: &str) -> Self {
         Self {
+            detail: None,
             message: Some(message.to_string()),
             js: None,
             signals_normal_finish: false,
@@ -32,6 +46,7 @@ impl From<&str> for AxError {
 impl From<String> for AxError {
     fn from(message: String) -> Self {
         Self {
+            detail: None,
             message: Some(message),
             js: None,
             signals_normal_finish: false,
@@ -41,6 +56,7 @@ impl From<String> for AxError {
 impl From<JsError> for AxError {
     fn from(err: JsError) -> Self {
         Self {
+            detail: None,
             message: None,
             js: Some(JsValue::from(err)),
             signals_normal_finish: false,
@@ -50,6 +66,7 @@ impl From<JsError> for AxError {
 impl From<JsValue> for AxError {
     fn from(err: JsValue) -> Self {
         Self {
+            detail: None,
             message: None,
             js: Some(err),
             signals_normal_finish: false,
@@ -89,7 +106,8 @@ impl fmt::Display for AxError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "{}",
+            "{}{}",
+            if let Some(m) = &self.detail { m } else { "" },
             if let Some(ref m) = self.message {
                 m.to_owned()
             } else if let Some(ref v) = self.js {
@@ -106,7 +124,8 @@ impl fmt::Debug for AxError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "{}",
+            "{}{}",
+            if let Some(m) = &self.detail { m } else { "" },
             if let Some(ref m) = self.message {
                 m.to_owned()
             } else if let Some(ref v) = self.js {
