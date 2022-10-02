@@ -6,6 +6,18 @@ use wasm_bindgen::{JsError, JsValue};
 pub struct AxError {
     message: Option<String>,
     js: Option<JsValue>,
+
+    pub(crate) signals_normal_finish: bool,
+}
+
+impl AxError {
+    pub(crate) fn end_execution(&self) -> Self {
+        Self {
+            message: self.message.clone(),
+            js: self.js.clone(),
+            signals_normal_finish: true,
+        }
+    }
 }
 
 impl From<&str> for AxError {
@@ -13,6 +25,7 @@ impl From<&str> for AxError {
         Self {
             message: Some(message.to_string()),
             js: None,
+            signals_normal_finish: false,
         }
     }
 }
@@ -21,6 +34,7 @@ impl From<String> for AxError {
         Self {
             message: Some(message),
             js: None,
+            signals_normal_finish: false,
         }
     }
 }
@@ -29,6 +43,7 @@ impl From<JsError> for AxError {
         Self {
             message: None,
             js: Some(JsValue::from(err)),
+            signals_normal_finish: false,
         }
     }
 }
@@ -37,6 +52,7 @@ impl From<JsValue> for AxError {
         Self {
             message: None,
             js: Some(err),
+            signals_normal_finish: false,
         }
     }
 }

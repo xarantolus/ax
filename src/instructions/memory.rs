@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 
+use crate::instructions::registers::SupportedRegister;
+
 use super::{axecutor::Axecutor, errors::AxError};
 
 use std::convert::TryInto;
@@ -152,5 +154,28 @@ impl Axecutor {
 
     pub fn mem_init_zero(&mut self, start: u64, length: u64) -> Result<(), AxError> {
         self.mem_init_area(start, vec![0; length as usize])
+    }
+
+    pub fn init_stack(&mut self, length: u64) -> Result<(), AxError> {
+        let mut stack_start: u64 = 0x1000;
+
+        loop {
+            if stack_start >= 0x7fff_ffff_ffff_ffff {
+                return Err(AxError::from(
+                    "Could not find a suitable stack start address",
+                ));
+            }
+
+            if self.mem_init_zero(stack_start, length).is_ok() {
+                break;
+            }
+            stack_start <<= 1;
+        }
+
+        let initial_rsp = stack_start + length - 8;
+        self.reg_write_64(SupportedRegister::RSP, initial_rsp);
+        self.stack_top = stack_start + length;
+
+        Ok(())
     }
 }

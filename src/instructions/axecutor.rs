@@ -16,14 +16,22 @@ extern crate console_error_panic_hook;
 #[wasm_bindgen]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Axecutor {
+    // code_start_address is the memory address/RIP of the first instruction, which isn't necessarily the entrypoint (can be set by writing to RIP)
     pub(crate) code_start_address: u64,
+    // code_length is the length of the encoded instructions in bytes
     pub(crate) code_length: u64,
 
+    // finished is true if the execution has finished. State may be mutated or read after execution, but no further step-calls must be made
     pub(crate) finished: bool,
+    // stack_initial_rsp is the initial RSP address when starting, this allows top-level `ret`s to finish without errors. It's set by init_stack
+    pub(crate) stack_top: u64,
 
+    // instructions holds all instructions decoded from the input code
     pub(crate) instructions: Vec<Instruction>,
+    // rip_to_index maps a RIP address to the index of the instruction in the instructions vector
     pub(crate) rip_to_index: HashMap<u64, usize>,
 
+    // state holds the current state of the execution
     pub(crate) state: MachineState,
 
     #[serde(skip)]
@@ -117,6 +125,7 @@ impl Axecutor {
             code_start_address: code_start_addr,
             code_length: code.len() as u64,
             instructions,
+            stack_top: 0,
             rip_to_index: rti,
             hooks: HookProcessor::default(),
             state: MachineState {
@@ -233,6 +242,7 @@ fn decode_all(code: &[u8], code_start_addr: u64) -> Result<Vec<Instruction>, AxE
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_async;
     use iced_x86::Register;
 
     #[test]
@@ -244,4 +254,24 @@ mod tests {
         assert_eq!(ax.instructions[0].next_ip(), 0x1000 + code.len() as u64);
         assert_eq!(ax.reg_read_64(Register::RIP.into()), 0x1000);
     }
+
+    test_async![top_lvl_return_with_stack_setup; async {
+        // ret
+        let code = [0xc3];
+        let mut ax = Axecutor::new(&code, 0x1000, 0x1000).unwrap();
+        ax.init_stack(0).expect("Failed to init stack");
+        if let Err(e) = ax.execute().await {
+            panic!("Failed to execute: {:?}", AxError::from(e));
+        }
+        assert!(ax.finished);
+    }];
+
+    test_async![top_lvl_return; async {
+        // ret
+        let code = [0xc3];
+        let mut ax = Axecutor::new(&code, 0x1000, 0x1000).unwrap();
+
+        let e = ax.execute().await;
+        assert!(e.is_err(), "Expected error for top-level return without stack setup, got {:?}", AxError::from(e));
+    }];
 }

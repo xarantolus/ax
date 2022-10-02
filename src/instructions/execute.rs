@@ -48,7 +48,14 @@ impl Axecutor {
             h.run_before(self, mnem).await?;
         }
 
-        self.switch_instruction_mnemonic(instr)?;
+        if let Err(e) = self.switch_instruction_mnemonic(instr) {
+            // This is so e.g. the ret instruction can end execution
+            if e.signals_normal_finish {
+                self.finished = true;
+            } else {
+                return Err(e.into());
+            }
+        }
 
         // If we reached the last instruction (and no jump has been performed etc.), we're done
         if self.reg_read_64(Register::RIP.into()) == self.instructions.last().unwrap().next_ip() {

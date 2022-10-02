@@ -10,6 +10,9 @@ use crate::instructions::registers::SupportedRegister::*;
 macro_rules! pop_rip {
     ($self:ident) => {{
         let rsp = $self.reg_read_64(RSP) + 8;
+        if rsp == $self.stack_top {
+            return Err(AxError::from("Cannot pop from empty stack").end_execution());
+        }
         let rip = $self.mem_read_64(rsp)?;
         $self.reg_write_64(RIP, rip);
         $self.reg_write_64(RSP, rsp);
