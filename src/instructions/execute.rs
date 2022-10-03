@@ -39,7 +39,7 @@ impl Axecutor {
         // Fetch the next instruction
         let instr = self.get_next_instruction()?;
 
-        self.reg_write_64(Register::RIP.into(), instr.next_ip());
+        self.reg_write_64(SupportedRegister::RIP, instr.next_ip());
 
         let mnem = instr.mnemonic().into();
 
@@ -53,10 +53,12 @@ impl Axecutor {
             if e.signals_normal_finish {
                 self.finished = true;
             } else {
-                return Err(e.add_detail(format!(
-                    "while executing instruction {:?}",
-                    instr.mnemonic()
-                )).into());
+                return Err(e
+                    .add_detail(format!(
+                        "while executing instruction {:?}",
+                        instr.mnemonic()
+                    ))
+                    .into());
             }
         }
 

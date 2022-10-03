@@ -145,16 +145,18 @@ impl Axecutor {
     ran: {},
     code_start_address: {:#0x},
     code_length: {:#x},
-    instructions: {},
-    rip_to_index: {},
+    hooks: {},
     state: {},
+    rip_to_index: {},
+    instructions: {},
 }}",
             self.finished,
             self.code_start_address,
             self.code_length,
-            self.prefix_each_line(format!("{:#?}", self.instructions).as_str(), "    "),
-            self.prefix_each_line(format!("{:#?}", self.rip_to_index).as_str(), "    "),
+            self.prefix_each_line(self.hooks.to_string().as_str(), "    "),
             self.state.to_string_ident(1),
+            self.prefix_each_line(format!("{:#?}", self.rip_to_index).as_str(), "    "),
+            self.prefix_each_line(format!("{:#?}", self.instructions).as_str(), "    "),
         )
     }
 

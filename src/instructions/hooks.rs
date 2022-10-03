@@ -89,6 +89,25 @@ impl HookProcessor {
             running: false,
         }
     }
+
+    pub(crate) fn to_string(&self) -> String {
+        let mut s = String::new();
+
+        s.push_str("{\n");
+
+        for (mnem, hook) in self.mnemonic_hooks.iter() {
+            s.push_str(&format!(
+                "    {:?}: {{ before: {}, after: {} }}\n",
+                mnem,
+                hook.before.len(),
+                hook.after.len()
+            ));
+        }
+
+        s.push_str("}");
+
+        s
+    }
 }
 
 #[wasm_bindgen]

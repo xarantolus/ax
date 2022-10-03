@@ -14,7 +14,7 @@ watch:
 	cargo watch -s "make normal"
 
 watch-tests:
-	cargo watch --why --no-restart --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
+	cargo watch --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
 
 fmt:
 	cargo fix --allow-staged && cargo fmt

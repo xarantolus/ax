@@ -80,10 +80,12 @@ export default defineComponent({
         });
 
         await ax.execute();
+
+        this.console_content += "\nFinished execution.";
       } catch (e) {
-        alert("Error while running ELF file: " + e);
         let axstate = (ax ?? "no axecutor state available").toString();
         console.error(axstate)
+        this.console_content += "\nError during execution:\n" + e + "\n\n" + axstate;
       }
     }
   }
