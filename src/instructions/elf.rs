@@ -3,7 +3,10 @@ use elf_rs::*;
 use std::str;
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::instructions::{axecutor::Axecutor, errors::AxError};
+use crate::{
+    debug_log,
+    instructions::{axecutor::Axecutor, errors::AxError},
+};
 
 impl From<Error> for AxError {
     fn from(err: Error) -> Self {
@@ -18,6 +21,8 @@ impl From<Error> for AxError {
 #[wasm_bindgen]
 impl Axecutor {
     pub fn from_binary(binary: &[u8]) -> Result<Axecutor, AxError> {
+        debug_log!("Calling Axecutor::from_binary");
+
         let obj_file = Elf::from_bytes(&*binary)?;
 
         let text_section = match obj_file.lookup_section(b".text") {

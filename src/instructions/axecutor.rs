@@ -4,6 +4,7 @@ use iced_x86::{Decoder, DecoderOptions, Instruction};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
+use crate::debug_log;
 use crate::instructions::flags::FLAG_TO_NAMES;
 
 use super::errors::AxError;
@@ -107,19 +108,24 @@ impl MachineState {
 impl Axecutor {
     #[wasm_bindgen(constructor)]
     pub fn new(code: &[u8], code_start_addr: u64, initial_rip: u64) -> Result<Axecutor, AxError> {
+        debug_log!("Calling Axecutor::new");
+
         // In case of panics, we want more info in console.error
         #[cfg(all(target_arch = "wasm32", not(test)))]
         {
             console_error_panic_hook::set_once();
+            debug_log!("Panic hook set");
         }
 
         let instructions = decode_all(code, code_start_addr)?;
+        debug_log!("Decoded {} instructions", instructions.len());
 
         let mut rti = HashMap::with_capacity(instructions.len());
         for (idx, instr) in instructions.iter().enumerate() {
             rti.insert(instr.ip(), idx);
         }
 
+        debug_log!("Creating Axecutor");
         Ok(Self {
             finished: false,
             code_start_address: code_start_addr,
@@ -140,6 +146,7 @@ impl Axecutor {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_string(&self) -> String {
+        debug_log!("Calling Axecutor::to_string");
         format!(
             "Axecutor {{
     ran: {},
@@ -178,6 +185,11 @@ impl Axecutor {
 
     #[wasm_bindgen]
     pub fn commit(&self) -> Result<JsValue, JsError> {
+        debug_log!(
+            "Calling Axecutor::commit, finished: {}, hooks_running: {}",
+            self.finished,
+            self.hooks.running
+        );
         if !self.hooks.running {
             return Err(JsError::new("Cannot call commit() outside of a hook"));
         }
@@ -190,6 +202,12 @@ impl Axecutor {
     }
 
     pub(crate) fn state_from_committed(&mut self, value: JsValue) -> Result<(), JsError> {
+        debug_log!(
+            "Calling Axecutor::state_from_committed, finished: {}, hooks_running: {}",
+            self.finished,
+            self.hooks.running
+        );
+
         if !self.hooks.running {
             return Err(JsError::new(
                 "Cannot call state_from_committed() outside of a hook",

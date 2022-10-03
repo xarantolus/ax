@@ -4,7 +4,7 @@ build:
 	wasm-pack build --target web --release
 
 normal:
-	wasm-pack build --target web
+	wasm-pack build --target web --debug
 
 example: build
 	cd example
