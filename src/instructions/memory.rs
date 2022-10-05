@@ -5,6 +5,8 @@ use crate::instructions::registers::SupportedRegister;
 
 use super::{axecutor::Axecutor, errors::AxError};
 
+use crate::debug_log;
+
 use std::convert::TryInto;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -55,6 +57,12 @@ impl Axecutor {
     // TODO: Currently cannot read consecutive sections of memory
     #[must_use]
     pub fn mem_read_bytes(&self, address: u64, length: u64) -> Result<Vec<u8>, AxError> {
+        debug_log!(
+            "Calling Axecutor::mem_read_bytes, address={:#x}, length={}",
+            address,
+            length
+        );
+
         let mut result = Vec::new();
 
         for area in &self.state.memory {
@@ -100,6 +108,12 @@ impl Axecutor {
     // It would also make sense to give better error messages, e.g. if the write start address is within an area, but the data is too long
     #[must_use]
     pub fn mem_write_bytes(&mut self, address: u64, data: &[u8]) -> Result<(), AxError> {
+        debug_log!(
+            "Calling Axecutor::mem_write_bytes, address={:#x}, data={:?}",
+            address,
+            data
+        );
+
         for area in &mut self.state.memory {
             if address >= area.start && address + data.len() as u64 <= area.start + area.length {
                 let offset = (address - area.start) as usize;

@@ -57,7 +57,7 @@ impl Axecutor {
             debug_log!("Finished running before hooks for mnemonic {:?}", mnem);
         }
 
-        debug_log!("Executing instruction {}", instr);
+        debug_log!("Executing instruction {} ({:?})", instr, instr.code());
         if let Err(e) = self.switch_instruction_mnemonic(instr) {
             // This is so e.g. the ret instruction can end execution
             if e.signals_normal_finish {
