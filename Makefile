@@ -1,4 +1,4 @@
-.PHONY: build normal watch test clean generate coverage fmt
+.PHONY: build normal watch test clean generate coverage fmt example-programs example
 
 build:
 	wasm-pack build --target web --release
@@ -6,9 +6,8 @@ build:
 normal:
 	wasm-pack build --target web --debug
 
-example: build
-	cd example
-	npm i && npm run build
+example-programs:
+	cd examples/programs && make build
 
 watch:
 	cargo watch -s "make normal"
@@ -16,7 +15,7 @@ watch:
 watch-tests:
 	cargo watch --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
 
-web:
+web: example-programs
 	cd examples/web && npm install && npm run dev
 
 fmt:
@@ -37,3 +36,4 @@ dependencies:
 
 clean:
 	rm -rf pkg
+	cd examples/programs && make clean
