@@ -183,7 +183,6 @@ impl Axecutor {
         result
     }
 
-    #[wasm_bindgen]
     pub fn commit(&self) -> Result<JsValue, JsError> {
         debug_log!(
             "Calling Axecutor::commit, finished: {}, hooks_running: {}",
@@ -199,6 +198,27 @@ impl Axecutor {
         self.state
             .serialize(&s)
             .map_err(|e| JsError::new(&*format!("Failed to serialize: {}", e)))
+    }
+
+    pub fn stop(&mut self) -> Result<JsValue, JsError> {
+        debug_log!(
+            "Calling Axecutor::stop, finished: {}, hooks_running: {}",
+            self.finished,
+            self.hooks.running
+        );
+
+        self.finished = true;
+
+        return self.commit();
+    }
+
+    pub fn unchanged(&self) -> JsValue {
+        debug_log!(
+            "Calling Axecutor::unchanged, finished: {}, hooks_running: {}",
+            self.finished,
+            self.hooks.running
+        );
+        JsValue::NULL
     }
 
     pub(crate) fn state_from_committed(&mut self, value: JsValue) -> Result<(), JsError> {

@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "vue": "^3.2.38",
-    "ax": "file:../pkg/"
+    "ax": "file:../../pkg"
   },
   "devDependencies": {
     "@types/node": "^16.11.56",

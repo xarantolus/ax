@@ -16,6 +16,9 @@ watch:
 watch-tests:
 	cargo watch --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
 
+web:
+	cd examples/web && npm install && npm run dev
+
 fmt:
 	cargo fix --allow-staged && cargo fmt
 
