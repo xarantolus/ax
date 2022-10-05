@@ -162,8 +162,16 @@ impl Axecutor {
             self.code_length,
             self.prefix_each_line(self.hooks.to_string().as_str(), "    "),
             self.state.to_string_ident(1),
-            self.prefix_each_line(format!("{:#?}", self.rip_to_index).as_str(), "    "),
-            self.prefix_each_line(format!("{:#?}", self.instructions).as_str(), "    "),
+            if self.instructions.len() > 1000 {
+                format!("{} instructions", self.instructions.len())
+            } else {
+                self.prefix_each_line(format!("{:#?}", self.instructions).as_str(), "    ")
+            },
+            if self.rip_to_index.len() > 1000 {
+                format!("{} entries", self.rip_to_index.len())
+            } else {
+                self.prefix_each_line(format!("{:#?}", self.rip_to_index).as_str(), "    ")
+            }
         )
     }
 

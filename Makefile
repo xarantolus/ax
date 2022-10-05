@@ -1,21 +1,21 @@
-.PHONY: build normal watch test clean generate coverage fmt example-programs example
+.PHONY: build debug watch test clean generate coverage fmt example-programs example
 
 build:
 	wasm-pack build --target web --release
 
-normal:
+debug:
 	wasm-pack build --target web --debug
 
 example-programs:
 	cd examples/programs && make build
 
 watch:
-	cargo watch -s "make normal"
+	cargo watch -s "make debug"
 
 watch-tests:
 	cargo watch --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
 
-web: example-programs
+web: example-programs build
 	cd examples/web && npm install && npm run dev
 
 fmt:
@@ -35,5 +35,5 @@ dependencies:
 	python3 -m pip install pyperclip tqdm
 
 clean:
-	rm -rf pkg
+	rm -rf pkg target examples/web/node_modules
 	cd examples/programs && make clean

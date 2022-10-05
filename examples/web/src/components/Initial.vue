@@ -4,13 +4,16 @@ import { default as init, Axecutor, Mnemonic, Register } from 'ax';
 await init();
 </script>
 
-<template>
-  <h1>AX Test Site</h1>
-  <div>
-    <input type="file" ref="file">
-    <button @click="runFile">Run!</button>
+<template >
+  <div class="middle width-2-3">
+    <h1>AX Test Site</h1>
+    <p>Select an ELF binary compiled with <code>-m64 -nostdlib -static</code> that only interacts with std{in,out,err}.</p>
+    <div>
+      <input type="file" ref="file">
+      <button @click="runFile">Run!</button>
+    </div>
+    <pre id="console">{{console_content}}</pre>
   </div>
-  <pre id="console">{{console_content}}</pre>
 </template>
 
 <script lang="ts">
@@ -19,7 +22,7 @@ import { defineComponent } from 'vue';
 export default defineComponent({
   data() {
     return {
-      console_content: "Content",
+      console_content: "This is the console output. It will contain stdout/stderr messages.",
     };
   },
   methods: {
@@ -99,7 +102,14 @@ export default defineComponent({
         }
 
         ax = Axecutor.from_binary(content);
+      } catch (e) {
+        let axstate = (ax ?? "no axecutor state available").toString();
+        console.error(axstate)
+        this.console_content = "Error while decoding binary:\n" + e;
+        return;
+      }
 
+      try {
         ax.init_stack(8n * 1024n);
 
         ax.hook_before_mnemonic(Mnemonic.Ret, (ax: Axecutor) => {
@@ -111,31 +121,6 @@ export default defineComponent({
         });
 
         ax.hook_before_mnemonic(Mnemonic.Syscall, this.syscallHandler);
-
-        // ax.hook_before_mnemonic(Mnemonic.Syscall, (ax: Axecutor, mnemonic: number) => {
-        //   console.log("Syscall!");
-
-        //   let rax = ax.reg_read_64(Register.RAX);
-        //   if (rax != 1n) {
-        //     throw new Error(`Unsupported RAX value ${rax} in syscall, only write to stdout is supported in this demo`);
-        //   }
-
-        //   let fd = ax.reg_read_64(Register.RDI);
-        //   if (fd != 0n && fd != 1n) {
-        //     throw new Error(`Unsupported FD/RDI value ${fd} in syscall, only write to stdout is supported in this demo`);
-        //   }
-
-        //   let buf_ptr = ax.reg_read_64(Register.RSI);
-        //   let buf_len = ax.reg_read_64(Register.RDX);
-
-        //   let buf = ax.mem_read_bytes(buf_ptr, buf_len);
-        //   let result_str = new TextDecoder().decode(buf);
-
-        //   this.console_content += result_str;
-
-        //   // No modifications made to axecutor, so return null
-        //   return null;
-        // });
 
         await ax.execute();
 
@@ -149,3 +134,9 @@ export default defineComponent({
   }
 })
 </script>
+
+<style>
+.width-2-3 {
+  width: 66.67%;
+}
+</style>
