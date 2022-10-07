@@ -86,7 +86,7 @@ class JumpTestCase:
             output = subprocess.run(
                 [executable_path], stdout=subprocess.PIPE).stdout
 
-            assert len(output) == 24, "Output is not 24 bytes long"
+            assert len(output) == 24, "Output is not 24 bytes long, check for stack overflows, missing returns and other errors!"
 
             rflags = int.from_bytes(
                 output[:8], byteorder="little", signed=False)
@@ -164,7 +164,7 @@ class JumpTestCase:
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        sys.argv += ["mov rax, 5; JMP .label", "50", ".label: sub rax, 1", ]
+        sys.argv += ["mov rax, 0; JMP .Llabel", "50", "function: add rax, 5; ret; .Llabel: call function", ]
 
     # 3 positional arguments: <initial_instructions> padding <final_instructions>
     if len(sys.argv) != 4:
@@ -198,6 +198,7 @@ if __name__ == '__main__':
     elif setup.lower() == "c":
         tc_str = generate_assembly(code_start, padding, code_end)
     else:
+        testcase = JumpTestCase.create(code_start, padding, code_end)
         tc_str = testcase.no_setup_asserts()
 
     pyperclip.copy(tc_str)

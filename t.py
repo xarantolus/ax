@@ -517,7 +517,7 @@ def assemble(instruction: Instruction | str):
         return hex_arr
 
 
-def test_id(instruction: Instruction, flags_set, inputs=None):
+def test_id(instruction: Instruction | str, flags_set, inputs=None):
     def map_flags(f):
         # remove the FLAG_ prefix from each flag
         return [x[5:] for x in f]
@@ -526,7 +526,7 @@ def test_id(instruction: Instruction, flags_set, inputs=None):
 
     test_name = f"{instruction}_{'_'.join(map_flags(flags_set))}"
 
-    if len(instruction.implicit_arguments) > 0 and inputs is not None:
+    if isinstance(instruction, Instruction) and len(instruction.implicit_arguments) > 0 and inputs is not None:
         test_name += f"_{'_'.join([f'{op}_{inputs[i+len(instruction.arguments)]}' for i, op in enumerate(instruction.implicit_arguments)])}"
 
     # only keep alphanumerial characters

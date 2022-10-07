@@ -70,6 +70,24 @@ impl Axecutor {
                 let offset = (address - area.start) as usize;
                 result.extend_from_slice(&area.data[offset..offset + length as usize]);
 
+                if result.len() <= 100 {
+                    debug_log!(
+                        "Read from memory area, start={:#x}, length={}, read={:?}",
+                        area.start,
+                        area.length,
+                        result
+                    );
+                } else {
+                    // Only log the first 50 and last 50 bytes of the memory area, with "<too much data to display>" in the middle
+                    debug_log!(
+                        "Read from memory area, start={:#x}, length={}, read=[{:?}, <too much data to display>, {:?}]",
+                        area.start,
+                        area.length,
+                        &result[0..50],
+                        &result[result.len() - 50..]
+                    );
+                }
+
                 return Ok(result);
             }
         }
@@ -118,6 +136,24 @@ impl Axecutor {
             if address >= area.start && address + data.len() as u64 <= area.start + area.length {
                 let offset = (address - area.start) as usize;
                 area.data[offset..offset + data.len()].copy_from_slice(data);
+
+                if data.len() <= 100 {
+                    debug_log!(
+                        "Wrote to memory area, start={:#x}, length={}, wrote={:?}",
+                        area.start,
+                        area.length,
+                        data
+                    );
+                } else {
+                    // Only log the first 50 and last 50 bytes of the memory area, with "<too much data to display>" in the middle
+                    debug_log!(
+                        "Wrote to memory area, start={:#x}, length={}, wrote=[{:?}, <too much data to display>, {:?}]",
+                        area.start,
+                        area.length,
+                        &data[0..50],
+                        &data[data.len() - 50..]
+                    );
+                }
 
                 return Ok(());
             }
