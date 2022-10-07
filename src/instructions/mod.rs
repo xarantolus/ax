@@ -55,6 +55,7 @@ pub mod push;
 pub mod registers;
 pub mod ret;
 pub mod shl;
+pub mod shr;
 pub mod sub;
 pub mod syscall;
 pub mod test;
