@@ -40,7 +40,6 @@ impl Hook {
         ax.hooks.running = true;
 
         for js_fn in &self.before {
-            // TODO: Handle the function stopping the emulator etc
             let res = run_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
             if let Err(e) = res {
                 debug_log!("Error running hook: {:?}", e);
@@ -65,7 +64,6 @@ impl Hook {
         );
         ax.hooks.running = true;
         for js_fn in &self.after {
-            // TODO: Handle the function stopping the emulator etc
             let res = run_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
             if let Err(e) = res {
                 debug_log!("Error running hook: {:?}", e);
