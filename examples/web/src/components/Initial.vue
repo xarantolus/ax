@@ -114,10 +114,14 @@ export default defineComponent({
 
         ax.hook_before_mnemonic(Mnemonic.Ret, (ax: Axecutor) => {
           console.log("before RET @ " + ax.reg_read_64(Register.RIP));
+
+          return ax.unchanged();
         });
 
         ax.hook_after_mnemonic(Mnemonic.Ret, (ax: Axecutor) => {
           console.log("after RET @ " + ax.reg_read_64(Register.RIP));
+
+          return ax.unchanged();
         });
 
         ax.hook_before_mnemonic(Mnemonic.Syscall, this.syscallHandler);
