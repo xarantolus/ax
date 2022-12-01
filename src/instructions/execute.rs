@@ -9,6 +9,8 @@ use super::{axecutor::Axecutor, errors::AxError};
 #[wasm_bindgen]
 impl Axecutor {
     fn get_next_instruction(&self) -> Result<Instruction, AxError> {
+        // TODO: create new decoder instead of decoding all instructions in advance
+
         let rip_register: SupportedRegister = Register::RIP.into();
 
         let rip = self.reg_read_64(rip_register);

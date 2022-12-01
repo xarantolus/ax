@@ -1,5 +1,3 @@
-from ctypes import memset
-from lib2to3.pgen2.token import OP
 from multiprocessing.dummy import Pool
 import re
 import pyperclip

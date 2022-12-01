@@ -28,11 +28,11 @@ test:
 	cargo test
 
 generate:
-	python3 generate.py generate
+	py generate.py generate
 
 dependencies:
-	cargo install cargo-tarpaulin cargo-watch
-	python3 -m pip install pyperclip tqdm
+	cargo install cargo-tarpaulin cargo-watch python-launcher
+	py -m pip install pyperclip tqdm
 
 clean:
 	rm -rf pkg target examples/web/node_modules

@@ -1,7 +1,4 @@
-
-from atexit import register
 import os
-from pickletools import markobject
 import random
 import subprocess
 import sys
