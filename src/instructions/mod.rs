@@ -6,6 +6,7 @@ pub mod cdq;
 pub mod cmp;
 pub mod cqo;
 pub mod cwd;
+mod debug;
 pub mod dec;
 pub mod div;
 pub mod elf;
