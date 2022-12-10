@@ -8,6 +8,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use wasm_bindgen::prelude::wasm_bindgen;
 
+use crate::debug_log;
+
 use super::axecutor::Axecutor;
 
 lazy_static! {
@@ -379,6 +381,8 @@ impl Axecutor {
         };
 
         self.state.registers.insert(*qword_register, result_value);
+
+        debug_log!("Set register {:?} to 0x{:x}", reg, result_value);
     }
 
     pub fn reg_write_16(&mut self, reg: SupportedRegister, value: u16) {
@@ -392,6 +396,8 @@ impl Axecutor {
 
         let result_value = (reg_value & 0xFFFF_FFFF_FFFF_0000) | (value as u64);
         self.state.registers.insert(*qword_register, result_value);
+
+        debug_log!("Set register {:?} to 0x{:x}", reg, result_value);
     }
 
     pub fn reg_write_32(&mut self, reg: SupportedRegister, value: u32) {
@@ -404,6 +410,8 @@ impl Axecutor {
         // Intentionally cut off the upper 32bit, setting them to zero
         let result_value = value as u64;
         self.state.registers.insert(*qword_register, result_value);
+
+        debug_log!("Set register {:?} to 0x{:x}", reg, result_value);
     }
 
     pub fn reg_write_64(&mut self, reg: SupportedRegister, value: u64) {
@@ -415,6 +423,8 @@ impl Axecutor {
         );
 
         self.state.registers.insert(reg, value);
+
+        debug_log!("Set register {:?} to 0x{:x}", reg, value);
     }
 
     pub fn reg_read_8(&self, reg: SupportedRegister) -> u8 {
@@ -434,6 +444,8 @@ impl Axecutor {
             (reg_value & 0xFF) as u8
         };
 
+        debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
+
         return result_value;
     }
 
@@ -447,6 +459,9 @@ impl Axecutor {
         let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
 
         let result_value = (reg_value & 0xFFFF) as u16;
+
+        debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
+
         return result_value;
     }
 
@@ -460,6 +475,9 @@ impl Axecutor {
         let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
 
         let result_value = (reg_value & 0xFFFF_FFFF) as u32;
+
+        debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
+
         return result_value;
     }
 
@@ -472,6 +490,9 @@ impl Axecutor {
         );
 
         let reg_value = self.state.registers.get(&reg).unwrap().clone();
+
+        debug_log!("Read value 0x{:x} from {:?}", reg_value, reg);
+
         return reg_value;
     }
 }

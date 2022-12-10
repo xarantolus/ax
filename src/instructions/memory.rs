@@ -1,16 +1,15 @@
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::instructions::registers::SupportedRegister;
+use crate::{debug_log, instructions::registers::SupportedRegister};
 
 use super::{axecutor::Axecutor, errors::AxError};
-
-use crate::debug_log;
 
 use std::convert::TryInto;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct MemoryArea {
+    name: Option<String>,
     start: u64,
     length: u64,
     data: Vec<u8>,
@@ -21,6 +20,11 @@ impl MemoryArea {
         let mut s = String::new();
 
         s.push_str(&format!("MemoryArea {{\n"));
+        s.push_str(&format!(
+            "{}    name: {:?},\n",
+            " ".repeat(i * 4),
+            self.name
+        ));
         s.push_str(&format!(
             "{}    start: {:#x},\n",
             " ".repeat(i * 4),
@@ -72,7 +76,11 @@ impl Axecutor {
 
                 if result.len() <= 100 {
                     debug_log!(
-                        "Read from memory area, start={:#x}, length={}, read={:?}",
+                        "Read from memory area{}, start={:#x}, length={}, read={:?}",
+                        match &area.name {
+                            Some(name) => format!(" {}", name),
+                            None => String::new(),
+                        },
                         area.start,
                         area.length,
                         result
@@ -80,7 +88,11 @@ impl Axecutor {
                 } else {
                     // Only log the first 50 and last 50 bytes of the memory area, with "<too much data to display>" in the middle
                     debug_log!(
-                        "Read from memory area, start={:#x}, length={}, read=[{:?}, <too much data to display>, {:?}]",
+                        "Read from memory area{}, start={:#x}, length={}, read=[{:?}, <too much data to display>, {:?}]",
+                        match &area.name {
+                            Some(name) => format!(" {}", name),
+                            None => String::new(),
+                        },
                         area.start,
                         area.length,
                         &result[0..50],
@@ -137,15 +149,32 @@ impl Axecutor {
                 let offset = (address - area.start) as usize;
                 area.data[offset..offset + data.len()].copy_from_slice(data);
 
+                #[cfg(debug_assertions)]
                 if data.len() <= 100 {
                     debug_log!(
-                        "Wrote to memory area, start={:#x}, length={}, wrote={:?}",
+                        "Wrote to memory area, start={:#x}, length={}, wrote={:?}{}",
                         area.start,
                         area.length,
-                        data
+                        data,
+                        match data.len() {
+                            1 => format!(", formatted=0x{:02x}", data[0]),
+                            2 => format!(
+                                ", formatted=0x{:04x}",
+                                u16::from_le_bytes(data.try_into().unwrap())
+                            ),
+                            4 => format!(
+                                ", formatted=0x{:08x}",
+                                u32::from_le_bytes(data.try_into().unwrap())
+                            ),
+                            8 => format!(
+                                ", formatted=0x{:016x}",
+                                u64::from_le_bytes(data.try_into().unwrap())
+                            ),
+                            _ => "".to_string(),
+                        }
                     );
                 } else {
-                    // Only log the first 50 and last 50 bytes of the memory area, with "<too much data to display>" in the middle
+                    // Only log the first 50 and last 50 bytes of data, with "<too much data to display>" in the middle
                     debug_log!(
                         "Wrote to memory area, start={:#x}, length={}, wrote=[{:?}, <too much data to display>, {:?}]",
                         area.start,
@@ -182,7 +211,12 @@ impl Axecutor {
     }
 
     #[must_use]
-    pub fn mem_init_area(&mut self, start: u64, data: Vec<u8>) -> Result<(), AxError> {
+    pub fn mem_init_area_named(
+        &mut self,
+        start: u64,
+        data: Vec<u8>,
+        name: Option<String>,
+    ) -> Result<(), AxError> {
         // Make sure there's no overlapping area already defined, including code region
         if start >= self.code_start_address && start < self.code_start_address + self.code_length {
             return Err(AxError::from(format!(
@@ -200,17 +234,44 @@ impl Axecutor {
             }
         }
 
+        #[cfg(debug_assertions)]
+        let display_name = match &name {
+            Some(n) => format!(" {}", n),
+            None => "".to_string(),
+        };
+
+        let len = data.len() as u64;
         self.state.memory.push(MemoryArea {
             start,
-            length: data.len() as u64,
+            length: len,
             data,
+            name,
         });
+
+        debug_log!(
+            "Initialized memory area{}, start={:#x}, length={:#x}",
+            display_name,
+            start,
+            len
+        );
 
         Ok(())
     }
 
+    pub fn mem_init_area(&mut self, start: u64, data: Vec<u8>) -> Result<(), AxError> {
+        self.mem_init_area_named(start, data, None)
+    }
     pub fn mem_init_zero(&mut self, start: u64, length: u64) -> Result<(), AxError> {
-        self.mem_init_area(start, vec![0; length as usize])
+        self.mem_init_area_named(start, vec![0; length as usize], None)
+    }
+
+    pub fn mem_init_zero_named(
+        &mut self,
+        start: u64,
+        length: u64,
+        name: String,
+    ) -> Result<(), AxError> {
+        self.mem_init_area_named(start, vec![0; length as usize], Some(name))
     }
 
     pub fn init_stack(&mut self, length: u64) -> Result<(), AxError> {
@@ -223,7 +284,10 @@ impl Axecutor {
                 ));
             }
 
-            if self.mem_init_zero(stack_start, length).is_ok() {
+            if self
+                .mem_init_zero_named(stack_start, length, "Stack".to_string())
+                .is_ok()
+            {
                 break;
             }
             stack_start <<= 1;
