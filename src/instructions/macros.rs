@@ -1284,27 +1284,3 @@ macro_rules! calculate_rm {
         }
     };
 }
-
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console, js_name = debug)]
-    pub(crate) fn js_debug_log(a: &str);
-}
-
-#[macro_export]
-macro_rules! debug_log {
-    ($str:expr) => {
-        #[cfg(all(target_arch = "wasm32", debug_assertions))]
-        {
-            use crate::instructions::macros::js_debug_log;
-            js_debug_log(&*format!("{}:{}: {}", file!(), line!(), $str));
-        }
-    };
-    ($fmt:expr, $($arg:tt)*) => {
-        #[cfg(all(target_arch = "wasm32", debug_assertions))]
-        {
-            use crate::instructions::macros::js_debug_log;
-            js_debug_log(&*format!("{}:{}: {}", file!(), line!(), format!($fmt, $($arg)*)));
-        }
-    };
-}

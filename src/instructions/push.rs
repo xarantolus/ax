@@ -9,6 +9,7 @@ use iced_x86::Register;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
+use crate::debug_log;
 use crate::instructions::operand::Operand;
 use crate::instructions::registers::SupportedRegister;
 
@@ -41,8 +42,30 @@ impl Axecutor {
         let value = self.reg_read_16(reg);
         let rsp = self.reg_read_64(Register::RSP.into()) - 2;
 
+        // Debug_print stack before push
+        let mut stack = Vec::new();
+        for i in 0..8 {
+            let addr = rsp + (i * 2);
+            let val = self.mem_read_16(addr);
+            if let Ok(v) = val {
+                stack.push(v);
+            }
+        }
+        debug_log!("Stack before push: {:?}", stack);
+
         self.mem_write_16(rsp, value)?;
         self.reg_write_64(Register::RSP.into(), rsp);
+
+        // Debug_print stack after push
+        let mut stack = Vec::new();
+        for i in 0..8 {
+            let addr = rsp + (i * 2);
+            let val = self.mem_read_16(addr);
+            if let Ok(v) = val {
+                stack.push(v);
+            }
+        }
+        debug_log!("Stack after push: {:?}", stack);
 
         Ok(())
     }
@@ -67,8 +90,30 @@ impl Axecutor {
         let value = self.reg_read_64(reg);
         let rsp = self.reg_read_64(Register::RSP.into()) - 8;
 
+        // Debug_print stack before push
+        let mut stack = Vec::new();
+        for i in 0..8 {
+            let addr = rsp + (i * 8);
+            let val = self.mem_read_64(addr);
+            if let Ok(v) = val {
+                stack.push(v);
+            }
+        }
+        debug_log!("Stack before push: {:?}", stack);
+
         self.mem_write_64(rsp, value)?;
         self.reg_write_64(Register::RSP.into(), rsp);
+
+        // Debug_print stack after push
+        let mut stack = Vec::new();
+        for i in 0..8 {
+            let addr = rsp + (i * 8);
+            let val = self.mem_read_64(addr);
+            if let Ok(v) = val {
+                stack.push(v);
+            }
+        }
+        debug_log!("Stack after push: {:?}", stack);
 
         Ok(())
     }
