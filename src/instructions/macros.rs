@@ -1,5 +1,3 @@
-use wasm_bindgen::prelude::wasm_bindgen;
-
 pub(crate) const NO_WRITEBACK: u64 = 0x8000_0000_0000_0000;
 
 #[macro_export]
