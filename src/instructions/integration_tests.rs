@@ -3,7 +3,8 @@ mod test {
     // You can add more tests here using the a.py script, e.g. run `python3 a.py "mov rax, 0x1234567890abcdef; xor eax, eax"` (select "ts" for setup) to generate a test case
     use super::super::axecutor::Axecutor;
     use crate::{
-        assert_reg_value, ax_test, instructions::registers::SupportedRegister, write_reg_value,
+        assert_reg_value, ax_test, debug_log, instructions::registers::SupportedRegister,
+        write_reg_value,
     };
     use iced_x86::Register::*;
 
@@ -139,12 +140,11 @@ mod test {
     ];
 
     // Note that "\n" is used as string end marker by the program, simulating reading one line from stdin
-    const STRING_REVERSE_INPUT: &[u8] = b"Hi!\n";
-    const STRING_REVERSE_EXPECTED_OUTPUT: &[u8] = b"!iH\n";
+    const STRING_REVERSE_INPUT: &[u8] = b"This is a very interesting string!\n";
     const STRING_REVERSE_INPUT_LEN: u64 = STRING_REVERSE_INPUT.len() as u64;
     const STRING_REVERSE_INPUT_START_ADDR: u64 = 0x1000;
 
-    // See testdata/string_reverse.S source
+    // See testdata/string_reverse.S for source
     ax_test![string_reverse;
     0x48, 0x31, 0xdb, 0x48, 0x31, 0xc9, 0x48, 0xf7, 0xc4, 0x0f, 0x00, 0x00, 0x00, 0x74, 0x0f, 0x48, 0x83, 0xec, 0x08, 0xe8, 0x83, 0x00, 0x00, 0x00, 0x48, 0x83,
     0xc4, 0x08, 0xeb, 0x05, 0xe8, 0x78, 0x00, 0x00, 0x00, 0x41, 0x8a, 0x1a, 0x80, 0xfb, 0x0a, 0x74, 0x07, 0x53, 0x48, 0x83, 0xc1, 0x01, 0xeb, 0xd4, 0x48, 0x83, 0xf9, 0x00, 0x7f, 0x04,
@@ -171,14 +171,17 @@ mod test {
             a.mem_init_zero(0x3000, 1).expect("Failed to initialize char buffer memory");
             write_reg_value!(q; a; R10; 0x3000); // char buffer addr
 
-            a.init_stack(128).expect("Failed to initialize stack");
+            // This should be more depending on the test string
+            a.init_stack(512).expect("Failed to initialize stack");
         };
         |a: Axecutor| {
             // After running, the output should be reversed
             let output = a.mem_read_bytes(0x2000, STRING_REVERSE_INPUT_LEN).expect("Failed to read output area");
 
             let output_str = String::from_utf8(output).expect("Failed to convert output to string");
+            let input_str = String::from_utf8(Vec::from(STRING_REVERSE_INPUT)).expect("Failed to convert input to string");
 
+            debug_log!("Reversed string {:?} to {:?}", input_str, output_str);
             assert_eq!(output_str, STRING_REVERSE_INPUT.iter().rev().skip(1).map(|&b| b as char).collect::<String>() + "\n");
         }
     ];
