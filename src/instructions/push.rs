@@ -16,24 +16,6 @@ impl Axecutor {
     pub fn mnemonic_push(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Push);
 
-        // TODO: It is likely that the push/pop implementations are quite frankly wrong.
-        // Here's the relevant output from the debug log:
-        /*
-               src/instructions/execute.rs:35: Calling Axecutor::step, finished=false, rip=0xf029bbef5ebd
-               src/instructions/registers.rs:526: Read value 0xf029bbef5ebd from RIP
-               src/instructions/execute.rs:49: Fetched instruction push rbx
-               src/instructions/registers.rs:451: Wrote 0xf029bbef5ebe to RIP (previously 0xf029bbef5ebd)
-               src/instructions/execute.rs:62: Executing instruction push rbx (Push_r64)
-               src/instructions/registers.rs:526: Read value 0x48 from RBX
-               src/instructions/registers.rs:526: Read value 0x4078 from RSP
-               src/instructions/memory.rs:158: Calling Axecutor::mem_write_bytes, address=0x4070, data=[72, 0, 0, 0, 0, 0, 0, 0]
-               src/instructions/memory.rs:171: Wrote to memory area, start=0x4000, length=128, wrote=[72, 0, 0, 0, 0, 0, 0, 0], formatted=0x0000000000000048
-               src/instructions/registers.rs:451: Wrote 0x4070 to RSP (previously 0x4078)
-               src/instructions/registers.rs:526: Read value 0xf029bbef5ebe from RIP
-        */
-        // Basically it looks like we should write to 4078, not 4070; should confirm this however with the manual
-        // Too tired to do this right now, so I'll just leave this here for now
-
         match i.code() {
             Push_r16 => self.instr_push_r16(i),
             Push_r32 => self.instr_push_r32(i),
