@@ -382,7 +382,14 @@ impl Axecutor {
 
         self.state.registers.insert(*qword_register, result_value);
 
-        debug_log!("Set register {:?} to 0x{:x}", reg, result_value);
+        debug_log!(
+            "Wrote 0x{:x} to {:?}, setting {:?} to 0x{:x} (previously 0x{:x})",
+            value,
+            reg,
+            qword_register,
+            result_value,
+            reg_value
+        );
     }
 
     pub fn reg_write_16(&mut self, reg: SupportedRegister, value: u16) {
@@ -397,7 +404,14 @@ impl Axecutor {
         let result_value = (reg_value & 0xFFFF_FFFF_FFFF_0000) | (value as u64);
         self.state.registers.insert(*qword_register, result_value);
 
-        debug_log!("Set register {:?} to 0x{:x}", reg, result_value);
+        debug_log!(
+            "Wrote 0x{:x} to {:?}, setting {:?} to 0x{:x} (previously 0x{:x})",
+            value,
+            reg,
+            qword_register,
+            result_value,
+            reg_value
+        );
     }
 
     pub fn reg_write_32(&mut self, reg: SupportedRegister, value: u32) {
@@ -409,9 +423,19 @@ impl Axecutor {
 
         // Intentionally cut off the upper 32bit, setting them to zero
         let result_value = value as u64;
-        self.state.registers.insert(*qword_register, result_value);
+        let old = self.state.registers.insert(*qword_register, result_value);
 
-        debug_log!("Set register {:?} to 0x{:x}", reg, result_value);
+        debug_log!(
+            "Wrote 0x{:x} to {:?}, setting {:?} to 0x{:x}{}",
+            value,
+            reg,
+            qword_register,
+            result_value,
+            match old {
+                Some(o) => format!(" (previously 0x{:x})", o),
+                Option::None => "".to_string(),
+            }
+        );
     }
 
     pub fn reg_write_64(&mut self, reg: SupportedRegister, value: u64) {
@@ -422,9 +446,17 @@ impl Axecutor {
             r
         );
 
-        self.state.registers.insert(reg, value);
+        let old = self.state.registers.insert(reg, value);
 
-        debug_log!("Set register {:?} to 0x{:x}", reg, value);
+        debug_log!(
+            "Wrote 0x{:x} to {:?}{}",
+            value,
+            reg,
+            match old {
+                Some(o) => format!(" (previously 0x{:x})", o),
+                Option::None => "".to_string(),
+            }
+        );
     }
 
     pub fn reg_read_8(&self, reg: SupportedRegister) -> u8 {

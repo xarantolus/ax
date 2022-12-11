@@ -72,18 +72,35 @@ impl Axecutor {
         for area in &self.state.memory {
             if address >= area.start && address + length <= area.start + area.length {
                 let offset = (address - area.start) as usize;
-                result.extend_from_slice(&area.data[offset..offset + length as usize]);
+                let slice = &area.data[offset..offset + length as usize];
+                result.extend_from_slice(slice);
 
                 if result.len() <= 100 {
                     debug_log!(
-                        "Read from memory area{}, start={:#x}, length={}, read={:?}",
+                        "Read from memory area{}, start={:#x}, length={}, read={:?}{}",
                         match &area.name {
                             Some(name) => format!(" {}", name),
                             None => String::new(),
                         },
                         area.start,
                         area.length,
-                        result
+                        result,
+                        match result.len() {
+                            1 => format!(", formatted=0x{:02x}", result[0]),
+                            2 => format!(
+                                ", formatted=0x{:04x}",
+                                u16::from_le_bytes(slice.try_into().unwrap())
+                            ),
+                            4 => format!(
+                                ", formatted=0x{:08x}",
+                                u32::from_le_bytes(slice.try_into().unwrap())
+                            ),
+                            8 => format!(
+                                ", formatted=0x{:016x}",
+                                u64::from_le_bytes(slice.try_into().unwrap())
+                            ),
+                            _ => "".to_string(),
+                        }
                     );
                 } else {
                     // Only log the first 50 and last 50 bytes of the memory area, with "<too much data to display>" in the middle
