@@ -121,6 +121,16 @@ impl Axecutor {
             }
         }
 
+        // Check if address is within code area
+        if address >= self.code_start_address
+            && address < self.code_start_address + self.code_length
+        {
+            return Err(AxError::from(format!(
+                "Could not read memory from code area at address {:#x}",
+                address
+            )));
+        }
+
         Err(AxError::from(format!(
             "Could not read memory at address {:#x}",
             address
