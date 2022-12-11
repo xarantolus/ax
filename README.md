@@ -1,5 +1,7 @@
 # ax
-Minimal x86-64 emulator(?) for WebAssembly. Currently very WIP.
+This is a minimal x86-64 emulator that powers the [MemeAssembly Playground](https://memeasm.010.one/). It executes real machine code and can be used to emulate x86-64 instructions in the browser.
+
+Note that not all implemented instructions work exactly the same way as on real hardware, but the goal is to be as close as possible while staying reasonable. Currently only around 50 instruction mnemonics are implemented (some opcodes are omitted, but the most important stuff is there).
 
 ### Development setup
 1. Make sure you have installed Rust/Cargo, Node.js and Make
