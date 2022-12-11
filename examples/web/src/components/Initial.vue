@@ -12,7 +12,7 @@ await init();
       <input type="file" ref="file">
       <button @click="runFile">Run!</button>
     </div>
-    <pre id="console">{{console_content}}</pre>
+    <pre id="console">{{ console_content }}</pre>
   </div>
 </template>
 
@@ -111,6 +111,8 @@ export default defineComponent({
 
       try {
         ax.init_stack(8n * 1024n);
+
+        ax.reg_write_64(Register.RSP, ax.reg_read_64(Register.RSP) - 8n);
 
         ax.hook_before_mnemonic(Mnemonic.Ret, (ax: Axecutor) => {
           console.log("before RET @ " + ax.reg_read_64(Register.RIP));
