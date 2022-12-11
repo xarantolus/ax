@@ -320,7 +320,7 @@ impl Axecutor {
             stack_start <<= 1;
         }
 
-        let initial_rsp = stack_start + length - 16;
+        let initial_rsp = stack_start + length - 8;
         self.reg_write_64(SupportedRegister::RSP, initial_rsp);
         self.stack_top = stack_start + length;
 
