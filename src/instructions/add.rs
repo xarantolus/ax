@@ -6,6 +6,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
 
+use crate::fatal_error;
 use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
 
 impl Axecutor {
@@ -33,7 +34,7 @@ impl Axecutor {
             Add_rm16_imm8 => self.instr_add_rm16_imm8(i),
             Add_rm32_imm8 => self.instr_add_rm32_imm8(i),
             Add_rm64_imm8 => self.instr_add_rm64_imm8(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Add", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Add", i.code()),
         }
     }
 

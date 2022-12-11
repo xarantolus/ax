@@ -5,6 +5,7 @@ use iced_x86::Mnemonic::Int;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
+use crate::fatal_error;
 use crate::instructions::generated::SupportedMnemonic;
 
 impl Axecutor {
@@ -13,7 +14,7 @@ impl Axecutor {
 
         match i.code() {
             Int_imm8 => self.instr_int_imm8(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Int", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Int", i.code()),
         }
     }
 

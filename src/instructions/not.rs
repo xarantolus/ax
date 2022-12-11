@@ -4,6 +4,7 @@ use iced_x86::Mnemonic::Not;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+use crate::fatal_error;
 use crate::instructions::flags::*;
 
 use crate::calculate_rm;
@@ -17,7 +18,7 @@ impl Axecutor {
             Not_rm16 => self.instr_not_rm16(i),
             Not_rm32 => self.instr_not_rm32(i),
             Not_rm64 => self.instr_not_rm64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Not", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Not", i.code()),
         }
     }
 

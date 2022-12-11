@@ -2,6 +2,8 @@ use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Nop;
 
+use crate::fatal_error;
+
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
@@ -16,7 +18,7 @@ impl Axecutor {
             Nop_rm16 => self.instr_nop_rm16(i),
             Nop_rm32 => self.instr_nop_rm32(i),
             Nop_rm64 => self.instr_nop_rm64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Nop", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Nop", i.code()),
         }
     }
 

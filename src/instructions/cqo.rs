@@ -4,6 +4,7 @@ use iced_x86::Mnemonic::Cqo;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
+use crate::fatal_error;
 use crate::instructions::registers::SupportedRegister::*;
 
 impl Axecutor {
@@ -12,7 +13,7 @@ impl Axecutor {
 
         match i.code() {
             iced_x86::Code::Cqo => self.instr_cqo(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Cqo", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Cqo", i.code()),
         }
     }
 

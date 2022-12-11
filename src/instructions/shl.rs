@@ -7,6 +7,7 @@ use iced_x86::Mnemonic::Shl;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::calculate_rm_r;
+use crate::fatal_error;
 use crate::instructions::flags::*;
 
 use crate::calculate_rm_imm;
@@ -28,7 +29,7 @@ impl Axecutor {
             Shl_rm16_CL => self.instr_shl_rm16_cl(i),
             Shl_rm32_CL => self.instr_shl_rm32_cl(i),
             Shl_rm64_CL => self.instr_shl_rm64_cl(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Shl", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Shl", i.code()),
         }
     }
 

@@ -72,7 +72,7 @@ impl Axecutor {
                 // In tests, `.into` panics with a very non-helpful message, so we just panic before with a helpful message
                 #[cfg(test)]
                 {
-                    panic!("{}", err_info);
+                    crate::fatal_error!("{}", err_info);
                 }
 
                 // Throw normal JS exception when running in browser

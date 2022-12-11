@@ -175,6 +175,7 @@ macro_rules! jmp_test {
             async_std::task::block_on(async {
                 use crate::instructions::errors::AxError;
                 use crate::code_with_nops;
+                use crate::fatal_error;
 
                 let bytes = code_with_nops!($($bytes_start),*; $count; $($bytes_end),*);
 
@@ -184,7 +185,7 @@ macro_rules! jmp_test {
                 assert_reg_value!(q; ax; RIP; $initial_rip);
 
                 if let Err(e) = ax.execute().await {
-                    panic!("Failed to execute: {:?}", AxError::from(e));
+                    fatal_error!("Failed to execute: {:?}", AxError::from(e));
                 }
 
                 assert_reg_value!(q; ax; RIP; $final_rip);

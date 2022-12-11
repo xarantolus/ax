@@ -5,6 +5,7 @@ use iced_x86::Mnemonic::Div;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
+use crate::fatal_error;
 use crate::instructions::operand::Operand;
 use crate::instructions::registers::SupportedRegister::*;
 
@@ -17,7 +18,7 @@ impl Axecutor {
             Div_rm16 => self.instr_div_rm16(i),
             Div_rm32 => self.instr_div_rm32(i),
             Div_rm64 => self.instr_div_rm64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Div", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Div", i.code()),
         }
     }
 
@@ -33,7 +34,7 @@ impl Axecutor {
         let src_val = match op {
             Operand::Register(r) => self.reg_read_8(r),
             Operand::Memory(m) => self.mem_read_8(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Div_rm8", op),
+            _ => fatal_error!("Invalid operand {:?} for Div_rm8", op),
         } as u16;
 
         if src_val == 0 {
@@ -62,7 +63,7 @@ impl Axecutor {
         let src_val = match op {
             Operand::Register(r) => self.reg_read_16(r),
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Div_rm16", op),
+            _ => fatal_error!("Invalid operand {:?} for Div_rm16", op),
         } as u32;
 
         if src_val == 0 {
@@ -93,7 +94,7 @@ impl Axecutor {
         let src_val = match op {
             Operand::Register(r) => self.reg_read_32(r),
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Div_rm32", op),
+            _ => fatal_error!("Invalid operand {:?} for Div_rm32", op),
         } as u64;
 
         if src_val == 0 {
@@ -124,7 +125,7 @@ impl Axecutor {
         let src_val = match op {
             Operand::Register(r) => self.reg_read_64(r),
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Div_rm64", op),
+            _ => fatal_error!("Invalid operand {:?} for Div_rm64", op),
         } as u128;
 
         if src_val == 0 {

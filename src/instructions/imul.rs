@@ -4,6 +4,7 @@ use iced_x86::Mnemonic::Imul;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+use crate::fatal_error;
 use crate::instructions::flags::*;
 use crate::instructions::operand::Operand;
 use crate::instructions::registers::SupportedRegister::*;
@@ -26,7 +27,7 @@ impl Axecutor {
             Imul_r16_rm16 => self.instr_imul_r16_rm16(i),
             Imul_r32_rm32 => self.instr_imul_r32_rm32(i),
             Imul_r64_rm64 => self.instr_imul_r64_rm64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Imul", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Imul", i.code()),
         }
     }
 
@@ -42,12 +43,14 @@ impl Axecutor {
         let src_value = match src_op {
             Operand::Register(r) => self.reg_read_16(r),
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            _ => panic!("Invalid operand for IMUL r16, r/m16, imm16"),
+            _ => fatal_error!("Invalid operand for IMUL r16, r/m16, imm16"),
         } as i16;
 
         let imm_value = match imm_op {
             Operand::Immediate { data, size: _ } => data as i16,
-            _ => panic!("Invalid operand for IMUL r16, r/m16, imm16; expected immediate value"),
+            _ => {
+                fatal_error!("Invalid operand for IMUL r16, r/m16, imm16; expected immediate value")
+            }
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
@@ -75,12 +78,14 @@ impl Axecutor {
         let src_value = match src_op {
             Operand::Register(r) => self.reg_read_32(r),
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
-            _ => panic!("Invalid operand for IMUL r32, r/m32, imm32"),
+            _ => fatal_error!("Invalid operand for IMUL r32, r/m32, imm32"),
         } as i32;
 
         let imm_value = match imm_op {
             Operand::Immediate { data, size: _ } => data as i32,
-            _ => panic!("Invalid operand for IMUL r32, r/m32, imm32; expected immediate value"),
+            _ => {
+                fatal_error!("Invalid operand for IMUL r32, r/m32, imm32; expected immediate value")
+            }
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
@@ -108,12 +113,14 @@ impl Axecutor {
         let src_value = match src_op {
             Operand::Register(r) => self.reg_read_64(r),
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
-            _ => panic!("Invalid operand for IMUL r64, r/m64, imm32"),
+            _ => fatal_error!("Invalid operand for IMUL r64, r/m64, imm32"),
         } as i64;
 
         let imm_value = match imm_op {
             Operand::Immediate { data, size: _ } => data as i64,
-            _ => panic!("Invalid operand for IMUL r64, r/m64, imm32; expected immediate value"),
+            _ => {
+                fatal_error!("Invalid operand for IMUL r64, r/m64, imm32; expected immediate value")
+            }
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
@@ -141,12 +148,14 @@ impl Axecutor {
         let src_value = match src_op {
             Operand::Register(r) => self.reg_read_16(r),
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            _ => panic!("Invalid operand for IMUL r16, r/m16, imm8"),
+            _ => fatal_error!("Invalid operand for IMUL r16, r/m16, imm8"),
         } as i16;
 
         let imm_value = match imm_op {
             Operand::Immediate { data, size: _ } => data as i16,
-            _ => panic!("Invalid operand for IMUL r16, r/m16, imm8; expected immediate value"),
+            _ => {
+                fatal_error!("Invalid operand for IMUL r16, r/m16, imm8; expected immediate value")
+            }
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
@@ -174,12 +183,14 @@ impl Axecutor {
         let src_value = match src_op {
             Operand::Register(r) => self.reg_read_32(r),
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
-            _ => panic!("Invalid operand for IMUL r32, r/m32, imm8"),
+            _ => fatal_error!("Invalid operand for IMUL r32, r/m32, imm8"),
         } as i32;
 
         let imm_value = match imm_op {
             Operand::Immediate { data, size: _ } => data as i32,
-            _ => panic!("Invalid operand for IMUL r32, r/m32, imm8; expected immediate value"),
+            _ => {
+                fatal_error!("Invalid operand for IMUL r32, r/m32, imm8; expected immediate value")
+            }
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
@@ -207,12 +218,14 @@ impl Axecutor {
         let src_value = match src_op {
             Operand::Register(r) => self.reg_read_64(r),
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
-            _ => panic!("Invalid operand for IMUL r64, r/m64, imm8"),
+            _ => fatal_error!("Invalid operand for IMUL r64, r/m64, imm8"),
         } as i64;
 
         let imm_value = match imm_op {
             Operand::Immediate { data, size: _ } => data as i64,
-            _ => panic!("Invalid operand for IMUL r64, r/m64, imm8; expected immediate value"),
+            _ => {
+                fatal_error!("Invalid operand for IMUL r64, r/m64, imm8; expected immediate value")
+            }
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
@@ -239,7 +252,7 @@ impl Axecutor {
         let src_val = match op {
             Operand::Register(r) => self.reg_read_8(r),
             Operand::Memory(m) => self.mem_read_8(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Imul_rm8", op),
+            _ => fatal_error!("Invalid operand {:?} for Imul_rm8", op),
         } as i8;
 
         let dst_val = self.reg_read_8(AL) as i8;
@@ -276,7 +289,7 @@ impl Axecutor {
         let src_val = match op {
             Operand::Register(r) => self.reg_read_16(r),
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Imul_rm16", op),
+            _ => fatal_error!("Invalid operand {:?} for Imul_rm16", op),
         } as i16;
 
         let dst_val = self.reg_read_16(AX) as i16;
@@ -314,7 +327,7 @@ impl Axecutor {
         let src_val = match op {
             Operand::Register(r) => self.reg_read_32(r),
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Imul_rm32", op),
+            _ => fatal_error!("Invalid operand {:?} for Imul_rm32", op),
         } as i32;
 
         let dst_val = self.reg_read_32(EAX) as i32;
@@ -352,7 +365,7 @@ impl Axecutor {
         let src_val = match op {
             Operand::Register(r) => self.reg_read_64(r),
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Imul_rm64", op),
+            _ => fatal_error!("Invalid operand {:?} for Imul_rm64", op),
         } as i64;
 
         let dst_val = self.reg_read_64(RAX) as i64;
@@ -390,12 +403,12 @@ impl Axecutor {
         let src_val = match src_op {
             Operand::Register(r) => self.reg_read_16(r),
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Imul_r16_rm16", src_op),
+            _ => fatal_error!("Invalid operand {:?} for Imul_r16_rm16", src_op),
         } as i16;
 
         let dst_val = match dest_op {
             Operand::Register(r) => self.reg_read_16(r),
-            _ => panic!("Invalid operand {:?} for Imul_r16_rm16", dest_op),
+            _ => fatal_error!("Invalid operand {:?} for Imul_r16_rm16", dest_op),
         } as i16;
 
         let result = (dst_val as i32).wrapping_mul(src_val as i32);
@@ -430,12 +443,12 @@ impl Axecutor {
         let src_val = match src_op {
             Operand::Register(r) => self.reg_read_32(r),
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Imul_r32_rm32", src_op),
+            _ => fatal_error!("Invalid operand {:?} for Imul_r32_rm32", src_op),
         } as i32;
 
         let dst_val = match dest_op {
             Operand::Register(r) => self.reg_read_32(r),
-            _ => panic!("Invalid operand {:?} for Imul_r32_rm32", dest_op),
+            _ => fatal_error!("Invalid operand {:?} for Imul_r32_rm32", dest_op),
         } as i32;
 
         let result = (dst_val as i64).wrapping_mul(src_val as i64);
@@ -470,12 +483,12 @@ impl Axecutor {
         let src_val = match src_op {
             Operand::Register(r) => self.reg_read_64(r),
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for Imul_r64_rm64", src_op),
+            _ => fatal_error!("Invalid operand {:?} for Imul_r64_rm64", src_op),
         } as i64;
 
         let dst_val = match dest_op {
             Operand::Register(r) => self.reg_read_64(r),
-            _ => panic!("Invalid operand {:?} for Imul_r64_rm64", dest_op),
+            _ => fatal_error!("Invalid operand {:?} for Imul_r64_rm64", dest_op),
         } as i64;
 
         let result = (dst_val as i128).wrapping_mul(src_val as i128);

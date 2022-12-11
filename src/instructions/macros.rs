@@ -5,6 +5,7 @@ macro_rules! calculate_rm_r {
     [u8f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
 			use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = $self.reg_read_8(src.into());
@@ -31,13 +32,14 @@ macro_rules! calculate_rm_r {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u16f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
 			use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = $self.reg_read_16(src.into());
@@ -64,13 +66,14 @@ macro_rules! calculate_rm_r {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u32f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = $self.reg_read_32(src.into());
@@ -96,13 +99,14 @@ macro_rules! calculate_rm_r {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u64f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = $self.reg_read_64(src.into());
@@ -128,13 +132,14 @@ macro_rules! calculate_rm_r {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u16f; u8; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = $self.reg_read_8(src.into());
@@ -160,13 +165,14 @@ macro_rules! calculate_rm_r {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u32f; u8; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = $self.reg_read_8(src.into());
@@ -192,13 +198,14 @@ macro_rules! calculate_rm_r {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u64f; u8; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = $self.reg_read_8(src.into());
@@ -224,14 +231,14 @@ macro_rules! calculate_rm_r {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u8; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = $self.reg_read_8(src.into());
@@ -256,13 +263,14 @@ macro_rules! calculate_rm_r {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u16; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = $self.reg_read_16(src.into());
@@ -286,13 +294,14 @@ macro_rules! calculate_rm_r {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u32; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = $self.reg_read_32(src.into());
@@ -316,13 +325,14 @@ macro_rules! calculate_rm_r {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u64; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = $self.reg_read_64(src.into());
@@ -346,7 +356,7 @@ macro_rules! calculate_rm_r {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
@@ -370,6 +380,7 @@ macro_rules! calculate_r_rm {
         {
 			use crate::instructions::operand::Operand;
 			use crate::instructions::registers::SupportedRegister;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let dest_reg : SupportedRegister = dest.into();
@@ -396,7 +407,7 @@ macro_rules! calculate_r_rm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
             }
         }
     };
@@ -404,6 +415,7 @@ macro_rules! calculate_r_rm {
         {
 			use crate::instructions::operand::Operand;
 			use crate::instructions::registers::SupportedRegister;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let dest_reg : SupportedRegister = dest.into();
@@ -430,7 +442,7 @@ macro_rules! calculate_r_rm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
             }
         }
     };
@@ -438,6 +450,7 @@ macro_rules! calculate_r_rm {
         {
 			use crate::instructions::operand::Operand;
 			use crate::instructions::registers::SupportedRegister;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let dest_reg : SupportedRegister = dest.into();
@@ -464,7 +477,7 @@ macro_rules! calculate_r_rm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
             }
         }
     };
@@ -472,6 +485,7 @@ macro_rules! calculate_r_rm {
         {
 			use crate::instructions::operand::Operand;
 			use crate::instructions::registers::SupportedRegister;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let dest_reg : SupportedRegister = dest.into();
@@ -498,13 +512,14 @@ macro_rules! calculate_r_rm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", src, $i.mnemonic()),
             }
         }
     };
     [u8; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
 			use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -514,7 +529,7 @@ macro_rules! calculate_r_rm {
                 Operand::Register(r) => {
                     $self.reg_read_8(r)
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             let dest = dest.into();
@@ -529,9 +544,8 @@ macro_rules! calculate_r_rm {
     };
     [u16; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-
-
-			use crate::instructions::operand::Operand;
+            use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -541,7 +555,7 @@ macro_rules! calculate_r_rm {
                 Operand::Register(r) => {
                     $self.reg_read_16(r)
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             let dest = dest.into();
@@ -556,8 +570,8 @@ macro_rules! calculate_r_rm {
     };
     [u32; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-
-			use crate::instructions::operand::Operand;
+            use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -567,7 +581,7 @@ macro_rules! calculate_r_rm {
                 Operand::Register(r) => {
                     $self.reg_read_32(r)
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             let dest = dest.into();
@@ -582,8 +596,8 @@ macro_rules! calculate_r_rm {
     };
     [u64; $self:expr; $i:expr; $op:expr;  (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-
-			use crate::instructions::operand::Operand;
+            use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -593,7 +607,7 @@ macro_rules! calculate_r_rm {
                 Operand::Register(r) => {
                     $self.reg_read_64(r)
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             let dest = dest.into();
@@ -620,7 +634,8 @@ macro_rules! calculate_r_rm {
     };
     [u64; u32; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-			use crate::instructions::operand::Operand;
+            use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -630,7 +645,7 @@ macro_rules! calculate_r_rm {
                 Operand::Register(r) => {
                     $self.reg_read_32(r)
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             let dest = dest.into();
@@ -650,6 +665,7 @@ macro_rules! calculate_rm_imm {
     [u8f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -657,7 +673,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 1, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u8
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -681,13 +697,14 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u16f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -695,7 +712,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 2, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u16
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -719,13 +736,14 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u32f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -733,7 +751,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 4, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u32
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -757,13 +775,14 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u64f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -771,7 +790,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 8, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u64
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -795,14 +814,14 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u8; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -810,7 +829,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 1, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u8
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -832,14 +851,14 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u16; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -847,7 +866,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 2, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u16
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -869,14 +888,14 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u32; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -884,7 +903,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 4, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u32
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -906,14 +925,14 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u64; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -921,7 +940,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 8, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u64
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -943,14 +962,14 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u64; u32; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
-
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -958,7 +977,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 4, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u32
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -980,7 +999,7 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
@@ -1011,6 +1030,7 @@ macro_rules! calculate_rm_imm {
     [u8f; u8; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -1018,7 +1038,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 1, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u8
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -1042,12 +1062,13 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u16f; u8; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => { {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -1055,7 +1076,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 1, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u8
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -1079,12 +1100,13 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u32f; u8; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => { {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -1092,7 +1114,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 1, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u8
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -1116,12 +1138,13 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u64f; u8; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => { {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let (dest, src) = $self.instruction_operands_2($i)?;
             let src_val = match src {
@@ -1129,7 +1152,7 @@ macro_rules! calculate_rm_imm {
                     debug_assert_eq!(size, 1, "Invalid immediate size for {:?} instruction", $i.mnemonic());
                     data as u8
                 }
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             };
 
             match dest {
@@ -1153,7 +1176,7 @@ macro_rules! calculate_rm_imm {
                     }
                     Ok(())
                 }
-                _ => panic!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid destination operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
@@ -1164,6 +1187,7 @@ macro_rules! calculate_rm {
     [u8f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let dest = $self.instruction_operand($i, 0)?;
             match dest {
@@ -1187,13 +1211,14 @@ macro_rules! calculate_rm {
                     }
                     Ok(())
                 },
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u16f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let dest = $self.instruction_operand($i, 0)?;
             match dest {
@@ -1217,13 +1242,14 @@ macro_rules! calculate_rm {
                     }
                     Ok(())
                 },
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u32f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let dest = $self.instruction_operand($i, 0)?;
             match dest {
@@ -1247,13 +1273,14 @@ macro_rules! calculate_rm {
                     }
                     Ok(())
                 },
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };
     [u64f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         {
             use crate::instructions::operand::Operand;
+            use crate::fatal_error;
 
             let dest = $self.instruction_operand($i, 0)?;
             match dest {
@@ -1277,7 +1304,7 @@ macro_rules! calculate_rm {
                     }
                     Ok(())
                 },
-                _ => panic!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
+                _ => fatal_error!("Invalid source operand {:?} for {:?} instruction", dest, $i.mnemonic()),
             }
         }
     };

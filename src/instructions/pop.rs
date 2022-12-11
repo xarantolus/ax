@@ -8,6 +8,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 
 use crate::instructions::registers::SupportedRegister;
+use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_pop(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -20,7 +21,7 @@ impl Axecutor {
             Pop_rm16 => self.instr_pop_rm16(i),
             Pop_rm32 => self.instr_pop_rm32(i),
             Pop_rm64 => self.instr_pop_rm64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Pop", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Pop", i.code()),
         }
     }
 
@@ -47,7 +48,7 @@ impl Axecutor {
     fn instr_pop_r32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Pop_r32);
 
-        panic!("There's no prefix for encoding this in 64-bit x86-64 (see Intel manual)");
+        fatal_error!("There's no prefix for encoding this in 64-bit x86-64 (see Intel manual)");
     }
 
     /// POP r64
@@ -73,7 +74,7 @@ impl Axecutor {
     fn instr_pop_rm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Pop_rm16);
 
-        todo!("instr_pop_rm16 for Pop")
+        opcode_unimplemented!("instr_pop_rm16 for Pop")
     }
 
     /// POP r/m32
@@ -82,7 +83,7 @@ impl Axecutor {
     fn instr_pop_rm32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Pop_rm32);
 
-        todo!("instr_pop_rm32 for Pop")
+        opcode_unimplemented!("instr_pop_rm32 for Pop")
     }
 
     /// POP r/m64
@@ -91,7 +92,7 @@ impl Axecutor {
     fn instr_pop_rm64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Pop_rm64);
 
-        todo!("instr_pop_rm64 for Pop")
+        opcode_unimplemented!("instr_pop_rm64 for Pop")
     }
 }
 

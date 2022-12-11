@@ -136,3 +136,50 @@ impl fmt::Debug for AxError {
         )
     }
 }
+
+#[macro_export]
+macro_rules! fatal_error {
+    ($message:expr, $($arg:tt)*) => {{
+        #[cfg(target_arch = "wasm32")]
+        {
+            // In WASM we don't panic, as it's not possible to catch panics from JS
+            return Err(AxError::from(format!($message, $($arg)*)));
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            panic!($message, $($arg)*);
+        }
+    }};
+    ($message:expr) => {{
+        #[cfg(target_arch = "wasm32")]
+        {
+            // In WASM we don't panic, as it's not possible to catch panics from JS
+            return Err(AxError::from($message));
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            panic!($message);
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! opcode_unimplemented {
+    ($message:expr) => {{
+        #[cfg(target_arch = "wasm32")]
+        {
+            // In WASM we don't panic, as it's not possible to catch panics from JS
+            return Err(AxError::from(format!(
+                "Executed unimplemented opcode: {}",
+                $message
+            )));
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            panic!("Executed unimplemented opcode: {}", $message);
+        }
+    }};
+}

@@ -4,6 +4,7 @@ use iced_x86::Mnemonic::Int3;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
+use crate::fatal_error;
 use crate::instructions::generated::SupportedMnemonic;
 
 impl Axecutor {
@@ -12,7 +13,7 @@ impl Axecutor {
 
         match i.code() {
             iced_x86::Code::Int3 => self.instr_int3(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Int3", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Int3", i.code()),
         }
     }
 

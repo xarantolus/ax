@@ -4,6 +4,7 @@ use iced_x86::Mnemonic::Cmp;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+use crate::fatal_error;
 use crate::instructions::flags::*;
 use crate::instructions::macros::NO_WRITEBACK;
 
@@ -34,7 +35,7 @@ impl Axecutor {
             Cmp_rm16_imm8 => self.instr_cmp_rm16_imm8(i),
             Cmp_rm32_imm8 => self.instr_cmp_rm32_imm8(i),
             Cmp_rm64_imm8 => self.instr_cmp_rm64_imm8(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Cmp", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Cmp", i.code()),
         }
     }
 

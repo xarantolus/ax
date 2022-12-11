@@ -7,6 +7,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
 use crate::instructions::registers::SupportedRegister::*;
+use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_jg(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -19,7 +20,7 @@ impl Axecutor {
             Jg_rel16 => self.instr_jg_rel16(i),
             Jg_rel32_32 => self.instr_jg_rel32_32(i),
             Jg_rel32_64 => self.instr_jg_rel32_64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Jg", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Jg", i.code()),
         }
     }
 
@@ -29,7 +30,7 @@ impl Axecutor {
     fn instr_jg_rel8_16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jg_rel8_16);
 
-        todo!("instr_jg_rel8_16 for Jg")
+        opcode_unimplemented!("instr_jg_rel8_16 for Jg")
     }
 
     /// JG rel8
@@ -38,7 +39,7 @@ impl Axecutor {
     fn instr_jg_rel8_32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jg_rel8_32);
 
-        todo!("instr_jg_rel8_32 for Jg")
+        opcode_unimplemented!("instr_jg_rel8_32 for Jg")
     }
 
     /// JG rel8
@@ -55,7 +56,7 @@ impl Axecutor {
                     let offset = i.near_branch64() as i64 as u64;
                     self.reg_write_64(RIP, offset);
                 }
-                _ => panic!("Invalid op0_kind {:?} for JG rel8_64", i.op0_kind()),
+                _ => fatal_error!("Invalid op0_kind {:?} for JG rel8_64", i.op0_kind()),
             }
         }
 
@@ -68,7 +69,7 @@ impl Axecutor {
     fn instr_jg_rel16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jg_rel16);
 
-        todo!("instr_jg_rel16 for Jg")
+        opcode_unimplemented!("instr_jg_rel16 for Jg")
     }
 
     /// JG rel32
@@ -77,7 +78,7 @@ impl Axecutor {
     fn instr_jg_rel32_32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jg_rel32_32);
 
-        todo!("instr_jg_rel32_32 for Jg")
+        opcode_unimplemented!("instr_jg_rel32_32 for Jg")
     }
 
     /// JG rel32
@@ -94,7 +95,7 @@ impl Axecutor {
                     let offset = i.near_branch64() as i64 as u64;
                     self.reg_write_64(RIP.into(), offset);
                 }
-                _ => panic!("Invalid op0_kind {:?} for JG rel32_64", i.op0_kind()),
+                _ => fatal_error!("Invalid op0_kind {:?} for JG rel32_64", i.op0_kind()),
             }
         }
 

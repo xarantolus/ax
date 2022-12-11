@@ -154,7 +154,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
 use crate::instructions::registers::SupportedRegister::*;
-use crate::{{calculate_r_rm, calculate_rm_imm, calculate_rm_r, calculate_rm}};
+use crate::{{calculate_r_rm, calculate_rm_imm, calculate_rm_r, calculate_rm, opcode_unimplemented, fatal_error}};
 
 
 impl Axecutor {{
@@ -168,7 +168,7 @@ impl Axecutor {{
         code += f"""            {instr.enum_name} => self.instr_{instr.enum_name.lower()}(i),
 """
 
-    code += f"""            _ => panic!("Invalid instruction code {{:?}} for mnemonic {mnemonic}", i.code()),
+    code += f"""            _ => fatal_error!("Invalid instruction code {{:?}} for mnemonic {mnemonic}", i.code()),
         }}
     }}""" + "\n\n"
 
@@ -181,7 +181,7 @@ impl Axecutor {{
     fn instr_{instr.enum_name.lower()}(&mut self, i: Instruction) -> Result<(), AxError> {{
         debug_assert_eq!(i.code(), {instr.enum_name});
 
-        todo!("instr_{instr.enum_name.lower()} for {mnemonic}")
+        opcode_unimplemented!("instr_{instr.enum_name.lower()} for {mnemonic}")
     }}
 """
 

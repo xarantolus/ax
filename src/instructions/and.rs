@@ -4,6 +4,7 @@ use iced_x86::Mnemonic::And;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+use crate::fatal_error;
 use crate::instructions::flags::*;
 
 use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
@@ -33,7 +34,7 @@ impl Axecutor {
             And_rm16_imm8 => self.instr_and_rm16_imm8(i),
             And_rm32_imm8 => self.instr_and_rm32_imm8(i),
             And_rm64_imm8 => self.instr_and_rm64_imm8(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic And", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic And", i.code()),
         }
     }
 

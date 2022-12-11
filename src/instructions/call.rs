@@ -8,6 +8,7 @@ use super::errors::AxError;
 
 use crate::instructions::operand::Operand;
 use crate::instructions::registers::SupportedRegister::*;
+use crate::{fatal_error, opcode_unimplemented};
 
 macro_rules! push_rip {
     ($self:ident) => {{
@@ -34,7 +35,7 @@ impl Axecutor {
             Call_m1616 => self.instr_call_m1616(i),
             Call_m1632 => self.instr_call_m1632(i),
             Call_m1664 => self.instr_call_m1664(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Call", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Call", i.code()),
         }
     }
 
@@ -44,7 +45,7 @@ impl Axecutor {
     fn instr_call_ptr1616(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Call_ptr1616);
 
-        todo!("instr_call_ptr1616 for Call")
+        opcode_unimplemented!("instr_call_ptr1616 for Call")
     }
 
     /// CALL ptr16:32
@@ -53,7 +54,7 @@ impl Axecutor {
     fn instr_call_ptr1632(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Call_ptr1632);
 
-        todo!("instr_call_ptr1632 for Call")
+        opcode_unimplemented!("instr_call_ptr1632 for Call")
     }
 
     /// CALL rel16
@@ -62,7 +63,7 @@ impl Axecutor {
     fn instr_call_rel16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Call_rel16);
 
-        todo!("instr_call_rel16 for Call")
+        opcode_unimplemented!("instr_call_rel16 for Call")
     }
 
     /// CALL rel32
@@ -71,7 +72,7 @@ impl Axecutor {
     fn instr_call_rel32_32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Call_rel32_32);
 
-        todo!("instr_call_rel32_32 for Call")
+        opcode_unimplemented!("instr_call_rel32_32 for Call")
     }
 
     /// CALL rel32
@@ -93,7 +94,7 @@ impl Axecutor {
                 self.reg_write_64(RIP.into(), offset);
                 Ok(())
             }
-            _ => panic!("Invalid op0_kind for CALL rel32: {:?}", i.op0_kind()),
+            _ => fatal_error!("Invalid op0_kind for CALL rel32: {:?}", i.op0_kind()),
         }
     }
 
@@ -103,7 +104,7 @@ impl Axecutor {
     fn instr_call_rm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Call_rm16);
 
-        todo!("instr_call_rm16 for Call")
+        opcode_unimplemented!("instr_call_rm16 for Call")
     }
 
     /// CALL r/m32
@@ -112,7 +113,7 @@ impl Axecutor {
     fn instr_call_rm32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Call_rm32);
 
-        todo!("instr_call_rm32 for Call")
+        opcode_unimplemented!("instr_call_rm32 for Call")
     }
 
     /// CALL r/m64
@@ -127,7 +128,7 @@ impl Axecutor {
                 self.mem_read_64(addr)?
             }
             Operand::Register(r) => self.reg_read_64(r),
-            _ => panic!("Invalid operand for CALL r/m64: {:?}", i.op0_kind()),
+            _ => fatal_error!("Invalid operand for CALL r/m64: {:?}", i.op0_kind()),
         };
 
         push_rip!(self);
@@ -142,7 +143,7 @@ impl Axecutor {
     fn instr_call_m1616(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Call_m1616);
 
-        todo!("instr_call_m1616 for Call")
+        opcode_unimplemented!("instr_call_m1616 for Call")
     }
 
     /// CALL m16:32
@@ -151,7 +152,7 @@ impl Axecutor {
     fn instr_call_m1632(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Call_m1632);
 
-        todo!("instr_call_m1632 for Call")
+        opcode_unimplemented!("instr_call_m1632 for Call")
     }
 
     /// CALL m16:64
@@ -160,7 +161,7 @@ impl Axecutor {
     fn instr_call_m1664(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Call_m1664);
 
-        todo!("instr_call_m1664 for Call")
+        opcode_unimplemented!("instr_call_m1664 for Call")
     }
 }
 
@@ -195,7 +196,7 @@ mod tests {
                 .expect("Failed to init memory");
 
             match ax.execute().await {
-                Err(e) => panic!("Failed to execute: {:?}", AxError::from(e)),
+                Err(e) => crate::fatal_error!("Failed to execute: {:?}", AxError::from(e)),
                 _ => {}
             };
 

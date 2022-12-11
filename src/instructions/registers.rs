@@ -423,6 +423,7 @@ impl Axecutor {
 
         // Intentionally cut off the upper 32bit, setting them to zero
         let result_value = value as u64;
+        #[allow(unused_variables)]
         let old = self.state.registers.insert(*qword_register, result_value);
 
         debug_log!(
@@ -446,6 +447,7 @@ impl Axecutor {
             r
         );
 
+        #[allow(unused_variables)]
         let old = self.state.registers.insert(reg, value);
 
         debug_log!(

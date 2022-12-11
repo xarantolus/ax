@@ -313,7 +313,7 @@ mod tests {
         let mut ax = Axecutor::new(&code, 0x1000, 0x1000).unwrap();
         ax.init_stack(0).expect("Failed to init stack");
         if let Err(e) = ax.execute().await {
-            panic!("Failed to execute: {:?}", AxError::from(e));
+            crate::fatal_error!("Failed to execute: {:?}", AxError::from(e));
         }
         assert!(ax.finished);
     }];

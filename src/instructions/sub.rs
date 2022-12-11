@@ -6,7 +6,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
 
-use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
+use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r, fatal_error};
 
 impl Axecutor {
     pub fn mnemonic_sub(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -33,7 +33,7 @@ impl Axecutor {
             Sub_rm16_imm8 => self.instr_sub_rm16_imm8(i),
             Sub_rm32_imm8 => self.instr_sub_rm32_imm8(i),
             Sub_rm64_imm8 => self.instr_sub_rm64_imm8(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Sub", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Sub", i.code()),
         }
     }
 

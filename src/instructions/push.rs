@@ -1,5 +1,3 @@
-use core::panic;
-
 use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Push;
@@ -11,6 +9,7 @@ use super::errors::AxError;
 
 use crate::instructions::operand::Operand;
 use crate::instructions::registers::SupportedRegister;
+use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_push(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -26,7 +25,7 @@ impl Axecutor {
             Push_rm64 => self.instr_push_rm64(i),
             Pushq_imm8 => self.instr_pushq_imm8(i),
             Pushq_imm32 => self.instr_pushq_imm64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Push", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Push", i.code()),
         }
     }
 
@@ -53,7 +52,7 @@ impl Axecutor {
     fn instr_push_r32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Push_r32);
 
-        panic!("There's no prefix for encoding this in 64-bit x86-64 (see AMD64 manual)");
+        fatal_error!("There's no prefix for encoding this in 64-bit x86-64 (see AMD64 manual)")
     }
 
     /// PUSH r64
@@ -97,7 +96,7 @@ impl Axecutor {
         let src = match self.instruction_operand(i, 0)? {
             Operand::Register(r) => self.reg_read_16(r),
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            _ => panic!("Invalid operand {:?} for PUSH r/m16", i.op0_kind()),
+            _ => fatal_error!("Invalid operand {:?} for PUSH r/m16", i.op0_kind()),
         };
 
         let rsp = self.reg_read_64(Register::RSP.into());
@@ -114,7 +113,7 @@ impl Axecutor {
     fn instr_push_rm32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Push_rm32);
 
-        todo!("instr_push_rm32 for Push")
+        opcode_unimplemented!("instr_push_rm32 for Push")
     }
 
     /// PUSH r/m64
@@ -123,7 +122,7 @@ impl Axecutor {
     fn instr_push_rm64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Push_rm64);
 
-        todo!("instr_push_rm64 for Push")
+        opcode_unimplemented!("instr_push_rm64 for Push")
     }
 
     /// PUSH imm8
@@ -156,7 +155,7 @@ impl Axecutor {
                 self.mem_write_64(rsp, value as u64)?;
                 self.reg_write_64(Register::RSP.into(), rsp - 8);
             }
-            _ => panic!("Invalid operand {:?} for PUSH imm8", i.op0_kind()),
+            _ => fatal_error!("Invalid operand {:?} for PUSH imm8", i.op0_kind()),
         }
 
         Ok(())
@@ -178,7 +177,7 @@ impl Axecutor {
                 self.mem_write_64(rsp, value)?;
                 self.reg_write_64(Register::RSP.into(), rsp - 8);
             }
-            _ => panic!("Invalid operand {:?} for PUSH imm64", i.op0_kind()),
+            _ => fatal_error!("Invalid operand {:?} for PUSH imm64", i.op0_kind()),
         }
 
         Ok(())

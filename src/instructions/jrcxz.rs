@@ -7,6 +7,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 
 use crate::instructions::registers::SupportedRegister;
+use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_jrcxz(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -15,7 +16,7 @@ impl Axecutor {
         match i.code() {
             Jrcxz_rel8_16 => self.instr_jrcxz_rel8_16(i),
             Jrcxz_rel8_64 => self.instr_jrcxz_rel8_64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Jrcxz", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Jrcxz", i.code()),
         }
     }
 
@@ -25,7 +26,7 @@ impl Axecutor {
     fn instr_jrcxz_rel8_16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jrcxz_rel8_16);
 
-        todo!("instr_jrcxz_rel8_16 for Jrcxz")
+        opcode_unimplemented!("instr_jrcxz_rel8_16 for Jrcxz")
     }
 
     /// JRCXZ rel8
@@ -42,7 +43,7 @@ impl Axecutor {
 
                     return Ok(());
                 }
-                _ => panic!("Invalid op0_kind for JMP rel32: {:?}", i.op0_kind()),
+                _ => fatal_error!("Invalid op0_kind for JMP rel32: {:?}", i.op0_kind()),
             }
         }
 

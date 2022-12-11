@@ -7,6 +7,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 
 use crate::instructions::registers::SupportedRegister;
+use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_jecxz(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -16,7 +17,7 @@ impl Axecutor {
             Jecxz_rel8_16 => self.instr_jecxz_rel8_16(i),
             Jecxz_rel8_32 => self.instr_jecxz_rel8_32(i),
             Jecxz_rel8_64 => self.instr_jecxz_rel8_64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Jecxz", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Jecxz", i.code()),
         }
     }
 
@@ -27,7 +28,7 @@ impl Axecutor {
         debug_assert_eq!(i.code(), Jecxz_rel8_16);
 
         // This is not supported in 64-bit mode (according to GNU as), so ignored
-        todo!("instr_jecxz_rel8_16 for Jecxz")
+        opcode_unimplemented!("instr_jecxz_rel8_16 for Jecxz")
     }
 
     /// JECXZ rel8
@@ -36,7 +37,7 @@ impl Axecutor {
     fn instr_jecxz_rel8_32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jecxz_rel8_32);
 
-        todo!("instr_jecxz_rel8_32 for Jecxz")
+        opcode_unimplemented!("instr_jecxz_rel8_32 for Jecxz")
     }
 
     /// JECXZ rel8
@@ -53,7 +54,7 @@ impl Axecutor {
 
                     return Ok(());
                 }
-                _ => panic!("Invalid op0_kind for JMP rel32: {:?}", i.op0_kind()),
+                _ => fatal_error!("Invalid op0_kind for JMP rel32: {:?}", i.op0_kind()),
             }
         }
 

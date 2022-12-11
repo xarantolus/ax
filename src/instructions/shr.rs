@@ -4,6 +4,7 @@ use iced_x86::Mnemonic::Shr;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+use crate::fatal_error;
 use crate::instructions::flags::*;
 
 use crate::{calculate_rm_imm, calculate_rm_r};
@@ -25,7 +26,7 @@ impl Axecutor {
             Shr_rm16_CL => self.instr_shr_rm16_cl(i),
             Shr_rm32_CL => self.instr_shr_rm32_cl(i),
             Shr_rm64_CL => self.instr_shr_rm64_cl(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Shr", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Shr", i.code()),
         }
     }
 

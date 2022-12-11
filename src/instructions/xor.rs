@@ -6,7 +6,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 
 use crate::instructions::flags::*;
-use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
+use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r, fatal_error};
 
 impl Axecutor {
     pub fn mnemonic_xor(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -33,7 +33,7 @@ impl Axecutor {
             Xor_rm16_imm8 => self.instr_xor_rm16_imm8(i),
             Xor_rm32_imm8 => self.instr_xor_rm32_imm8(i),
             Xor_rm64_imm8 => self.instr_xor_rm64_imm8(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Xor", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Xor", i.code()),
         }
     }
 

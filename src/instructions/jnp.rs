@@ -7,6 +7,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
 use crate::instructions::registers::SupportedRegister::*;
+use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_jnp(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -19,7 +20,7 @@ impl Axecutor {
             Jnp_rel16 => self.instr_jnp_rel16(i),
             Jnp_rel32_32 => self.instr_jnp_rel32_32(i),
             Jnp_rel32_64 => self.instr_jnp_rel32_64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Jnp", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Jnp", i.code()),
         }
     }
 
@@ -29,7 +30,7 @@ impl Axecutor {
     fn instr_jnp_rel8_16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jnp_rel8_16);
 
-        todo!("instr_jnp_rel8_16 for Jnp")
+        opcode_unimplemented!("instr_jnp_rel8_16 for Jnp")
     }
 
     /// JNP rel8
@@ -38,7 +39,7 @@ impl Axecutor {
     fn instr_jnp_rel8_32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jnp_rel8_32);
 
-        todo!("instr_jnp_rel8_32 for Jnp")
+        opcode_unimplemented!("instr_jnp_rel8_32 for Jnp")
     }
 
     /// JNP rel8
@@ -53,7 +54,7 @@ impl Axecutor {
                     let offset = i.near_branch64() as i64 as u64;
                     self.reg_write_64(RIP, offset);
                 }
-                _ => panic!("Invalid op0_kind {:?} for JNP rel8_64", i.op0_kind()),
+                _ => fatal_error!("Invalid op0_kind {:?} for JNP rel8_64", i.op0_kind()),
             }
         }
 
@@ -66,7 +67,7 @@ impl Axecutor {
     fn instr_jnp_rel16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jnp_rel16);
 
-        todo!("instr_jnp_rel16 for Jnp")
+        opcode_unimplemented!("instr_jnp_rel16 for Jnp")
     }
 
     /// JNP rel32
@@ -75,7 +76,7 @@ impl Axecutor {
     fn instr_jnp_rel32_32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jnp_rel32_32);
 
-        todo!("instr_jnp_rel32_32 for Jnp")
+        opcode_unimplemented!("instr_jnp_rel32_32 for Jnp")
     }
 
     /// JNP rel32
@@ -90,7 +91,7 @@ impl Axecutor {
                     let offset = i.near_branch64() as i64 as u64;
                     self.reg_write_64(RIP, offset);
                 }
-                _ => panic!("Invalid op0_kind {:?} for JNP rel32_64", i.op0_kind()),
+                _ => fatal_error!("Invalid op0_kind {:?} for JNP rel32_64", i.op0_kind()),
             }
         }
 

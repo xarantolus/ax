@@ -5,6 +5,7 @@ use iced_x86::Mnemonic::Lea;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
+use crate::fatal_error;
 use crate::instructions::operand::Operand;
 
 impl Axecutor {
@@ -15,7 +16,7 @@ impl Axecutor {
             Lea_r16_m => self.instr_lea_r16_m(i),
             Lea_r32_m => self.instr_lea_r32_m(i),
             Lea_r64_m => self.instr_lea_r64_m(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Lea", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Lea", i.code()),
         }
     }
 
@@ -29,7 +30,7 @@ impl Axecutor {
 
         let src_addr = match src {
             Operand::Memory(m) => self.mem_addr(m),
-            _ => panic!("Invalid source operand {:?} for LEA r16, m", src),
+            _ => fatal_error!("Invalid source operand {:?} for LEA r16, m", src),
         };
 
         let dest = dest.into();
@@ -48,7 +49,7 @@ impl Axecutor {
 
         let src_addr = match src {
             Operand::Memory(m) => self.mem_addr(m),
-            _ => panic!("Invalid source operand {:?} for LEA r32, m", src),
+            _ => fatal_error!("Invalid source operand {:?} for LEA r32, m", src),
         };
 
         let dest = dest.into();
@@ -67,7 +68,7 @@ impl Axecutor {
 
         let src_addr = match src {
             Operand::Memory(m) => self.mem_addr(m),
-            _ => panic!("Invalid source operand {:?} for LEA r64, m", src),
+            _ => fatal_error!("Invalid source operand {:?} for LEA r64, m", src),
         };
 
         let dest = dest.into();

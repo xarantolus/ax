@@ -7,6 +7,7 @@ use super::errors::AxError;
 use crate::instructions::flags::*;
 
 use crate::calculate_rm;
+use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_inc(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -19,7 +20,7 @@ impl Axecutor {
             Inc_rm16 => self.instr_inc_rm16(i),
             Inc_rm32 => self.instr_inc_rm32(i),
             Inc_rm64 => self.instr_inc_rm64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Inc", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Inc", i.code()),
         }
     }
 
@@ -29,7 +30,7 @@ impl Axecutor {
     fn instr_inc_r16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Inc_r16);
 
-        todo!("instr_inc_r16 for Inc")
+        opcode_unimplemented!("instr_inc_r16 for Inc")
     }
 
     /// INC r32
@@ -38,7 +39,7 @@ impl Axecutor {
     fn instr_inc_r32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Inc_r32);
 
-        todo!("instr_inc_r32 for Inc")
+        opcode_unimplemented!("instr_inc_r32 for Inc")
     }
 
     /// INC r/m8

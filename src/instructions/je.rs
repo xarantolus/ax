@@ -7,6 +7,7 @@ use iced_x86::Register::*;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
+use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_je(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -19,7 +20,7 @@ impl Axecutor {
             Je_rel16 => self.instr_je_rel16(i),
             Je_rel32_32 => self.instr_je_rel32_32(i),
             Je_rel32_64 => self.instr_je_rel32_64(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Je", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Je", i.code()),
         }
     }
 
@@ -29,7 +30,7 @@ impl Axecutor {
     fn instr_je_rel8_16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Je_rel8_16);
 
-        todo!("instr_je_rel8_16 for Je")
+        opcode_unimplemented!("instr_je_rel8_16 for Je")
     }
 
     /// JE rel8
@@ -38,7 +39,7 @@ impl Axecutor {
     fn instr_je_rel8_32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Je_rel8_32);
 
-        todo!("instr_je_rel8_32 for Je")
+        opcode_unimplemented!("instr_je_rel8_32 for Je")
     }
 
     /// JE rel8
@@ -53,7 +54,7 @@ impl Axecutor {
                     let offset = i.near_branch64() as i64 as u64;
                     self.reg_write_64(RIP.into(), offset);
                 }
-                _ => panic!("Invalid op0_kind {:?} for JE rel8_64", i.op0_kind()),
+                _ => fatal_error!("Invalid op0_kind {:?} for JE rel8_64", i.op0_kind()),
             }
         }
 
@@ -66,7 +67,7 @@ impl Axecutor {
     fn instr_je_rel16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Je_rel16);
 
-        todo!("instr_je_rel16 for Je")
+        opcode_unimplemented!("instr_je_rel16 for Je")
     }
 
     /// JE rel32
@@ -75,7 +76,7 @@ impl Axecutor {
     fn instr_je_rel32_32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Je_rel32_32);
 
-        todo!("instr_je_rel32_32 for Je")
+        opcode_unimplemented!("instr_je_rel32_32 for Je")
     }
 
     /// JE rel32
@@ -90,7 +91,7 @@ impl Axecutor {
                     let offset = i.near_branch64() as i64 as u64;
                     self.reg_write_64(RIP.into(), offset);
                 }
-                _ => panic!("Invalid op0_kind {:?} for JE rel32_64", i.op0_kind()),
+                _ => fatal_error!("Invalid op0_kind {:?} for JE rel32_64", i.op0_kind()),
             }
         }
 

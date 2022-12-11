@@ -6,6 +6,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
 use crate::instructions::operand::Operand;
+use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_test(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -28,7 +29,7 @@ impl Axecutor {
             Test_rm16_imm16_F7r1 => self.instr_test_rm16_imm16_f7r1(i),
             Test_rm32_imm32_F7r1 => self.instr_test_rm32_imm32_f7r1(i),
             Test_rm64_imm32_F7r1 => self.instr_test_rm64_imm32_f7r1(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Test", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Test", i.code()),
         }
     }
 
@@ -40,13 +41,13 @@ impl Axecutor {
 
         let src_val = match src {
             Operand::Register(r) => self.reg_read_8(r),
-            _ => panic!("Invalid source operand {:?} for TEST r/m8, r8", src),
+            _ => fatal_error!("Invalid source operand {:?} for TEST r/m8, r8", src),
         };
 
         let dest_val = match dest {
             Operand::Register(r) => self.reg_read_8(r),
             Operand::Memory(m) => self.mem_read_8(self.mem_addr(m))?,
-            _ => panic!("Invalid destination operand {:?} for TEST r/m8, r8", dest),
+            _ => fatal_error!("Invalid destination operand {:?} for TEST r/m8, r8", dest),
         };
 
         let result = dest_val & src_val;
@@ -66,13 +67,13 @@ impl Axecutor {
 
         let src_val = match src {
             Operand::Register(r) => self.reg_read_16(r),
-            _ => panic!("Invalid source operand {:?} for TEST r/m16, r16", src),
+            _ => fatal_error!("Invalid source operand {:?} for TEST r/m16, r16", src),
         };
 
         let dest_val = match dest {
             Operand::Register(r) => self.reg_read_16(r),
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            _ => panic!("Invalid destination operand {:?} for TEST r/m16, r16", dest),
+            _ => fatal_error!("Invalid destination operand {:?} for TEST r/m16, r16", dest),
         };
 
         let result = dest_val & src_val;
@@ -92,13 +93,13 @@ impl Axecutor {
 
         let src_val = match src {
             Operand::Register(r) => self.reg_read_32(r),
-            _ => panic!("Invalid source operand {:?} for TEST r/m32, r32", src),
+            _ => fatal_error!("Invalid source operand {:?} for TEST r/m32, r32", src),
         };
 
         let dest_val = match dest {
             Operand::Register(r) => self.reg_read_32(r),
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
-            _ => panic!("Invalid destination operand {:?} for TEST r/m32, r32", dest),
+            _ => fatal_error!("Invalid destination operand {:?} for TEST r/m32, r32", dest),
         };
 
         let result = dest_val & src_val;
@@ -118,13 +119,13 @@ impl Axecutor {
 
         let src_val = match src {
             Operand::Register(r) => self.reg_read_64(r),
-            _ => panic!("Invalid source operand {:?} for TEST r/m64, r64", src),
+            _ => fatal_error!("Invalid source operand {:?} for TEST r/m64, r64", src),
         };
 
         let dest_val = match dest {
             Operand::Register(r) => self.reg_read_64(r),
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
-            _ => panic!("Invalid destination operand {:?} for TEST r/m64, r64", dest),
+            _ => fatal_error!("Invalid destination operand {:?} for TEST r/m64, r64", dest),
         };
 
         let result = dest_val & src_val;
@@ -182,13 +183,13 @@ impl Axecutor {
 
                 data as u8
             }
-            _ => panic!("Invalid source operand {:?} for TEST r/m8, imm8", src),
+            _ => fatal_error!("Invalid source operand {:?} for TEST r/m8, imm8", src),
         };
 
         let dest_val = match dest {
             Operand::Register(r) => self.reg_read_8(r),
             Operand::Memory(m) => self.mem_read_8(self.mem_addr(m))?,
-            _ => panic!("Invalid destination operand {:?} for TEST r/m8, imm8", dest),
+            _ => fatal_error!("Invalid destination operand {:?} for TEST r/m8, imm8", dest),
         };
 
         let result = dest_val & src_val;
@@ -205,7 +206,7 @@ impl Axecutor {
         debug_assert_eq!(i.code(), Test_rm8_imm8_F6r1);
 
         // This opcode doesn't seem to be mentioned in the Intel manual
-        todo!("instr_test_rm8_imm8_f6r1 for Test")
+        opcode_unimplemented!("instr_test_rm8_imm8_f6r1 for Test")
     }
 
     /// TEST r/m16, imm16
@@ -220,7 +221,7 @@ impl Axecutor {
 
                 data as u16
             }
-            _ => panic!("Invalid source operand {:?} for TEST r/m16, imm16", src),
+            _ => fatal_error!("Invalid source operand {:?} for TEST r/m16, imm16", src),
         };
 
         let dest_val = match dest {
@@ -251,7 +252,7 @@ impl Axecutor {
 
                 data as u32
             }
-            _ => panic!("Invalid source operand {:?} for TEST r/m32, imm32", src),
+            _ => fatal_error!("Invalid source operand {:?} for TEST r/m32, imm32", src),
         };
 
         let dest_val = match dest {
@@ -282,7 +283,7 @@ impl Axecutor {
 
                 data
             }
-            _ => panic!("Invalid source operand {:?} for TEST r/m64, imm32", src),
+            _ => fatal_error!("Invalid source operand {:?} for TEST r/m64, imm32", src),
         };
 
         let dest_val = match dest {
@@ -307,7 +308,7 @@ impl Axecutor {
     fn instr_test_rm16_imm16_f7r1(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Test_rm16_imm16_F7r1);
 
-        todo!("instr_test_rm16_imm16_f7r1 for Test")
+        opcode_unimplemented!("instr_test_rm16_imm16_f7r1 for Test")
     }
 
     /// TEST r/m32, imm32
@@ -316,7 +317,7 @@ impl Axecutor {
     fn instr_test_rm32_imm32_f7r1(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Test_rm32_imm32_F7r1);
 
-        todo!("instr_test_rm32_imm32_f7r1 for Test")
+        opcode_unimplemented!("instr_test_rm32_imm32_f7r1 for Test")
     }
 
     /// TEST r/m64, imm32
@@ -325,7 +326,7 @@ impl Axecutor {
     fn instr_test_rm64_imm32_f7r1(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Test_rm64_imm32_F7r1);
 
-        todo!("instr_test_rm64_imm32_f7r1 for Test")
+        opcode_unimplemented!("instr_test_rm64_imm32_f7r1 for Test")
     }
 }
 

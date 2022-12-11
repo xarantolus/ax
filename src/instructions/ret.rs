@@ -6,6 +6,7 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 
 use crate::instructions::registers::SupportedRegister::*;
+use crate::{fatal_error, opcode_unimplemented};
 
 macro_rules! pop_rip {
     ($self:ident) => {{
@@ -36,7 +37,7 @@ impl Axecutor {
             Retfw => self.instr_retfw(i),
             Retfd => self.instr_retfd(i),
             Retfq => self.instr_retfq(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Ret", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Ret", i.code()),
         }
     }
 
@@ -46,7 +47,7 @@ impl Axecutor {
     fn instr_retnw_imm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retnw_imm16);
 
-        todo!("instr_retnw_imm16 for Ret")
+        opcode_unimplemented!("instr_retnw_imm16 for Ret")
     }
 
     /// RET imm16
@@ -55,7 +56,7 @@ impl Axecutor {
     fn instr_retnd_imm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retnd_imm16);
 
-        todo!("instr_retnd_imm16 for Ret")
+        opcode_unimplemented!("instr_retnd_imm16 for Ret")
     }
 
     /// RET imm16
@@ -64,7 +65,7 @@ impl Axecutor {
     fn instr_retnq_imm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retnq_imm16);
 
-        todo!("instr_retnq_imm16 for Ret")
+        opcode_unimplemented!("instr_retnq_imm16 for Ret")
     }
 
     /// RET
@@ -73,7 +74,7 @@ impl Axecutor {
     fn instr_retnw(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retnw);
 
-        todo!("instr_retnw for Ret")
+        opcode_unimplemented!("instr_retnw for Ret")
     }
 
     /// RET
@@ -82,7 +83,7 @@ impl Axecutor {
     fn instr_retnd(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retnd);
 
-        todo!("instr_retnd for Ret")
+        opcode_unimplemented!("instr_retnd for Ret")
     }
 
     /// RET
@@ -102,7 +103,7 @@ impl Axecutor {
     fn instr_retfw_imm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retfw_imm16);
 
-        todo!("instr_retfw_imm16 for Ret")
+        opcode_unimplemented!("instr_retfw_imm16 for Ret")
     }
 
     /// RETF imm16
@@ -111,7 +112,7 @@ impl Axecutor {
     fn instr_retfd_imm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retfd_imm16);
 
-        todo!("instr_retfd_imm16 for Ret")
+        opcode_unimplemented!("instr_retfd_imm16 for Ret")
     }
 
     /// RETF imm16
@@ -120,7 +121,7 @@ impl Axecutor {
     fn instr_retfq_imm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retfq_imm16);
 
-        todo!("instr_retfq_imm16 for Ret")
+        opcode_unimplemented!("instr_retfq_imm16 for Ret")
     }
 
     /// RETF
@@ -129,7 +130,7 @@ impl Axecutor {
     fn instr_retfw(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retfw);
 
-        todo!("instr_retfw for Ret")
+        opcode_unimplemented!("instr_retfw for Ret")
     }
 
     /// RETF
@@ -138,7 +139,7 @@ impl Axecutor {
     fn instr_retfd(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retfd);
 
-        todo!("instr_retfd for Ret")
+        opcode_unimplemented!("instr_retfd for Ret")
     }
 
     /// RETF
@@ -147,7 +148,7 @@ impl Axecutor {
     fn instr_retfq(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retfq);
 
-        todo!("instr_retfq for Ret")
+        opcode_unimplemented!("instr_retfq for Ret")
     }
 }
 

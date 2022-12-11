@@ -7,6 +7,7 @@ use super::errors::AxError;
 
 use crate::instructions::flags::FLAGS_UNAFFECTED;
 use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
+use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_mov(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -53,7 +54,7 @@ impl Axecutor {
             Mov_dr_r64 => self.instr_mov_dr_r64(i),
             Mov_r32_tr => self.instr_mov_r32_tr(i),
             Mov_tr_r32 => self.instr_mov_tr_r32(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Mov", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Mov", i.code()),
         }
     }
 
@@ -151,7 +152,7 @@ impl Axecutor {
     fn instr_mov_rm16_sreg(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_rm16_Sreg);
 
-        todo!("instr_mov_rm16_sreg for Mov")
+        opcode_unimplemented!("instr_mov_rm16_sreg for Mov")
     }
 
     /// MOV r32/m16, Sreg
@@ -160,7 +161,7 @@ impl Axecutor {
     fn instr_mov_r32m16_sreg(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_r32m16_Sreg);
 
-        todo!("instr_mov_r32m16_sreg for Mov")
+        opcode_unimplemented!("instr_mov_r32m16_sreg for Mov")
     }
 
     /// MOV r64/m16, Sreg
@@ -169,7 +170,7 @@ impl Axecutor {
     fn instr_mov_r64m16_sreg(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_r64m16_Sreg);
 
-        todo!("instr_mov_r64m16_sreg for Mov")
+        opcode_unimplemented!("instr_mov_r64m16_sreg for Mov")
     }
 
     /// MOV Sreg, r/m16
@@ -178,7 +179,7 @@ impl Axecutor {
     fn instr_mov_sreg_rm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_Sreg_rm16);
 
-        todo!("instr_mov_sreg_rm16 for Mov")
+        opcode_unimplemented!("instr_mov_sreg_rm16 for Mov")
     }
 
     /// MOV Sreg, r32/m16
@@ -187,7 +188,7 @@ impl Axecutor {
     fn instr_mov_sreg_r32m16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_Sreg_r32m16);
 
-        todo!("instr_mov_sreg_r32m16 for Mov")
+        opcode_unimplemented!("instr_mov_sreg_r32m16 for Mov")
     }
 
     /// MOV Sreg, r64/m16
@@ -196,7 +197,7 @@ impl Axecutor {
     fn instr_mov_sreg_r64m16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_Sreg_r64m16);
 
-        todo!("instr_mov_sreg_r64m16 for Mov")
+        opcode_unimplemented!("instr_mov_sreg_r64m16 for Mov")
     }
 
     /// MOV AL, moffs8
@@ -205,7 +206,7 @@ impl Axecutor {
     fn instr_mov_al_moffs8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_AL_moffs8);
 
-        todo!("instr_mov_al_moffs8 for Mov")
+        opcode_unimplemented!("instr_mov_al_moffs8 for Mov")
     }
 
     /// MOV AX, moffs16
@@ -214,7 +215,7 @@ impl Axecutor {
     fn instr_mov_ax_moffs16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_AX_moffs16);
 
-        todo!("instr_mov_ax_moffs16 for Mov")
+        opcode_unimplemented!("instr_mov_ax_moffs16 for Mov")
     }
 
     /// MOV EAX, moffs32
@@ -223,7 +224,7 @@ impl Axecutor {
     fn instr_mov_eax_moffs32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_EAX_moffs32);
 
-        todo!("instr_mov_eax_moffs32 for Mov")
+        opcode_unimplemented!("instr_mov_eax_moffs32 for Mov")
     }
 
     /// MOV RAX, moffs64
@@ -232,7 +233,7 @@ impl Axecutor {
     fn instr_mov_rax_moffs64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_RAX_moffs64);
 
-        todo!("instr_mov_rax_moffs64 for Mov")
+        opcode_unimplemented!("instr_mov_rax_moffs64 for Mov")
     }
 
     /// MOV moffs8, AL
@@ -241,7 +242,7 @@ impl Axecutor {
     fn instr_mov_moffs8_al(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_moffs8_AL);
 
-        todo!("instr_mov_moffs8_al for Mov")
+        opcode_unimplemented!("instr_mov_moffs8_al for Mov")
     }
 
     /// MOV moffs16, AX
@@ -250,7 +251,7 @@ impl Axecutor {
     fn instr_mov_moffs16_ax(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_moffs16_AX);
 
-        todo!("instr_mov_moffs16_ax for Mov")
+        opcode_unimplemented!("instr_mov_moffs16_ax for Mov")
     }
 
     /// MOV moffs32, EAX
@@ -259,7 +260,7 @@ impl Axecutor {
     fn instr_mov_moffs32_eax(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_moffs32_EAX);
 
-        todo!("instr_mov_moffs32_eax for Mov")
+        opcode_unimplemented!("instr_mov_moffs32_eax for Mov")
     }
 
     /// MOV moffs64, RAX
@@ -268,7 +269,7 @@ impl Axecutor {
     fn instr_mov_moffs64_rax(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_moffs64_RAX);
 
-        todo!("instr_mov_moffs64_rax for Mov")
+        opcode_unimplemented!("instr_mov_moffs64_rax for Mov")
     }
 
     /// MOV r8, imm8
@@ -366,7 +367,7 @@ impl Axecutor {
     fn instr_mov_r32_cr(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_r32_cr);
 
-        todo!("instr_mov_r32_cr for Mov")
+        opcode_unimplemented!("instr_mov_r32_cr for Mov")
     }
 
     /// MOV r64, cr
@@ -375,7 +376,7 @@ impl Axecutor {
     fn instr_mov_r64_cr(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_r64_cr);
 
-        todo!("instr_mov_r64_cr for Mov")
+        opcode_unimplemented!("instr_mov_r64_cr for Mov")
     }
 
     /// MOV r32, dr
@@ -384,7 +385,7 @@ impl Axecutor {
     fn instr_mov_r32_dr(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_r32_dr);
 
-        todo!("instr_mov_r32_dr for Mov")
+        opcode_unimplemented!("instr_mov_r32_dr for Mov")
     }
 
     /// MOV r64, dr
@@ -393,7 +394,7 @@ impl Axecutor {
     fn instr_mov_r64_dr(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_r64_dr);
 
-        todo!("instr_mov_r64_dr for Mov")
+        opcode_unimplemented!("instr_mov_r64_dr for Mov")
     }
 
     /// MOV cr, r32
@@ -402,7 +403,7 @@ impl Axecutor {
     fn instr_mov_cr_r32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_cr_r32);
 
-        todo!("instr_mov_cr_r32 for Mov")
+        opcode_unimplemented!("instr_mov_cr_r32 for Mov")
     }
 
     /// MOV cr, r64
@@ -411,7 +412,7 @@ impl Axecutor {
     fn instr_mov_cr_r64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_cr_r64);
 
-        todo!("instr_mov_cr_r64 for Mov")
+        opcode_unimplemented!("instr_mov_cr_r64 for Mov")
     }
 
     /// MOV dr, r32
@@ -420,7 +421,7 @@ impl Axecutor {
     fn instr_mov_dr_r32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_dr_r32);
 
-        todo!("instr_mov_dr_r32 for Mov")
+        opcode_unimplemented!("instr_mov_dr_r32 for Mov")
     }
 
     /// MOV dr, r64
@@ -429,7 +430,7 @@ impl Axecutor {
     fn instr_mov_dr_r64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_dr_r64);
 
-        todo!("instr_mov_dr_r64 for Mov")
+        opcode_unimplemented!("instr_mov_dr_r64 for Mov")
     }
 
     /// MOV r32, tr
@@ -438,7 +439,7 @@ impl Axecutor {
     fn instr_mov_r32_tr(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_r32_tr);
 
-        todo!("instr_mov_r32_tr for Mov")
+        opcode_unimplemented!("instr_mov_r32_tr for Mov")
     }
 
     /// MOV tr, r32
@@ -447,7 +448,7 @@ impl Axecutor {
     fn instr_mov_tr_r32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_tr_r32);
 
-        todo!("instr_mov_tr_r32 for Mov")
+        opcode_unimplemented!("instr_mov_tr_r32 for Mov")
     }
 }
 

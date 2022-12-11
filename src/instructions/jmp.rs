@@ -6,6 +6,7 @@ use iced_x86::Register::*;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_jmp(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -26,7 +27,7 @@ impl Axecutor {
             Jmp_m1616 => self.instr_jmp_m1616(i),
             Jmp_m1632 => self.instr_jmp_m1632(i),
             Jmp_m1664 => self.instr_jmp_m1664(i),
-            _ => panic!("Invalid instruction code {:?} for mnemonic Jmp", i.code()),
+            _ => fatal_error!("Invalid instruction code {:?} for mnemonic Jmp", i.code()),
         }
     }
 
@@ -36,7 +37,7 @@ impl Axecutor {
     fn instr_jmp_rel16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_rel16);
 
-        todo!("instr_jmp_rel16 for Jmp")
+        opcode_unimplemented!("instr_jmp_rel16 for Jmp")
     }
 
     /// JMP rel32
@@ -45,7 +46,7 @@ impl Axecutor {
     fn instr_jmp_rel32_32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_rel32_32);
 
-        todo!("instr_jmp_rel32_32 for Jmp")
+        opcode_unimplemented!("instr_jmp_rel32_32 for Jmp")
     }
 
     /// JMP rel32
@@ -60,7 +61,7 @@ impl Axecutor {
                 self.reg_write_64(RIP.into(), offset);
                 Ok(())
             }
-            _ => panic!("Invalid op0_kind for JMP rel32: {:?}", i.op0_kind()),
+            _ => fatal_error!("Invalid op0_kind for JMP rel32: {:?}", i.op0_kind()),
         }
     }
 
@@ -70,7 +71,7 @@ impl Axecutor {
     fn instr_jmp_ptr1616(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_ptr1616);
 
-        todo!("instr_jmp_ptr1616 for Jmp")
+        opcode_unimplemented!("instr_jmp_ptr1616 for Jmp")
     }
 
     /// JMP ptr16:32
@@ -79,7 +80,7 @@ impl Axecutor {
     fn instr_jmp_ptr1632(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_ptr1632);
 
-        todo!("instr_jmp_ptr1632 for Jmp")
+        opcode_unimplemented!("instr_jmp_ptr1632 for Jmp")
     }
 
     /// JMP rel8
@@ -101,7 +102,7 @@ impl Axecutor {
     fn instr_jmp_rel8_32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_rel8_32);
 
-        todo!("instr_jmp_rel8_32 for Jmp")
+        opcode_unimplemented!("instr_jmp_rel8_32 for Jmp")
     }
 
     /// JMP rel8
@@ -116,7 +117,7 @@ impl Axecutor {
                 self.reg_write_64(RIP.into(), offset);
                 Ok(())
             }
-            _ => panic!("Invalid op0_kind {:?} for JMP rel8", i.op0_kind()),
+            _ => fatal_error!("Invalid op0_kind {:?} for JMP rel8", i.op0_kind()),
         }
     }
 
@@ -126,7 +127,7 @@ impl Axecutor {
     fn instr_jmp_rm16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_rm16);
 
-        todo!("instr_jmp_rm16 for Jmp")
+        opcode_unimplemented!("instr_jmp_rm16 for Jmp")
     }
 
     /// JMP r/m32
@@ -135,7 +136,7 @@ impl Axecutor {
     fn instr_jmp_rm32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_rm32);
 
-        todo!("instr_jmp_rm32 for Jmp")
+        opcode_unimplemented!("instr_jmp_rm32 for Jmp")
     }
 
     /// JMP r/m64
@@ -146,7 +147,7 @@ impl Axecutor {
 
         print!("JMP r/m64: {:#?}", i);
 
-        todo!("instr_jmp_rm64 for Jmp")
+        opcode_unimplemented!("instr_jmp_rm64 for Jmp")
     }
 
     /// JMP m16:16
@@ -155,7 +156,7 @@ impl Axecutor {
     fn instr_jmp_m1616(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_m1616);
 
-        todo!("instr_jmp_m1616 for Jmp")
+        opcode_unimplemented!("instr_jmp_m1616 for Jmp")
     }
 
     /// JMP m16:32
@@ -164,7 +165,7 @@ impl Axecutor {
     fn instr_jmp_m1632(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_m1632);
 
-        todo!("instr_jmp_m1632 for Jmp")
+        opcode_unimplemented!("instr_jmp_m1632 for Jmp")
     }
 
     /// JMP m16:64
@@ -173,7 +174,7 @@ impl Axecutor {
     fn instr_jmp_m1664(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_m1664);
 
-        todo!("instr_jmp_m1664 for Jmp")
+        opcode_unimplemented!("instr_jmp_m1664 for Jmp")
     }
 }
 
