@@ -31,12 +31,12 @@ impl Axecutor {
         debug_assert_eq!(i.code(), Pop_r16);
 
         let reg: SupportedRegister = i.op0_register().into();
-        let rsp = self.reg_read_64(Register::RSP.into());
+        let rsp = self.reg_read_64(Register::RSP.into()) + 2;
 
         let value = self.mem_read_16(rsp)?;
         self.reg_write_16(reg, value);
 
-        self.reg_write_64(Register::RSP.into(), rsp + 2);
+        self.reg_write_64(Register::RSP.into(), rsp);
 
         Ok(())
     }
@@ -57,12 +57,12 @@ impl Axecutor {
         debug_assert_eq!(i.code(), Pop_r64);
 
         let reg: SupportedRegister = i.op0_register().into();
-        let rsp = self.reg_read_64(Register::RSP.into());
+        let rsp = self.reg_read_64(Register::RSP.into()) + 8;
 
         let value = self.mem_read_64(rsp)?;
         self.reg_write_64(reg, value);
 
-        self.reg_write_64(Register::RSP.into(), rsp + 8);
+        self.reg_write_64(Register::RSP.into(), rsp);
 
         Ok(())
     }
@@ -95,41 +95,4 @@ impl Axecutor {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, ax_test, instructions::registers::SupportedRegister};
-    use iced_x86::Register::*;
-
-    // pop ax
-    ax_test![pop_ax; 0x66, 0x58;
-        |a: &mut Axecutor| {
-            // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x1234).unwrap();
-        };
-        |a: Axecutor| {
-            assert_reg_value!(w; a; AX; 0x1234);
-
-            assert_eq!(a.reg_read_64(RSP.into()), 0x1002);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
-    ];
-
-    // pop rax
-    ax_test![pop_rax; 0x58;
-        |a: &mut Axecutor| {
-            // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x1234567890ABCDEF).unwrap();
-        };
-        |a: Axecutor| {
-            assert_reg_value!(q; a; RAX; 0x1234567890ABCDEFu64);
-
-            assert_eq!(a.reg_read_64(RSP.into()), 0x1008);
-        };
-        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
-    ];
-}
+// TODO: Write tests that make sense, there are some in integration tests that use pop

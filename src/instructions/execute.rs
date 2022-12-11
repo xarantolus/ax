@@ -67,10 +67,7 @@ impl Axecutor {
                 debug_log!("Marked execution as finished due to instruction indicating so");
             } else {
                 debug_log!("Error executing instruction: {}", e);
-                let err_info = e.add_detail(format!(
-                    "while executing instruction {:?}: ",
-                    instr.mnemonic()
-                ));
+                let err_info = e.add_detail(format!("while executing instruction {}: ", instr));
 
                 // In tests, `.into` panics with a very non-helpful message, so we just panic before with a helpful message
                 #[cfg(test)]
