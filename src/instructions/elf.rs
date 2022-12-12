@@ -61,3 +61,21 @@ impl Axecutor {
         Ok(axecutor)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_async;
+
+    test_async![run_printf_binary; async {
+        // Include from file
+        let binary = include_bytes!("../../testdata/printf.bin");
+
+        let mut ax = Axecutor::from_binary(binary).expect("Failed to parse binary");
+
+        match ax.execute().await {
+            Ok(_) => (),
+            Err(e) => panic!("Failed to execute: {}", AxError::from(e)),
+        }
+    }];
+}
