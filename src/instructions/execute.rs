@@ -1,4 +1,6 @@
-use iced_x86::{Instruction, Register};
+use std::cmp::min;
+
+use iced_x86::{Decoder, DecoderOptions, Instruction, Register};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsError;
 
@@ -8,25 +10,32 @@ use super::{axecutor::Axecutor, errors::AxError};
 
 #[wasm_bindgen]
 impl Axecutor {
-    fn get_next_instruction(&self) -> Result<Instruction, AxError> {
-        // TODO: create new decoder instead of decoding all instructions in advance
+    pub(crate) fn decode_next(&self) -> Result<Instruction, AxError> {
+        let rip = self.reg_read_64(SupportedRegister::RIP);
 
-        let rip_register: SupportedRegister = Register::RIP.into();
+        let code_offset = (rip - self.code_start_address) as usize;
 
-        let rip = self.reg_read_64(rip_register);
+        // x86 instructions are at most 15 bytes long; make sure we don't read past the end of the code
+        let code = &self.code[code_offset..min(code_offset + 15, self.code.len())];
 
-        // Fetch the next instruction
-        let idx = self.rip_to_index.get(&rip).ok_or(AxError::from(format!(
-            "invalid rip {:#x} does not map to an instruction index",
-            rip,
-        )))?;
+        let mut dec = Decoder::with_ip(64, code, rip, DecoderOptions::NONE);
+        if !dec.can_decode() {
+            return Err(AxError::from(format!(
+                "Cannot decode instruction at offset {}, decoder says there's no more data left to decode",
+                dec.position()
+            )));
+        }
 
-        let instr = self.instructions.get(*idx).ok_or(AxError::from(format!(
-            "invalid index {} for rip={:#x} does not map to an instruction",
-            *idx, rip,
-        )))?;
+        let instr = dec.decode();
 
-        Ok(*instr)
+        if instr.is_invalid() {
+            return Err(AxError::from(format!(
+                "Invalid instruction at offset {}",
+                dec.position() - instr.len()
+            )));
+        }
+
+        Ok(instr)
     }
 
     // step executes the next instruction, returning if the execution can continue running
@@ -45,7 +54,7 @@ impl Axecutor {
         }
 
         // Fetch the next instruction
-        let instr = self.get_next_instruction()?;
+        let instr = self.decode_next()?;
         debug_log!("Fetched instruction {}", instr);
 
         self.reg_write_64(SupportedRegister::RIP, instr.next_ip());
@@ -67,7 +76,8 @@ impl Axecutor {
                 debug_log!("Marked execution as finished due to instruction indicating so");
             } else {
                 debug_log!("Error executing instruction: {}", e);
-                let err_info = e.add_detail(format!("while executing instruction {}: ", instr));
+                let err_info =
+                    e.add_detail(format!("Error while executing instruction {}: ", instr));
 
                 // In tests, `.into` panics with a very non-helpful message, so we just panic before with a helpful message
                 #[cfg(test)]
@@ -84,7 +94,9 @@ impl Axecutor {
         }
 
         // If we reached the last instruction (and no jump has been performed etc.), we're done
-        if self.reg_read_64(Register::RIP.into()) == self.instructions.last().unwrap().next_ip() {
+        if self.reg_read_64(Register::RIP.into())
+            == self.code_start_address + self.code.len() as u64
+        {
             self.finished = true;
             debug_log!("Marked execution as finished due to reaching end of instruction sequence");
         }

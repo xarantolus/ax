@@ -63,7 +63,6 @@ An example for using this WebAssembly module from JavaScript can be found in the
 
 
 ### Limitations
-* No support for invalid instructions in the instruction stream
 * Only the Signed, Carry, Overflow, Zero and Parity status flags are supported
 * Most instructions aren't implemented, especially
   * Anything with SSE registers

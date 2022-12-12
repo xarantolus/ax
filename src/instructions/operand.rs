@@ -221,8 +221,8 @@ mod tests {
 			fn $test_name () {
 				let expected : Vec<Operand> = $expected;
 				let axecutor = Axecutor::new(&[$($bytes),*], TEST_RIP_VALUE, TEST_RIP_VALUE).expect("Failed to create axecutor");
-				assert_eq!(axecutor.instructions.len(), 1, "Expected 1 instruction, got {}", axecutor.instructions.len());
-				let instruction = axecutor.instructions[0];
+
+                let instruction = axecutor.decode_next().expect("Failed to get instruction");
 
 				assert_eq!(instruction.op_count(), expected.len() as u32, "Expected {} operands, got {}", expected.len(), instruction.op_count());
 				for i in 0..expected.len() {
@@ -237,8 +237,7 @@ mod tests {
 			fn $test_name () {
 				let expected : Vec<Operand> = $expected;
 				let mut axecutor = Axecutor::new(&[$($bytes),*], 0x1000, 0x1000).expect("Failed to create axecutor");
-				assert_eq!(axecutor.instructions.len(), 1, "Expected 1 instruction, got {}", axecutor.instructions.len());
-				let instruction = axecutor.instructions[0];
+				let instruction = axecutor.decode_next().expect("Failed to get instruction");
 
 				let mut mem_addr_counter: usize = 0;
 

@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use iced_x86::{Decoder, DecoderOptions, Instruction};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -22,15 +21,13 @@ pub struct Axecutor {
     // code_length is the length of the encoded instructions in bytes
     pub(crate) code_length: u64,
 
+    // code holds the encoded instructions
+    pub(crate) code: Vec<u8>,
+
     // finished is true if the execution has finished. State may be mutated or read after execution, but no further step-calls must be made
     pub(crate) finished: bool,
     // stack_initial_rsp is the initial RSP address when starting, this allows top-level `ret`s to finish without errors. It's set by init_stack
     pub(crate) stack_top: u64,
-
-    // instructions holds all instructions decoded from the input code
-    pub(crate) instructions: Vec<Instruction>,
-    // rip_to_index maps a RIP address to the index of the instruction in the instructions vector
-    pub(crate) rip_to_index: HashMap<u64, usize>,
 
     // state holds the current state of the execution
     pub(crate) state: MachineState,
@@ -117,22 +114,13 @@ impl Axecutor {
             debug_log!("Panic hook set");
         }
 
-        let instructions = decode_all(code, code_start_addr)?;
-        debug_log!("Decoded {} instructions", instructions.len());
-
-        let mut rti = HashMap::with_capacity(instructions.len());
-        for (idx, instr) in instructions.iter().enumerate() {
-            rti.insert(instr.ip(), idx);
-        }
-
         debug_log!("Creating Axecutor");
         Ok(Self {
             finished: false,
             code_start_address: code_start_addr,
             code_length: code.len() as u64,
-            instructions,
+            code: code.to_vec(),
             stack_top: 0,
-            rip_to_index: rti,
             hooks: HookProcessor::default(),
             state: MachineState {
                 memory: Vec::new(),
@@ -154,24 +142,12 @@ impl Axecutor {
     code_length: {:#x},
     hooks: {},
     state: {},
-    instructions: {},
-    rip_to_index: {},
 }}",
             self.finished,
             self.code_start_address,
             self.code_length,
             self.prefix_each_line(self.hooks.to_string().as_str(), "    "),
             self.state.to_string_ident(1),
-            if self.instructions.len() > 1000 {
-                format!("{} instructions", self.instructions.len())
-            } else {
-                self.prefix_each_line(format!("{:#?}", self.instructions).as_str(), "    ")
-            },
-            if self.rip_to_index.len() > 1000 {
-                format!("{} entries", self.rip_to_index.len())
-            } else {
-                self.prefix_each_line(format!("{:#?}", self.rip_to_index).as_str(), "    ")
-            }
         )
     }
 
@@ -258,39 +234,6 @@ impl Axecutor {
     }
 }
 
-fn decode_all(code: &[u8], code_start_addr: u64) -> Result<Vec<Instruction>, AxError> {
-    if code.is_empty() {
-        return Err(AxError::from("Cannot decode empty code buffer"));
-    }
-
-    let mut dec = Decoder::with_ip(64, code, code_start_addr, DecoderOptions::NONE);
-    let mut instructions = Vec::new();
-
-    while dec.can_decode() {
-        let instr = dec.decode();
-        if instr.is_invalid() {
-            return Err(AxError::from(format!(
-                "Invalid instruction at offset {}",
-                dec.position() - instr.len()
-            )));
-        }
-        instructions.push(instr);
-    }
-
-    // Assert that instructions are sorted by ip
-    for i in 0..instructions.len() - 1 {
-        if instructions[i].ip() > instructions[i + 1].ip() {
-            return Err(AxError::from(format!(
-                "Instructions are not sorted by instruction pointer after decode: {} > {}",
-                instructions[i].ip(),
-                instructions[i + 1].ip()
-            )));
-        }
-    }
-
-    Ok(instructions)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -301,9 +244,9 @@ mod tests {
     fn test_rip() {
         let code = [0x48, 0xc7, 0xc0, 0x3, 0x0, 0x0, 0x0];
         let ax = Axecutor::new(&code, 0x1000, 0x1000).unwrap();
-        assert_eq!(ax.instructions.len(), 1);
-        assert_eq!(ax.instructions[0].ip(), 0x1000);
-        assert_eq!(ax.instructions[0].next_ip(), 0x1000 + code.len() as u64);
+        let instruction = ax.decode_next().expect("Failed to get instruction");
+        assert_eq!(instruction.ip(), 0x1000);
+        assert_eq!(instruction.next_ip(), 0x1000 + code.len() as u64);
         assert_eq!(ax.reg_read_64(Register::RIP.into()), 0x1000);
     }
 
