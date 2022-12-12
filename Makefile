@@ -38,5 +38,5 @@ dependencies:
 	py -m pip install pyperclip tqdm
 
 clean:
-	rm -rf pkg target examples/web/node_modules
+	rm -rf pkg target examples/web/node_modules examples/web/dist
 	cd examples/programs && make clean
