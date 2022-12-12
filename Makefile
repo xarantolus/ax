@@ -18,6 +18,9 @@ watch-tests:
 web: example-programs build
 	cd examples/web && npm install && npm run dev
 
+build-web: build
+	cd examples/web && npm install && npm run build
+
 fmt:
 	cargo fix --allow-staged && cargo fmt
 
