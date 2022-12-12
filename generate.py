@@ -313,18 +313,21 @@ impl From<Mnemonic> for SupportedMnemonic {
 
 
 if __name__ == '__main__':
-    mnemonics_to_generate = "all"
+    mnemonics_to_generate = None
     # set to first argument and handle invalid inputs
     if len(sys.argv) > 1:
         mnemonics_to_generate = sys.argv[1]
 
-    if mnemonics_to_generate == "generate":
+    if mnemonics_to_generate == "switch":
         generate_all_switch()
         exit(0)
 
     if mnemonics_to_generate == "all":
         for mnemonic in filter(lambda m: m != "INVALID", mnemonics):
             generate_mnemonic_file(mnemonic)
-    else:
+    elif mnemonics_to_generate is not None:
         generate_mnemonic_file(mnemonics_to_generate)
-        print(f"Generated file for new mnemonic. To integrate this mnemonic into the project, run `make generate`")
+        print(f"Generated file for new mnemonic. To integrate this mnemonic into the project, run `make switch`")
+    else:
+        print("Usage: python3 generate.py <mnemonic>|switch|all")
+        exit(1)

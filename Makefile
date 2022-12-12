@@ -1,4 +1,4 @@
-.PHONY: build debug watch test clean generate coverage fmt example-programs example
+.PHONY: build debug watch test clean switch coverage fmt example-programs example
 
 build:
 	wasm-pack build --target web --release
@@ -27,8 +27,8 @@ coverage:
 test:
 	cargo test
 
-generate:
-	py generate.py generate
+switch:
+	py generate.py switch
 
 dependencies:
 	cargo install cargo-tarpaulin cargo-watch python-launcher
