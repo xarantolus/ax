@@ -1,4 +1,4 @@
-.PHONY: build debug watch test clean switch coverage fmt example-programs example
+.PHONY: build debug watch test clean switch coverage fmt example-programs example copy-programs dependencies web build-web
 
 build:
 	wasm-pack build --target web --release
@@ -15,11 +15,15 @@ watch:
 watch-tests:
 	cargo watch --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
 
-web: example-programs build
+web: copy-programs build
 	cd examples/web && npm install && npm run dev
 
-build-web: build
+build-web: copy-programs build
 	cd examples/web && npm install && npm run build
+
+copy-programs: example-programs
+	mkdir -p examples/web/public/programs
+	cp -r $(shell find examples/programs -name "*.bin") examples/web/public/programs
 
 fmt:
 	cargo fix --allow-staged && cargo fmt

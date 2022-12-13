@@ -7,11 +7,30 @@ await init();
 <template >
   <div class="middle width-2-3">
     <h1>AX Test Site</h1>
-    <p>Select an ELF binary compiled with <code>-m64 -nostdlib -static</code> that only interacts with std{in,out,err}.</p>
+    <p>
+      This is the demo site for [ax, an x86-64 emulator](github.com/xarantolus/ax).
+    </p>
+    <br />
+    <p>
+      Please select an ELF binary compiled with <code>-m64 -nostdlib -static</code> that only interacts with std{in,out,err}.
+      Some binaries (especially the ones that use libc) will not work due to the ELF loader being very basic right now.
+    </p>
     <div>
       <input type="file" ref="file">
       <button @click="runFile">Run!</button>
     </div>
+    <br />
+    <div>
+      You can also load one of the following binaries:
+      <ul>
+        <li><a href="/programs/hello_world.bin" @click.prevent="setBinary('hello_world.bin')">Hello World</a></li>
+        <li><a href="/programs/alphabet.bin" @click.prevent="setBinary('alphabet.bin')">Alphabet</a></li>
+        <li><a href="/programs/exit_code.bin" @click.prevent="setBinary('exit_code.bin')">Exit Code</a></li>
+      </ul>
+      You can also download these binaries and run them on Linux. This of course shows that the emulator can run some real binaries without any modifications.
+    </div>
+    <br />
+    <h2>Console output</h2>
     <pre id="console">{{ console_content }}</pre>
   </div>
 </template>
@@ -81,6 +100,26 @@ export default defineComponent({
         }
       }
     },
+    async setBinary(name: string) {
+      try {
+        this.console_content = `Downloading ${name}...\n`;
+        let response = await fetch(`/programs/${name}`);
+        let content = await response.arrayBuffer().then(buf => new Uint8Array(buf));
+
+        // Create a new file object from the binary and set it as the file input's value
+        let file = new File([content], name, { type: "application/octet-stream" });
+
+        let data = new DataTransfer();
+        data.items.add(file);
+
+        (this.$refs.file as any).files = data.files;
+
+        this.console_content += `Successfully downloaded ${name}, you can now run it.\n`;
+      } catch (e) {
+        this.console_content = "Error while fetching binary:\n" + e;
+        return;
+      }
+    },
     async runFile() {
       this.console_content = "";
 
@@ -112,7 +151,8 @@ export default defineComponent({
       try {
         ax.init_stack(8n * 1024n);
 
-        ax.reg_write_64(Register.RSP, ax.reg_read_64(Register.RSP) - 8n);
+        let rsp = ax.reg_read_64(Register.RSP);
+        ax.reg_write_64(Register.RSP, rsp - 1024n);
 
         ax.hook_before_mnemonic(Mnemonic.Ret, (ax: Axecutor) => {
           console.log("before RET @ " + ax.reg_read_64(Register.RIP));
@@ -127,7 +167,14 @@ export default defineComponent({
         });
 
         ax.hook_before_mnemonic(Mnemonic.Syscall, this.syscallHandler);
+      } catch (e) {
+        let axstate = (ax ?? "no axecutor state available").toString();
+        console.error(axstate)
+        this.console_content += "\nError during initialisation:\n" + e + "\n\n" + axstate;
+        return;
+      }
 
+      try {
         await ax.execute();
 
         this.console_content += `Program exited with exit code ${ax.reg_read_64(Register.RDI)}.`;
