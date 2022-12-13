@@ -10,8 +10,10 @@
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
+    "ax": "file:../../pkg",
     "vue": "^3.2.38",
-    "ax": "file:../../pkg"
+    "xterm": "^5.0.0",
+    "xterm-addon-fit": "^0.6.0"
   },
   "devDependencies": {
     "@types/node": "^16.11.56",

@@ -19,7 +19,7 @@ a,
 }
 
 #app, .middle {
-  margin: 2%;
+  margin: .25%;
 }
 
 @media (min-width: 1024px) {
