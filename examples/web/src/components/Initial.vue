@@ -2,7 +2,7 @@
   <div class="middle width-2-3">
     <h1>AX Test Site</h1>
     <p>
-      This is the demo site for [ax, an x86-64 emulator](github.com/xarantolus/ax).
+      This is the demo site for <a href="https://github.com/xarantolus/ax">ax, an x86-64 emulator</a>.
     </p>
     <br />
     <p>
