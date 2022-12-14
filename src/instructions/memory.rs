@@ -247,16 +247,17 @@ impl Axecutor {
         // Make sure there's no overlapping area already defined, including code region
         if start >= self.code_start_address && start < self.code_start_address + self.code_length {
             return Err(AxError::from(format!(
-                "Cannot initialize memory area at {:#x} (len={}), as it overlaps with the code section starting at {:#x} (len={})",
-                start, data.len(), self.code_start_address, self.code_length
+                "Cannot initialize memory area {} at {:#x} (len={}), as it overlaps with the code section starting at {:#x} (len={})",
+                name.unwrap_or("<unnamed>".to_string()), start, data.len(), self.code_start_address, self.code_length
             )));
         }
 
         for area in &self.state.memory {
             if start >= area.start && start < area.start + area.length {
+                let overlap_name = area.name.to_owned().unwrap_or("<unnamed>".to_string());
                 return Err(AxError::from(format!(
-                    "cannot create memory area with start={:#x}, length={:#x}: overlaps with area with start={:#x}, length={:#x}",
-                    start, data.len(), area.start, area.length
+                    "cannot create memory area {} with start={:#x}, length={:#x}: overlaps with area {} with start={:#x}, length={:#x}",
+                    name.unwrap_or("<unnamed>".to_string()), start, data.len(), overlap_name, area.start, area.length
                 )));
             }
         }
@@ -301,7 +302,7 @@ impl Axecutor {
         self.mem_init_area_named(start, vec![0; length as usize], Some(name))
     }
 
-    pub fn init_stack(&mut self, length: u64) -> Result<(), AxError> {
+    pub fn init_stack(&mut self, length: u64) -> Result<u64, AxError> {
         let mut stack_start: u64 = 0x1000;
 
         loop {
@@ -324,6 +325,6 @@ impl Axecutor {
         self.reg_write_64(SupportedRegister::RSP, initial_rsp);
         self.stack_top = stack_start + length;
 
-        Ok(())
+        Ok(stack_start)
     }
 }
