@@ -21,7 +21,7 @@ Other than that, you can also find it in use on the [MemeAssembly Playground](ht
 8. Open the local example site and make changes! (link should be in the `make web` output)
 
 ### Generate mnemonic stubs
-The [`generate.py`](generate.py) script is used for generating instruction implementation stubs. You can e.g. run `python3 generate.py push` to generate a file for all instruction mnemonics that start with `push`; if you only want more exact matches use `push_` as argument. Note that you must have run a build for the WebAssembly package, as otherwise the script won't be able to find the files from the [`icex-x86` crate](https://crates.io/crates/iced-x86) that are used for generating the stubs.
+The [`generate.py`](generate.py) script is used for generating instruction implementation stubs. You can e.g. run `python3 generate.py push` to generate a file for all instruction mnemonics that start with `push`; if you only want more exact matches use `push_` as argument. Note that you must have run a build for the WebAssembly package, as otherwise the script won't be able to find the files from the [`iced-x86` crate](https://crates.io/crates/iced-x86) that are used for generating the stubs.
 
 Afterwards, run `make switch` to regenerate the instruction mnemonic switch statement (in [`src/instructions/generated.rs`](src/instructions/generated.rs)). Now your new stub functions are reachable.
 
