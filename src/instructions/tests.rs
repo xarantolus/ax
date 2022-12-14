@@ -1,3 +1,62 @@
+#[cfg(test)]
+use super::axecutor::Axecutor;
+
+#[cfg(test)]
+#[inline(never)]
+pub(crate) fn ax_test_runner<S, A>(
+    bytes: &[u8],
+    mut setup: S,
+    mut asserts: A,
+    flags_to_set: u64,
+    flags_not_to_set: u64,
+) where
+    S: FnMut(&mut Axecutor) -> (),
+    A: FnMut(Axecutor) -> (),
+{
+    async_std::task::block_on(async {
+        use crate::instructions::errors::AxError;
+        use rand::Rng;
+
+        // Always use a random rip, but make sure it doesn't overlap with memory that is often allocated at 0x1000 in tests
+        let random_rip = rand::thread_rng().gen::<u64>() & 0x0000_ffff_ffff_ffff | 0xf0000;
+
+        let mut ax =
+            Axecutor::new(bytes, random_rip, random_rip).expect("Failed to create axecutor");
+
+        setup(&mut ax);
+
+        match ax.execute().await {
+            Err(e) => panic!("Failed to execute: {:?}", AxError::from(e)),
+            _ => {}
+        };
+
+        let flags = ax.state.rflags;
+
+        asserts(ax);
+
+        // Check flags
+        use crate::instructions::flags::*;
+        for flag in FLAG_LIST {
+            // If the flag should be set, it must be != 0
+            if flags_to_set & flag != 0 {
+                assert!(
+                    flags & flag != 0,
+                    "FLAG_{} should be set, but wasn't",
+                    FLAG_TO_NAMES.get(&flag).expect("Flag not found")
+                );
+            }
+
+            if flags_not_to_set & flag != 0 {
+                assert!(
+                    flags & flag == 0,
+                    "FLAG_{} should not be set, but was",
+                    FLAG_TO_NAMES.get(&flag).expect("Flag not found")
+                );
+            }
+        }
+    });
+}
+
 #[macro_export]
 #[cfg(test)]
 macro_rules! ax_test {
@@ -8,41 +67,9 @@ macro_rules! ax_test {
     [$test_name:ident; $($bytes:expr),*; $setup:expr; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
 		#[test]
 		fn $test_name () {
-            async_std::task::block_on(async {
-                use rand::Rng;
-                use crate::instructions::errors::AxError;
-
-                let bytes = &[$($bytes),*];
-
-                // Always use a random rip, but make sure it doesn't overlap with memory that is often allocated at 0x1000 in tests
-                let random_rip = rand::thread_rng().gen::<u64>() & 0x0000_ffff_ffff_ffff | 0xf0000;
-
-                let mut ax = Axecutor::new(bytes, random_rip, random_rip).expect("Failed to create axecutor");
-
-                $setup(&mut ax);
-
-                match ax.execute().await {
-                    Err(e) => panic!("Failed to execute: {:?}", AxError::from(e)),
-                    _ => {}
-                };
-
-                let flags = ax.state.rflags;
-
-                $asserts(ax);
-
-                // Check flags
-                use crate::instructions::flags::*;
-                for flag in FLAG_LIST {
-                    // If the flag should be set, it must be != 0
-                    if $flags_to_set & flag != 0 {
-                        assert!(flags & flag != 0, "FLAG_{} should be set, but wasn't", FLAG_TO_NAMES.get(&flag).expect("Flag not found"));
-                    }
-
-                    if $flags_not_to_set & flag != 0 {
-                        assert!(flags & flag == 0, "FLAG_{} should not be set, but was", FLAG_TO_NAMES.get(&flag).expect("Flag not found"));
-                    }
-                }
-            });
+            #[allow(unused_imports)] // Some tests use these, some don't
+            use crate::instructions::flags::*;
+            crate::instructions::tests::ax_test_runner(&[$($bytes),*], $setup, $asserts, $flags_to_set, $flags_not_to_set);
 		}
     };
     [$test_name:ident; $($bytes:expr),*; $asserts:expr] => {
