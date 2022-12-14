@@ -14,14 +14,12 @@
       <button @click="runFile">Run!</button>
     </div>
     <br />
-    <div>
+    <div v-if="programs.length > 0">
       You can also load one of the following binaries:
       <ul>
-        <li><a href="/programs/hello_world.bin" @click.prevent="setBinary('hello_world.bin')">Hello World</a></li>
-        <li><a href="/programs/alphabet.bin" @click.prevent="setBinary('alphabet.bin')">Alphabet</a></li>
-        <li><a href="/programs/exit_code.bin" @click.prevent="setBinary('exit_code.bin')">Exit Code</a></li>
-        <li><a href="/programs/uppercase_naive.bin" @click.prevent="setBinary('uppercase_naive.bin')">Uppercase</a></li>
-        <li><a href="/programs/hex_naive.bin" @click.prevent="setBinary('hex_naive.bin')">Hex</a></li>
+        <li v-for="program in programs" :key="program.name">
+          <a :href="'/programs/' + program.binary" @click.prevent="setBinary(program.binary)">{{ program.name }}</a> (<a :href="program_source_prefix + program.source_name" target="_blank">Source</a>)
+        </li>
       </ul>
       You can also download these binaries and run them on Linux. This of course shows that the emulator can run some real binaries without any modifications.
     </div>
@@ -41,7 +39,6 @@ export default defineComponent({
     Terminal,
   },
   async setup() {
-
     const terminalRef = ref<InstanceType<typeof Terminal>>();
 
     const termReset = () => {
@@ -62,10 +59,40 @@ export default defineComponent({
       terminalRef.value!.term.write(data);
     };
 
+    const programs = [
+      {
+        name: "Hello World",
+        binary: "hello_world.bin",
+        source_name: "hello_world/hello_world.s",
+      },
+      {
+        name: "Alphabet",
+        binary: "alphabet.bin",
+        source_name: "alphabet/alphabet.s",
+      },
+      {
+        name: "Exit Code",
+        binary: "exit_code.bin",
+        source_name: "exit/exit_code.s",
+      },
+      {
+        name: "Uppercase",
+        binary: "uppercase_naive.bin",
+        source_name: "uppercase/uppercase_naive.s",
+      },
+      {
+        name: "Hex",
+        binary: "hex_naive.bin",
+        source_name: "hex/hex_naive.s",
+      }
+    ]
+
     return {
       terminalRef,
       termReset,
       termWrite,
+      programs,
+      program_source_prefix: "https://github.com/xarantolus/ax/blob/main/examples/programs/"
     }
   },
   methods: {
