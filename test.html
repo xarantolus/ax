@@ -9,6 +9,8 @@
 </head>
 
 <body>
+	<p>Please open the browser console to see the interesting parts.</p>
+
 	<script type="module">
 		import * as ax from './pkg/ax.js';
 
@@ -27,7 +29,6 @@
 			console.log(ex.toString());
 
 			while (await ex.step()) {
-				console.log(ex);
 				console.log(ex.toString());
 			}
 

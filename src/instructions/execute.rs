@@ -75,9 +75,17 @@ impl Axecutor {
                 self.finished = true;
                 debug_log!("Marked execution as finished due to instruction indicating so");
             } else {
-                debug_log!("Error executing instruction: {}", e);
-                let err_info =
-                    e.add_detail(format!("Error while executing instruction {}: ", instr));
+                debug_log!(
+                    "Error executing instruction {}: {}",
+                    self.executed_instructions_count,
+                    e
+                );
+                let err_info = e.add_detail(format!(
+                    "Error while executing instruction {} ({:?}, {}): ",
+                    instr,
+                    instr.code(),
+                    self.executed_instructions_count
+                ));
 
                 // In tests, `.into` panics with a very non-helpful message, so we just panic before with a helpful message
                 #[cfg(test)]
@@ -92,6 +100,8 @@ impl Axecutor {
                 }
             }
         }
+
+        self.executed_instructions_count += 1;
 
         // If we reached the last instruction (and no jump has been performed etc.), we're done
         if self.reg_read_64(Register::RIP.into())

@@ -21,6 +21,9 @@ pub struct Axecutor {
     // code_length is the length of the encoded instructions in bytes
     pub(crate) code_length: u64,
 
+    // executed_instructions_count is the number of instructions that have been executed so far
+    pub(crate) executed_instructions_count: u64,
+
     // code holds the encoded instructions
     pub(crate) code: Vec<u8>,
 
@@ -121,6 +124,7 @@ impl Axecutor {
             code_length: code.len() as u64,
             code: code.to_vec(),
             stack_top: 0,
+            executed_instructions_count: 0,
             hooks: HookProcessor::default(),
             state: MachineState {
                 memory: Vec::new(),

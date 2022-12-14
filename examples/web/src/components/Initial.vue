@@ -84,6 +84,11 @@ export default defineComponent({
         name: "Hex",
         binary: "hex_naive.bin",
         source_name: "hex/hex_naive.s",
+      },
+      {
+        name: "String length",
+        binary: "strlen.bin",
+        source_name: "strlen/strlen.s",
       }
     ]
 
@@ -112,13 +117,14 @@ export default defineComponent({
           console.log("Reading " + rdx + " bytes from stdin");
 
           let inputBytes = [];
+          let byte;
           do {
-            let byte = await this.terminalRef!.readByte();
+            byte = await this.terminalRef!.readByte();
             if (byte === undefined) {
               throw new Error("READ syscall: no input");
             }
             inputBytes.push(byte);
-          } while (BigInt(inputBytes.length) < rdx);
+          } while (BigInt(inputBytes.length) < rdx && byte !== 0x0a);
 
           console.log(`Read ${inputBytes.length} bytes: ${inputBytes}, writing them to memory at ${rsi}`)
 
