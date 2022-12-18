@@ -11,3 +11,4 @@ main
 a.out
 __pycache__
 **.pyc
+*.out
