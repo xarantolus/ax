@@ -1,38 +1,43 @@
 .PHONY: build debug watch test clean switch coverage fmt example-programs example copy-programs dependencies web build-web
 
+MOLD_INSTALLED := $(shell which mold 2> /dev/null)
+ifneq ($(MOLD_INSTALLED),)
+  MOLD := mold -run
+endif
+
 build:
-	wasm-pack build --target web --release
+	$(MOLD) wasm-pack build --target web --release
 
 debug:
-	wasm-pack build --target web --debug
+	$(MOLD) wasm-pack build --target web --debug
 
 example-programs:
 	cd examples/programs && make build
 
 watch:
-	cargo watch -s "make debug"
+	$(MOLD) cargo watch -s "make debug"
 
 watch-tests:
-	cargo watch --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
+	$(MOLD) cargo watch --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
 
 web: copy-programs build
-	cd examples/web && npm install && npm run dev
+	$(MOLD) cd examples/web && npm install && npm run dev
 
 build-web: copy-programs build
-	cd examples/web && npm install && npm run build
+	$(MOLD) cd examples/web && npm install && npm run build
 
 copy-programs: example-programs
 	mkdir -p examples/web/public/programs
 	cp -r $(shell find examples/programs -name "*.bin") examples/web/public/programs
 
 fmt:
-	cargo fix --allow-staged && cargo fmt
+	$(MOLD) cargo fix --allow-staged && cargo fmt
 
 coverage:
-	cargo tarpaulin --out Lcov --skip-clean
+	$(MOLD) cargo tarpaulin --out Lcov --skip-clean
 
 test:
-	cargo test
+	$(MOLD) cargo test
 
 switch:
 	py generate.py switch
