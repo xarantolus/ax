@@ -21,10 +21,10 @@ watch-tests:
 	$(MOLD) cargo watch --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
 
 web: copy-programs build
-	$(MOLD) cd examples/web && npm install && npm run dev
+	cd examples/web && npm install && npm run dev
 
 build-web: copy-programs build
-	$(MOLD) cd examples/web && npm install && npm run build
+	cd examples/web && npm install && npm run build
 
 copy-programs: example-programs
 	mkdir -p examples/web/public/programs
