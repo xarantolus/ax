@@ -50,6 +50,17 @@ jobs:
       run: make build
       if: env.TAG
 
+    - name: Log in to NPM
+      run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      if: env.TAG
+
+    - name: Publish to NPM
+      working-directory: pkg
+      run: npm publish
+      if: env.TAG
+
     - name: GitHub Release
       uses: softprops/action-gh-release@v1
       with:
@@ -57,11 +68,4 @@ jobs:
         draft: true
         fail_on_unmatched_files: true
         generate_release_notes: true
-      if: env.TAG
-
-    - name: Publish to NPM
-      working-directory: pkg
-      run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       if: env.TAG
