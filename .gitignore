@@ -12,3 +12,4 @@ a.out
 __pycache__
 **.pyc
 *.out
+version

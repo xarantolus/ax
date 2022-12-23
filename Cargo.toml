@@ -1,5 +1,5 @@
 [package]
-name = "ax"
+name = "ax-x86"
 version = "0.1.0"
 authors = ["xarantolus <xarantolus@protonmail.com>"]
 edition = "2018"

@@ -3,7 +3,7 @@ name: Release WebAssembly Module
 on:
   push:
     tags:
-      - 'v*' 
+      - 'v*'
 
 env:
   CARGO_TERM_COLOR: always
@@ -20,7 +20,7 @@ jobs:
         toolchain: stable
         override: true
     - name: Install wasm-pack
-      run:  curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh 
+      run:  curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
     - name: Check out repository
       uses: actions/checkout@v3
 
@@ -31,10 +31,15 @@ jobs:
     - name: Build
       run: make build
 
-    - name: Release
+    - name: GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         files: pkg/*
         draft: true
         fail_on_unmatched_files: true
         generate_release_notes: true
+
+    - name: NPM Publish
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
