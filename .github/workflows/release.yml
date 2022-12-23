@@ -21,7 +21,7 @@ jobs:
 
     - name: Check if tag to be created does not yet exist
       run: |
-        TAG=$(awk '$1 == "version" {print $3}' Cargo.toml  | head  | tr -d "\"" | head -n1)
+        TAG=v$(awk '$1 == "version" {print $3}' Cargo.toml  | head  | tr -d "\"" | head -n1)
         if git rev-parse $TAG >/dev/null 2>&1; then
           echo "Tag $TAG already exists"
           exit 1
@@ -59,8 +59,9 @@ jobs:
         generate_release_notes: true
       if: env.TAG
 
-    - name: NPM Publish
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
+    - name: Publish to NPM
+      working-directory: pkg
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       if: env.TAG
