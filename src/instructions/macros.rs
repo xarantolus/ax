@@ -21,21 +21,21 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_8(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u8, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_8(self.mem_addr(m), result)?;
+                    self.mem_write_8(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_8(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u8, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(r, result);
+                    self.reg_write_8(r, result as u64);
                 }
                 Ok(())
             }
@@ -62,21 +62,21 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_16(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u16, src_val as u16);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_16(self.mem_addr(m), result)?;
+                    self.mem_write_16(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_16(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u16, src_val as u16);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result);
+                    self.reg_write_16(r, result as u64);
                 }
                 Ok(())
             }
@@ -103,21 +103,21 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_32(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u32, src_val as u32);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_32(self.mem_addr(m), result)?;
+                    self.mem_write_32(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_32(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u32, src_val as u32);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result);
+                    self.reg_write_32(r, result as u64);
                 }
                 Ok(())
             }
@@ -185,21 +185,21 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_16(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u16, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_16(self.mem_addr(m), result)?;
+                    self.mem_write_16(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_16(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u16, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result);
+                    self.reg_write_16(r, result as u64);
                 }
                 Ok(())
             }
@@ -226,21 +226,21 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_32(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u32, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_32(self.mem_addr(m), result)?;
+                    self.mem_write_32(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_32(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u32, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result);
+                    self.reg_write_32(r, result as u64);
                 }
                 Ok(())
             }
@@ -267,7 +267,7 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_64(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
@@ -277,7 +277,7 @@ impl Axecutor {
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_64(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
@@ -308,19 +308,19 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_8(self.mem_addr(m))?;
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u8, src_val as u8);
                 self.set_flags_u8(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_8(self.mem_addr(m), result)?;
+                    self.mem_write_8(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_8(r);
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u8, src_val as u8);
                 self.set_flags_u8(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(r, result);
+                    self.reg_write_8(r, result as u64);
                 }
                 Ok(())
             }
@@ -347,19 +347,19 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_16(self.mem_addr(m))?;
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u16, src_val as u16);
                 self.set_flags_u16(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_16(self.mem_addr(m), result)?;
+                    self.mem_write_16(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_16(r);
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u16, src_val as u16);
                 self.set_flags_u16(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result);
+                    self.reg_write_16(r, result as u64);
                 }
                 Ok(())
             }
@@ -386,19 +386,19 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_32(self.mem_addr(m))?;
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u32, src_val as u32);
                 self.set_flags_u32(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_32(self.mem_addr(m), result)?;
+                    self.mem_write_32(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_32(r);
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u32, src_val as u32);
                 self.set_flags_u32(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result);
+                    self.reg_write_32(r, result as u64);
                 }
                 Ok(())
             }
@@ -517,21 +517,21 @@ impl Axecutor {
         match src {
             Operand::Memory(m) => {
                 let src_val = self.mem_read_8(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u8, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(dest_reg, result);
+                    self.reg_write_8(dest_reg, result as u64);
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let src_val = self.reg_read_8(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u8, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(dest_reg, result);
+                    self.reg_write_8(dest_reg, result as u64);
                 }
                 Ok(())
             }
@@ -557,21 +557,21 @@ impl Axecutor {
         match src {
             Operand::Memory(m) => {
                 let src_val = self.mem_read_16(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u16, src_val as u16);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(dest_reg, result);
+                    self.reg_write_16(dest_reg, result as u64);
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let src_val = self.reg_read_16(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u16, src_val as u16);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(dest_reg, result);
+                    self.reg_write_16(dest_reg, result as u64);
                 }
                 Ok(())
             }
@@ -597,21 +597,21 @@ impl Axecutor {
         match src {
             Operand::Memory(m) => {
                 let src_val = self.mem_read_32(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u32, src_val as u32);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(dest_reg, result);
+                    self.reg_write_32(dest_reg, result as u64);
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let src_val = self.reg_read_32(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u32, src_val as u32);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(dest_reg, result);
+                    self.reg_write_32(dest_reg, result as u64);
                 }
                 Ok(())
             }
@@ -683,10 +683,10 @@ impl Axecutor {
 
         let dest = dest.into();
         let dest_val = self.reg_read_8(dest);
-        let result = op(dest_val, src_val);
+        let result = op(dest_val as u8, src_val as u8);
         self.set_flags_u8(flags_to_set, flags_to_clear, result);
         if (flags_to_set & NO_WRITEBACK) == 0 {
-            self.reg_write_8(dest, result);
+            self.reg_write_8(dest, result as u64);
         }
         Ok(())
     }
@@ -711,10 +711,10 @@ impl Axecutor {
 
         let dest = dest.into();
         let dest_val = self.reg_read_16(dest);
-        let result = op(dest_val, src_val);
+        let result = op(dest_val as u16, src_val as u16);
         self.set_flags_u16(flags_to_set, flags_to_clear, result);
         if (flags_to_set & NO_WRITEBACK) == 0 {
-            self.reg_write_16(dest, result);
+            self.reg_write_16(dest, result as u64);
         }
         Ok(())
     }
@@ -739,10 +739,10 @@ impl Axecutor {
 
         let dest = dest.into();
         let dest_val = self.reg_read_32(dest);
-        let result = op(dest_val, src_val);
+        let result = op(dest_val as u32, src_val as u32);
         self.set_flags_u32(flags_to_set, flags_to_clear, result);
         if (flags_to_set & NO_WRITEBACK) == 0 {
-            self.reg_write_32(dest, result);
+            self.reg_write_32(dest, result as u64);
         }
         Ok(())
     }
@@ -795,7 +795,7 @@ impl Axecutor {
 
         let dest = dest.into();
         let dest_val = self.reg_read_64(dest);
-        let result = op(dest_val, src_val);
+        let result = op(dest_val, src_val as u32);
         self.set_flags_u64(flags_to_set, flags_to_clear, result);
         if (flags_to_set & NO_WRITEBACK) == 0 {
             self.reg_write_64(dest, result);
@@ -877,21 +877,21 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_8(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u8, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_8(self.mem_addr(m), result)?;
+                    self.mem_write_8(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_8(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u8, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(r, result);
+                    self.reg_write_8(r, result as u64);
                 }
                 Ok(())
             }
@@ -931,21 +931,21 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_16(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u16, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_16(self.mem_addr(m), result)?;
+                    self.mem_write_16(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_16(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u16, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result);
+                    self.reg_write_16(r, result as u64);
                 }
                 Ok(())
             }
@@ -985,21 +985,21 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_32(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u32, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_32(self.mem_addr(m), result)?;
+                    self.mem_write_32(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_32(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u32, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result);
+                    self.reg_write_32(r, result as u64);
                 }
                 Ok(())
             }
@@ -1093,19 +1093,19 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_8(self.mem_addr(m))?;
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u8, src_val);
                 self.set_flags_u8(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_8(self.mem_addr(m), result)?;
+                    self.mem_write_8(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_8(r);
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u8, src_val);
                 self.set_flags_u8(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(r, result);
+                    self.reg_write_8(r, result as u64);
                 }
                 Ok(())
             }
@@ -1145,19 +1145,19 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_16(self.mem_addr(m))?;
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u16, src_val);
                 self.set_flags_u16(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_16(self.mem_addr(m), result)?;
+                    self.mem_write_16(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_16(r);
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u16, src_val);
                 self.set_flags_u16(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result);
+                    self.reg_write_16(r, result as u64);
                 }
                 Ok(())
             }
@@ -1197,19 +1197,19 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_32(self.mem_addr(m))?;
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u32, src_val);
                 self.set_flags_u32(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.mem_write_32(self.mem_addr(m), result)?;
+                    self.mem_write_32(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_32(r);
-                let result = op(dest_val, src_val);
+                let result = op(dest_val as u32, src_val);
                 self.set_flags_u32(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result);
+                    self.reg_write_32(r, result as u64);
                 }
                 Ok(())
             }
@@ -1301,21 +1301,21 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_16(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u16, src_val);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.mem_write_16(self.mem_addr(m), result)?;
+                    self.mem_write_16(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_16(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u16, src_val);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result);
+                    self.reg_write_16(r, result as u64);
                 }
                 Ok(())
             }
@@ -1355,21 +1355,21 @@ impl Axecutor {
         match dest {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_32(self.mem_addr(m))?;
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u32, src_val);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.mem_write_32(self.mem_addr(m), result)?;
+                    self.mem_write_32(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
                 let dest_val = self.reg_read_32(r);
-                let (result, flags) = op(dest_val, src_val);
+                let (result, flags) = op(dest_val as u32, src_val);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result);
+                    self.reg_write_32(r, result as u64);
                 }
                 Ok(())
             }
@@ -1510,21 +1510,21 @@ impl Axecutor {
         match dest {
             Operand::Register(r) => {
                 let src_val = self.reg_read_8(r);
-                let (result, flags) = op(src_val);
+                let (result, flags) = op(src_val as u8);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_8(r, result);
+                    self.reg_write_8(r, result as u64);
                 }
                 Ok(())
             }
             Operand::Memory(m) => {
                 let src_val = self.mem_read_8(self.mem_addr(m))?;
-                let (result, flags) = op(src_val);
+                let (result, flags) = op(src_val as u8);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.mem_write_8(self.mem_addr(m), result)?;
+                    self.mem_write_8(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
@@ -1549,21 +1549,21 @@ impl Axecutor {
         match dest {
             Operand::Register(r) => {
                 let src_val = self.reg_read_16(r);
-                let (result, flags) = op(src_val);
+                let (result, flags) = op(src_val as u16);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result);
+                    self.reg_write_16(r, result as u64);
                 }
                 Ok(())
             }
             Operand::Memory(m) => {
                 let src_val = self.mem_read_16(self.mem_addr(m))?;
-                let (result, flags) = op(src_val);
+                let (result, flags) = op(src_val as u16);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.mem_write_16(self.mem_addr(m), result)?;
+                    self.mem_write_16(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }
@@ -1588,21 +1588,21 @@ impl Axecutor {
         match dest {
             Operand::Register(r) => {
                 let src_val = self.reg_read_32(r);
-                let (result, flags) = op(src_val);
+                let (result, flags) = op(src_val as u32);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result);
+                    self.reg_write_32(r, result as u64);
                 }
                 Ok(())
             }
             Operand::Memory(m) => {
                 let src_val = self.mem_read_32(self.mem_addr(m))?;
-                let (result, flags) = op(src_val);
+                let (result, flags) = op(src_val as u32);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.mem_write_32(self.mem_addr(m), result)?;
+                    self.mem_write_32(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
             }

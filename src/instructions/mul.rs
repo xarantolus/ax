@@ -42,7 +42,7 @@ impl Axecutor {
 
         let upper = (result >> 8) as u8;
 
-        self.reg_write_16(AX, result);
+        self.reg_write_16(AX, result as u64);
 
         self.set_flags_u8(
             if upper == 0 { 0 } else { FLAG_CF | FLAG_OF },
@@ -73,8 +73,8 @@ impl Axecutor {
 
         let upper = (result >> 16) as u16;
 
-        self.reg_write_16(AX, result as u16);
-        self.reg_write_16(DX, upper);
+        self.reg_write_16(AX, result as u16 as u64);
+        self.reg_write_16(DX, upper as u64);
 
         self.set_flags_u8(
             if upper == 0 { 0 } else { FLAG_CF | FLAG_OF },
@@ -105,8 +105,8 @@ impl Axecutor {
 
         let upper = (result >> 32) as u32;
 
-        self.reg_write_32(EAX, result as u32);
-        self.reg_write_32(EDX, upper);
+        self.reg_write_32(EAX, result as u32 as u64);
+        self.reg_write_32(EDX, upper as u64);
 
         self.set_flags_u8(
             if upper == 0 { 0 } else { FLAG_CF | FLAG_OF },

@@ -46,8 +46,8 @@ impl Axecutor {
 
         let (quotient, remainder) = (ax / src_val, ax % src_val);
 
-        self.reg_write_8(AL, quotient as u8);
-        self.reg_write_8(AH, remainder as u8);
+        self.reg_write_8(AL, quotient as u8 as u64);
+        self.reg_write_8(AH, remainder as u8 as u64);
 
         Ok(())
     }
@@ -77,8 +77,8 @@ impl Axecutor {
 
         let (quotient, remainder) = (dst_val / src_val, dst_val % src_val);
 
-        self.reg_write_16(AX, quotient as u16);
-        self.reg_write_16(DX, remainder as u16);
+        self.reg_write_16(AX, quotient as u16 as u64);
+        self.reg_write_16(DX, remainder as u16 as u64);
 
         Ok(())
     }
@@ -109,8 +109,8 @@ impl Axecutor {
 
         let (quotient, remainder) = (dst_val / src_val, dst_val % src_val);
 
-        self.reg_write_32(EAX, quotient as u32);
-        self.reg_write_32(EDX, remainder as u32);
+        self.reg_write_32(EAX, quotient as u32 as u64);
+        self.reg_write_32(EDX, remainder as u32 as u64);
 
         Ok(())
     }

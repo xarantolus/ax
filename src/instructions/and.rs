@@ -636,11 +636,11 @@ mod tests {
             write_reg_value!(d; a; EAX; 0x80000000u32);
             write_reg_value!(q; a; RBX; 0x1000);
             a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x80000000u32).unwrap();
+            a.mem_write_32(0x1000, 0x80000000u64).unwrap()
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x80000000u32);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u32);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u64);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];

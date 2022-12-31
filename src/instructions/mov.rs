@@ -589,7 +589,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x9abcdef0u32);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x9abcdef0u32);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x9abcdef0u64);
         };
         (0; FLAGS_UNAFFECTED)
     ];

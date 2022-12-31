@@ -48,11 +48,11 @@ mod tests {
             write_reg_value!(q; a; RAX; 0x21);
             write_reg_value!(q; a; RBX; 0x1000);
             a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x80000000u32).unwrap();
+            a.mem_write_32(0x1000, 0x80000000u64).unwrap()
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xffffffff80000000u64);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u32);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u64);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -273,11 +273,11 @@ mod tests {
             write_reg_value!(q; a; RAX; 0x1000000000u64);
             write_reg_value!(q; a; RBX; 0x1000);
             a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x7fffffffu32).unwrap();
+            a.mem_write_32(0x1000, 0x7fffffffu64).unwrap()
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x7fffffffu64);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7fffffffu32);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7fffffffu64);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -378,11 +378,11 @@ mod tests {
             write_reg_value!(q; a; RAX; 0x1000);
             write_reg_value!(q; a; RBX; 0x1000);
             a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x7fffffffu32).unwrap();
+            a.mem_write_32(0x1000, 0x7fffffffu64).unwrap()
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x7fffffffu64);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7fffffffu32);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7fffffffu64);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -423,11 +423,11 @@ mod tests {
             write_reg_value!(q; a; RAX; 0x20000000000000u64);
             write_reg_value!(q; a; RBX; 0x1000);
             a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x7fffffffu32).unwrap();
+            a.mem_write_32(0x1000, 0x7fffffffu64).unwrap()
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x7fffffffu64);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7fffffffu32);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7fffffffu64);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -498,11 +498,11 @@ mod tests {
             write_reg_value!(q; a; RAX; 0x41);
             write_reg_value!(q; a; RBX; 0x1000);
             a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x7fffffffu32).unwrap();
+            a.mem_write_32(0x1000, 0x7fffffffu64).unwrap()
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x7fffffffu64);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7fffffffu32);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7fffffffu64);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -528,11 +528,11 @@ mod tests {
             write_reg_value!(q; a; RAX; 0x1000000000000u64);
             write_reg_value!(q; a; RBX; 0x1000);
             a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x7fffffffu32).unwrap();
+            a.mem_write_32(0x1000, 0x7fffffffu64).unwrap()
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x7fffffffu64);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7fffffffu32);
+            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7fffffffu64);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];

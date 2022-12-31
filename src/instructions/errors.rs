@@ -166,6 +166,20 @@ macro_rules! fatal_error {
 }
 
 #[macro_export]
+macro_rules! assert_fatal {
+    ($cond:expr, $message:expr, $($arg:tt)*) => {{
+        if !($cond) {
+            crate::fatal_error!($message, $($arg)*);
+        }
+    }};
+    ($cond:expr, $message:expr) => {{
+        if !($cond) {
+            crate::fatal_error!($message);
+        }
+    }};
+}
+
+#[macro_export]
 macro_rules! opcode_unimplemented {
     ($message:expr) => {{
         #[cfg(target_arch = "wasm32")]

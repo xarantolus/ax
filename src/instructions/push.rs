@@ -81,7 +81,7 @@ impl Axecutor {
         let value = i.immediate16() as u64;
         let rsp = self.reg_read_64(Register::RSP.into());
 
-        self.mem_write_16(rsp, value as u16)?;
+        self.mem_write_16(rsp, value)?;
         self.reg_write_64(Register::RSP.into(), rsp - 2);
 
         Ok(())
@@ -138,14 +138,14 @@ impl Axecutor {
                 let value = i.immediate8to16();
                 let rsp = self.reg_read_64(Register::RSP.into());
 
-                self.mem_write_16(rsp, value as u16)?;
+                self.mem_write_16(rsp, value as u16 as u64)?;
                 self.reg_write_64(Register::RSP.into(), rsp - 2);
             }
             OpKind::Immediate8to32 => {
                 let value = i.immediate8to32();
                 let rsp = self.reg_read_64(Register::RSP.into());
 
-                self.mem_write_32(rsp, value as u32)?;
+                self.mem_write_32(rsp, value as u32 as u64)?;
                 self.reg_write_64(Register::RSP.into(), rsp - 4);
             }
             OpKind::Immediate8to64 => {

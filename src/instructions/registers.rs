@@ -363,7 +363,13 @@ impl SupportedRegister {
 
 #[wasm_bindgen]
 impl Axecutor {
-    pub fn reg_write_8(&mut self, reg: SupportedRegister, value: u8) {
+    pub fn reg_write_8(&mut self, reg: SupportedRegister, value: u64) {
+        assert!(
+            value <= 0xFF,
+            "reg_write_8: value {:x} is too large to fit in 8 bits",
+            value
+        );
+
         let r: Register = reg.into();
         assert!(r.is_gpr8(), "{:?} is not a valid 8-bit register", r);
 
@@ -375,9 +381,9 @@ impl Axecutor {
         let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
 
         let result_value: u64 = if is_high {
-            (reg_value & 0xFFFF_FFFF_FFFF_00FF) | ((value as u64) << 8)
+            (reg_value & 0xFFFF_FFFF_FFFF_00FF) | (value << 8)
         } else {
-            (reg_value & 0xFFFF_FFFF_FFFF_FF00) | (value as u64)
+            (reg_value & 0xFFFF_FFFF_FFFF_FF00) | value
         };
 
         self.state.registers.insert(*qword_register, result_value);
@@ -392,7 +398,13 @@ impl Axecutor {
         );
     }
 
-    pub fn reg_write_16(&mut self, reg: SupportedRegister, value: u16) {
+    pub fn reg_write_16(&mut self, reg: SupportedRegister, value: u64) {
+        assert!(
+            value <= 0xFFFF,
+            "reg_write_16: value {:x} is too large to fit in 16 bits",
+            value
+        );
+
         let r: Register = reg.into();
         assert!(r.is_gpr16(), "{:?} is not a valid 16-bit register", r);
 
@@ -401,7 +413,7 @@ impl Axecutor {
 
         let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
 
-        let result_value = (reg_value & 0xFFFF_FFFF_FFFF_0000) | (value as u64);
+        let result_value = (reg_value & 0xFFFF_FFFF_FFFF_0000) | value;
         self.state.registers.insert(*qword_register, result_value);
 
         debug_log!(
@@ -414,7 +426,13 @@ impl Axecutor {
         );
     }
 
-    pub fn reg_write_32(&mut self, reg: SupportedRegister, value: u32) {
+    pub fn reg_write_32(&mut self, reg: SupportedRegister, value: u64) {
+        assert!(
+            value <= 0xFFFF_FFFF,
+            "reg_write_32: value {:x} is too large to fit in 32 bits",
+            value
+        );
+
         let r: Register = reg.into();
         assert!(r.is_gpr32(), "{:?} is not a valid 32-bit register", r);
 
@@ -422,7 +440,7 @@ impl Axecutor {
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
 
         // Intentionally cut off the upper 32bit, setting them to zero
-        let result_value = value as u64;
+        let result_value = value as u32 as u64;
         #[allow(unused_variables)]
         let old = self.state.registers.insert(*qword_register, result_value);
 
@@ -461,7 +479,7 @@ impl Axecutor {
         );
     }
 
-    pub fn reg_read_8(&self, reg: SupportedRegister) -> u8 {
+    pub fn reg_read_8(&self, reg: SupportedRegister) -> u64 {
         let r: Register = reg.into();
         assert!(r.is_gpr8(), "{:?} is not a valid 8-bit register", r);
 
@@ -480,10 +498,10 @@ impl Axecutor {
 
         debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
 
-        return result_value;
+        return result_value as u64;
     }
 
-    pub fn reg_read_16(&self, reg: SupportedRegister) -> u16 {
+    pub fn reg_read_16(&self, reg: SupportedRegister) -> u64 {
         let r: Register = reg.into();
         assert!(r.is_gpr16(), "{:?} is not a valid 16-bit register", r);
 
@@ -492,14 +510,14 @@ impl Axecutor {
 
         let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
 
-        let result_value = (reg_value & 0xFFFF) as u16;
+        let result_value = reg_value & 0xFFFF;
 
         debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
 
         return result_value;
     }
 
-    pub fn reg_read_32(&self, reg: SupportedRegister) -> u32 {
+    pub fn reg_read_32(&self, reg: SupportedRegister) -> u64 {
         let r: Register = reg.into();
         assert!(r.is_gpr32(), "{:?} is not a valid 32-bit register", r);
 
@@ -508,7 +526,7 @@ impl Axecutor {
 
         let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
 
-        let result_value = (reg_value & 0xFFFF_FFFF) as u32;
+        let result_value = reg_value & 0xFFFF_FFFF;
 
         debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
 

@@ -143,22 +143,22 @@ impl Axecutor {
         Ok(u64::from_le_bytes(bytes.try_into().unwrap()))
     }
 
-    pub fn mem_read_32(&self, address: u64) -> Result<u32, AxError> {
+    pub fn mem_read_32(&self, address: u64) -> Result<u64, AxError> {
         let bytes = self.mem_read_bytes(address, 4)?;
 
-        Ok(u32::from_le_bytes(bytes.try_into().unwrap()))
+        Ok(u32::from_le_bytes(bytes.try_into().unwrap()) as u64)
     }
 
-    pub fn mem_read_16(&self, address: u64) -> Result<u16, AxError> {
+    pub fn mem_read_16(&self, address: u64) -> Result<u64, AxError> {
         let bytes = self.mem_read_bytes(address, 2)?;
 
-        Ok(u16::from_le_bytes(bytes.try_into().unwrap()))
+        Ok(u16::from_le_bytes(bytes.try_into().unwrap()) as u64)
     }
 
-    pub fn mem_read_8(&self, address: u64) -> Result<u8, AxError> {
+    pub fn mem_read_8(&self, address: u64) -> Result<u64, AxError> {
         let bytes = self.mem_read_bytes(address, 1)?;
 
-        Ok(bytes[0])
+        Ok(bytes[0] as u64)
     }
 
     // TODO: Currently cannot write consecutive sections of memory
@@ -225,16 +225,33 @@ impl Axecutor {
         self.mem_write_bytes(address, &data.to_le_bytes())
     }
 
-    pub fn mem_write_32(&mut self, address: u64, data: u32) -> Result<(), AxError> {
-        self.mem_write_bytes(address, &data.to_le_bytes())
+    pub fn mem_write_32(&mut self, address: u64, data: u64) -> Result<(), AxError> {
+        crate::assert_fatal!(
+            data <= u32::MAX as u64,
+            "Could not write {:x} to 4 bytes of memory, value is too large",
+            data
+        );
+
+        self.mem_write_bytes(address, &(data as u32).to_le_bytes())
     }
 
-    pub fn mem_write_16(&mut self, address: u64, data: u16) -> Result<(), AxError> {
-        self.mem_write_bytes(address, &data.to_le_bytes())
+    pub fn mem_write_16(&mut self, address: u64, data: u64) -> Result<(), AxError> {
+        crate::assert_fatal!(
+            data <= u16::MAX as u64,
+            "Could not write {:x} to 2 bytes of memory, value is too large",
+            data
+        );
+        self.mem_write_bytes(address, &(data as u16).to_le_bytes())
     }
 
-    pub fn mem_write_8(&mut self, address: u64, data: u8) -> Result<(), AxError> {
-        self.mem_write_bytes(address, &[data])
+    pub fn mem_write_8(&mut self, address: u64, data: u64) -> Result<(), AxError> {
+        crate::assert_fatal!(
+            data <= u8::MAX as u64,
+            "Could not write {:x} to 1 byte of memory, value is too large",
+            data
+        );
+
+        self.mem_write_bytes(address, &[data as u8])
     }
 
     #[must_use]

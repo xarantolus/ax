@@ -35,7 +35,7 @@ impl Axecutor {
 
         let dest = dest.into();
 
-        self.reg_write_16(dest, src_addr as u16);
+        self.reg_write_16(dest, src_addr as u16 as u64);
         Ok(())
     }
 
@@ -54,7 +54,7 @@ impl Axecutor {
 
         let dest = dest.into();
 
-        self.reg_write_32(dest, src_addr as u32);
+        self.reg_write_32(dest, src_addr as u32 as u64);
         Ok(())
     }
 
