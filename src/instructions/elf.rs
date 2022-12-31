@@ -1,6 +1,6 @@
 extern crate elf_rs;
 use elf_rs::*;
-use std::str;
+use std::{str, string::FromUtf8Error};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
@@ -15,6 +15,12 @@ impl From<Error> for AxError {
             Error::InvalidMagic => AxError::from("ELF: Invalid magic"),
             Error::InvalidClass => AxError::from("ELF: Invalid class"),
         }
+    }
+}
+
+impl From<FromUtf8Error> for AxError {
+    fn from(err: FromUtf8Error) -> Self {
+        AxError::from(format!("ELF: Invalid UTF-8 in section name: {}", err))
     }
 }
 
@@ -44,7 +50,11 @@ impl Axecutor {
             if section.section_name() != b".text" && section.sh_type() == SectionType::SHT_PROGBITS
             {
                 axecutor
-                    .mem_init_area(section.addr(), section.content().to_vec())
+                    .mem_init_area_named(
+                        section.addr(),
+                        section.content().to_vec(),
+                        Some(String::from_utf8(section.section_name().to_vec())?),
+                    )
                     .map_err(|err| {
                         AxError::from(format!(
                             "ELF: initializing {} section: {}",
