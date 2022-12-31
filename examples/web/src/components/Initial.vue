@@ -136,7 +136,7 @@ export default defineComponent({
         case 1n: {
           // WRITE syscall MUST write to stdout or stderr
           // Actually this also supports also "writing" to stdin, as this also works in certain circumstances: https://stackoverflow.com/a/7680234
-          if (rdi != BigInt(0) && rdi != BigInt(1) && rdi != BigInt(2)) {
+          if (rdi != 0n && rdi != 1n && rdi != 2n) {
             throw new Error(`WRITE syscall: cannot write non-std{out,err} (!= 1,2) fds, but tried ${rdi}`);
           }
 
