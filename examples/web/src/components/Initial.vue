@@ -80,12 +80,12 @@ export default defineComponent({
         source_name: "exit/exit_code.s",
       },
       {
-        name: "Uppercase",
+        name: "Input to uppercase",
         binary: "uppercase_naive.bin",
         source_name: "uppercase/uppercase_naive.s",
       },
       {
-        name: "Hex",
+        name: "Byte to hex",
         binary: "hex_naive.bin",
         source_name: "hex/hex_naive.s",
       },
