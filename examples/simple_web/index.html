@@ -19,8 +19,8 @@
 	<pre id="console-output"></pre>
 
 	<script type="module">
-		// Make sure you the path to the ax_x86.js file is correct.
-		// import init, * as ax from '/pkg/ax_x86.js';
+		// Make sure the path to the ax_x86.js file is correct.
+		import { default as init, Axecutor, Mnemonic, Register, version } from './pkg/ax_x86.js';
 
 		let consoleOutput = document.getElementById("console-output");
 
@@ -29,7 +29,6 @@
 			consoleOutput.innerHTML += args.join(" ") + "\n";
 		}
 
-		import { default as init, Axecutor, Mnemonic, Register, version } from '/pkg/ax_x86.js';
 		async function run() {
 			await init();
 
