@@ -2,7 +2,7 @@
   <div class="middle width-2-3">
     <h1>AX Test Site</h1>
     <p>
-      This is the demo site for <a href="https://github.com/xarantolus/ax">ax, an x86-64 emulator</a>.
+      This is the demo site for <template v-if="version">v{{ version }} of </template><a href="https://github.com/xarantolus/ax">ax, an x86-64 emulator</a>.
     </p>
     <br />
     <p>
@@ -32,7 +32,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
 import Terminal from './Terminal.vue';
-import { default as init, Axecutor, Mnemonic, Register } from 'ax-x86';
+import { default as init, Axecutor, Mnemonic, Register, version } from 'ax-x86';
 
 export default defineComponent({
   components: {
@@ -47,9 +47,13 @@ export default defineComponent({
       terminalRef.value?.term.focus();
     };
 
+    const axversion = ref("");
+
     onMounted(async () => {
       // Download emulator
       await init();
+
+      axversion.value = version();
 
       termReset();
       terminalRef.value?.term.writeln('Welcome to the AX test site! When you run a binary, the output will be shown here.');
@@ -97,7 +101,8 @@ export default defineComponent({
       termReset,
       termWrite,
       programs,
-      program_source_prefix: "https://github.com/xarantolus/ax/blob/main/examples/programs/"
+      program_source_prefix: "https://github.com/xarantolus/ax/blob/main/examples/programs/",
+      version: axversion,
     }
   },
   methods: {
