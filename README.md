@@ -10,6 +10,87 @@ You can try out the emulator right now by visiting [the website](https://ax.010.
 
 Other than that, you can also find it in use on the [MemeAssembly Playground](https://memeasm.010.one). MemeAssembly is a meme programming language that compiles to x86-64 instructions, which are executed by this emulator. The site also emulates some syscalls like `read`, `write` and `exit` to make the programs work.
 
+## How to use
+The emulator is compiled to WebAssembly and can be used as a JavaScript Module. This works in modern browsers.
+
+The recommended approach is to just install the [NPM module](https://www.npmjs.com/package/ax-x86):
+
+```sh
+npm i ax-x86
+```
+
+To actually emulate programs, you have to make sure the WASM binary has been downloaded using the default `init` function:
+
+```js
+import { default as init, version } from 'ax-x86';
+// This will download the WASM binary and initialize the module
+await init();
+// Now you can use the module
+console.log("ax version:", version());
+```
+
+Here is a simple example that executes a few instructions and prints the result:
+
+```js
+import { default as init, Axecutor, Mnemonic, Register, version } from 'ax-x86';
+await init();
+
+// Define bytes for x86 instructions:
+let code = new Uint8Array([
+    // mov rax, 0xff
+    0x48, 0xc7, 0xc0, 0xff, 0, 0, 0,
+    // mov rbx, 0xf
+    0x48, 0xc7, 0xc3, 0xf, 0, 0, 0,
+    // and rax, rbx
+    0x48, 0x21, 0xd8
+]);
+
+// Create a new emulator instance
+// You could also create an instance from an ELF/Linux binary using `Axecutor.from_binary` instead
+let ax = new Axecutor(
+    code,
+    // Code start address, this is where the first instruction byte is located
+    0x1000n,
+    // Entrypoint address, this is where execution starts. It is usually, but not always, the same as the code start address
+    0x1000n
+);
+console.log("Initial state:", ax.toString());
+
+// One could set up a stack of size 0x1000 here, but it's not necessary for this example
+// This automatically writes the stack pointer to RSP
+// let stack_addr = ax.init_stack(0x1000n);
+
+// This function will be called before any "Mov" instruction is executed. There's also a hook_after_mnemonic function.
+// It can be used to e.g. implement custom syscall handlers
+ax.hook_before_mnemonic(Mnemonic.Mov, (instance) => {
+    console.log("Executing a mov instruction");
+
+    // Here you can e.g. modify registers, memory etc.
+    instance.reg_write_64(Register.RCX, 0xabn);
+
+    // this function *MUST* return one of
+    // - instance.commit(): keep the changes we made in this handler and continue execution
+    // - instance.stop(): keep changes, stop execution and return from the ax.execute() function
+    // - instance.unchanged(): don't keep changes, continue execution
+
+    // this will reset RCX to its previous value
+    return instance.unchanged();
+});
+
+// Execute all instructions
+await ax.execute();
+
+// Log the final state of the emulator
+console.log("Final state:", ax.toString());
+
+// Prints "15"
+console.log("RAX:", ax.reg_read_64(Register.RAX));
+```
+
+Warning: Make sure that all numbers are passed as `bigint`, hence the `n` suffix!
+
+When using frontend frameworks, it is recommended to await the `init` function in the `mounted` hook. This will make sure the WASM binary is downloaded before the component is rendered. You can look at the [this Vue component](examples/web/src/components/Initial.vue) for an example.
+
 ## Development setup
 1. Make sure you have installed Rust/Cargo, Node.js, NPM, Python, PIP, Make, GCC and the GNU Assembler
 2. [Install `wasm-pack`](https://rustwasm.github.io/wasm-pack/installer/)

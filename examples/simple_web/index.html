@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>AX Test Site</title>
+</head>
+
+<body>
+	<noscript>
+		<strong>
+			This page requires JavaScript and WebAssembly to run.
+			Please make sure your browser supports JavaScript and WebAssembly and reload the page after enabling it.
+		</strong>
+	</noscript>
+
+	<pre id="console-output"></pre>
+
+	<script type="module">
+		// Make sure you the path to the ax_x86.js file is correct.
+		// import init, * as ax from '/pkg/ax_x86.js';
+
+		let consoleOutput = document.getElementById("console-output");
+
+		function log(...args) {
+			console.log(...args);
+			consoleOutput.innerHTML += args.join(" ") + "\n";
+		}
+
+		import { default as init, Axecutor, Mnemonic, Register, version } from '/pkg/ax_x86.js';
+		async function run() {
+			await init();
+
+			// Define bytes for x86 instructions:
+			let code = new Uint8Array([
+				// mov rax, 0xff
+				0x48, 0xc7, 0xc0, 0xff, 0, 0, 0,
+				// mov rbx, 0xf
+				0x48, 0xc7, 0xc3, 0xf, 0, 0, 0,
+				// and rax, rbx
+				0x48, 0x21, 0xd8
+			]);
+
+			// Create a new emulator instance
+			let ax = new Axecutor(
+				code,
+				// Code start address, this is where the first instruction byte is located
+				0x1000n,
+				// Entrypoint address, this is where execution starts. It is usually, but not always, the same as the code start address
+				0x1000n
+			);
+
+			// Log the current state of the emulator
+			console.log("Initial state:", ax.toString());
+
+
+			// This function will be called before any "Mov" instruction is executed. There's also a hook_after_mnemonic function.
+			// It can be used to e.g. implement custom syscall handlers
+			ax.hook_before_mnemonic(Mnemonic.Mov, (instance) => {
+				console.log("Executing a mov instruction");
+
+				// Here you can e.g. modify registers, memory etc.
+				instance.reg_write_64(Register.RCX, 0xabn);
+
+				// this function *MUST* return one of
+				// - instance.commit(): keep the changes we made in this handler and continue execution
+				// - instance.stop(): keep changes, stop execution and return from the ax.execute() function
+				// - instance.unchanged(): don't keep changes, continue execution
+
+				return instance.unchanged();
+			});
+
+			// Execute the instructions
+			await ax.execute();
+
+			// Log the final state of the emulator
+			console.log("Final state:", ax.toString());
+
+			// Prints "15"
+			console.log("RAX:", ax.reg_read_64(Register.RAX));
+		}
+
+		run();
+	</script>
+</body>
+
+</html>

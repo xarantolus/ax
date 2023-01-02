@@ -206,7 +206,7 @@ def assembled_bytes(assembly_code: str):
 
         hex_arr = []
         for b in binary[binary_start:binary_end]:
-            hex_arr.append(hex(b))
+            hex_arr.append(hex(b) if b > 0 else '0')
 
         return hex_arr
 
