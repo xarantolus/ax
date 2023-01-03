@@ -47,14 +47,7 @@ export default defineComponent({
       terminalRef.value?.term.focus();
     };
 
-    const axversion = ref("");
-
     onMounted(async () => {
-      // Download emulator
-      await init();
-
-      axversion.value = version();
-
       termReset();
       terminalRef.value?.term.writeln('Welcome to the AX test site! When you run a binary, the output will be shown here.');
     });
@@ -96,13 +89,15 @@ export default defineComponent({
       }
     ]
 
+    await init();
+
     return {
       terminalRef,
       termReset,
       termWrite,
       programs,
       program_source_prefix: "https://github.com/xarantolus/ax/blob/main/examples/programs/",
-      version: axversion,
+      version: version(),
     }
   },
   methods: {

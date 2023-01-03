@@ -89,7 +89,7 @@ console.log("RAX:", ax.reg_read_64(Register.RAX));
 
 Warning: Make sure that all numbers are passed as `bigint`, hence the `n` suffix!
 
-When using frontend frameworks, it is recommended to await the `init` function in the `mounted` hook. This will make sure the WASM binary is downloaded before the component is rendered. You can look at the [this Vue component](examples/web/src/components/Initial.vue) for an example.
+When using frontend frameworks, it is recommended to await the `init` function before your components are mounted, e.g. in a `setup` function. This will make sure the WASM binary is downloaded before the component is rendered. You can look at the [this Vue component](examples/web/src/components/Initial.vue) for an example.
 
 ## Development setup
 1. Make sure you have installed Rust/Cargo, Node.js, NPM, Python, PIP, Make, GCC and the GNU Assembler
