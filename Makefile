@@ -1,4 +1,4 @@
-.PHONY: build debug watch test test-local test-node clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats
+.PHONY: build debug watch test test-local test-node clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -45,7 +45,9 @@ copy-programs: example-programs
 	cp -r $(shell find examples/programs -name "*.bin") examples/web/public/programs
 
 fmt:
-	$(MOLD) cargo fix --allow-staged && cargo fmt
+	$(MOLD) cargo fix --allow-staged && \
+	$(MOLD) cargo fix --allow-staged --tests && \
+	$(MOLD) cargo fmt
 
 coverage:
 	$(MOLD) cargo tarpaulin --out Lcov --skip-clean
@@ -72,3 +74,4 @@ dependencies:
 clean:
 	rm -rf pkg target examples/web/node_modules examples/web/dist
 	cd examples/programs && make clean
+

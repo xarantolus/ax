@@ -2,10 +2,7 @@
 mod test {
     // You can add more tests here using the a.py script, e.g. run `python3 a.py "mov rax, 0x1234567890abcdef; xor eax, eax"` (select "ts" for setup) to generate a test case
     use super::super::axecutor::Axecutor;
-    use crate::{
-        assert_reg_value, ax_test, debug_log, instructions::registers::SupportedRegister,
-        write_reg_value,
-    };
+    use crate::{assert_reg_value, ax_test, debug_log, write_reg_value};
     use iced_x86::Register::*;
 
     // push rax; xor rax, rax; pop rbx

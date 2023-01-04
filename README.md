@@ -96,6 +96,8 @@ If you want to contribute to this project, that's great! A good way to involved 
 You could e.g. get started by adding support for a new instruction mnemonic. There's a tutorial on how to do that below.
 If you run into problems setting up the development tools or have any other questions, feel free to open an issue.
 
+Please format the code using `make fmt` before submitting a pull request.
+
 ### Development setup
 1. Make sure you have installed Rust/Cargo, [`wasm-pack`](https://rustwasm.github.io/wasm-pack/installer/), Node.js, NPM, Python, PIP, Make, GCC and the GNU Assembler
    - You can optionally install [mold](https://github.com/rui314/mold) to speed up link times (mostly for tests); the Makefile will automatically use it if it's installed
