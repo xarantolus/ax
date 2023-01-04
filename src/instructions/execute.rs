@@ -1,4 +1,4 @@
-use std::cmp::min;
+use std::{cmp::min, convert::TryInto};
 
 use iced_x86::{Decoder, DecoderOptions, Instruction, Register};
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -59,7 +59,7 @@ impl Axecutor {
 
         self.reg_write_64(SupportedRegister::RIP, instr.next_ip());
 
-        let mnem = instr.mnemonic().into();
+        let mnem = instr.mnemonic().try_into()?;
 
         let hooks = self.mnemonic_hooks(mnem);
         if let Some(ref h) = hooks {
