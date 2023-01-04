@@ -56,6 +56,8 @@ test-local:
 	@echo "Running tests on processor..."
 	$(MOLD) cargo test
 
+test-wasm: test-node
+
 test-node:
 	@echo "Running tests in Node/WASM..."
 	wasm-pack test --node
