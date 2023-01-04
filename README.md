@@ -1,7 +1,7 @@
 # [ax](https://ax.010.one)
 This is a minimal x86-64 emulator for WebAssembly. It executes real machine code and can be used to emulate x86-64 user-space programs in the browser.
 
-Note that not all implemented instructions work exactly the same way as on real hardware, but the goal is to be as close as possible while staying reasonable. Currently only around 50 mnemonics/250 opcodes are implemented. An accurate count can be found via the [`stats.py`](stats.py) script.
+Note that not all implemented instructions work exactly the same way as on real hardware, but the goal is to be as close as possible while staying reasonable. Currently only around <!-- stats-count-marker -->53 mnemonics/264 opcodes<!-- stats-count-marker --> are implemented. This count can also be found via the [`stats.py`](stats.py) script.
 
 Additionally, this repository contains scripts that should be interesting for anyone who wants to write an x86-64 emulator. The most important one, [`t.py`](t.py), automatically generates test cases for an instruction by trying out different inputs and thus finding many flag combinations. See [automatically generate test cases](#automatically-generate-test-cases) for more information.
 

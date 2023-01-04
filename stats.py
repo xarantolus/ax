@@ -71,6 +71,22 @@ for file in files:
         if implemented > 0:
             total_mnemonics += 1
 
+def replace_in_readme(mnemonic_count, opcode_count):
+    # Replace the text between the two "<!-- stats-count-marker -->"
+    # with "x mnemonics/y opcodes"
+    with open("README.md", "r") as f:
+        content = f.read()
+
+    start = content.find("<!-- stats-count-marker -->")
+    end = content.find("<!-- stats-count-marker -->", start + 1)
+
+    new_content = content[:start + len("<!-- stats-count-marker -->")] + \
+                  f"{mnemonic_count} mnemonics/{opcode_count} opcodes" + \
+                  content[end:]
+
+    with open("README.md", "w") as f:
+        f.write(new_content)
+
 
 print(fmt.format("-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15))
 
@@ -78,3 +94,5 @@ print(fmt.format("Total", total_opcodes, total_implemented, total_opcodes - tota
 
 
 print("Number of at least partially implemented mnemonics:", total_mnemonics)
+
+replace_in_readme(total_mnemonics, total_implemented)

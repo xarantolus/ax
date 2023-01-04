@@ -155,6 +155,16 @@ export default defineComponent({
           // EXIT syscall
           return ax.stop();
         }
+        case 102n: // getuid
+        case 104n: // getgid
+        case 107n: // geteuid
+        case 108n: // getegid
+        case 158n: // arch_prctl
+        {
+          // just return dummy values for these
+          ax.reg_write_64(Register.RAX, 0n);
+          return ax.commit();
+        }
         default: {
           throw new Error("Syscall: unsupported RAX value " + syscall_num);
         }
@@ -212,7 +222,7 @@ export default defineComponent({
         return;
       }
       try {
-        ax.init_stack(8n * 1024n);
+        ax.init_stack_program_start(8n * 1024n, ["/bin/my_binary", "arg1", "arg2"]);
         let rsp = ax.reg_read_64(Register.RSP);
         ax.reg_write_64(Register.RSP, rsp - 1024n);
         ax.hook_before_mnemonic(Mnemonic.Ret, (ax: Axecutor) => {

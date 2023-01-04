@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
 use crate::{debug_log, instructions::registers::SupportedRegister};
 
@@ -166,9 +166,9 @@ impl Axecutor {
     #[must_use]
     pub fn mem_write_bytes(&mut self, address: u64, data: &[u8]) -> Result<(), AxError> {
         debug_log!(
-            "Calling Axecutor::mem_write_bytes, address={:#x}, data={:?}",
+            "Calling Axecutor::mem_write_bytes, address={:#x}, data_len={:?}",
             address,
-            data
+            data.len()
         );
 
         for area in &mut self.state.memory {
@@ -341,6 +341,55 @@ impl Axecutor {
 
         let initial_rsp = stack_start + length - 8;
         self.reg_write_64(SupportedRegister::RSP, initial_rsp);
+        self.stack_top = stack_start + length;
+
+        Ok(stack_start)
+    }
+
+    pub fn init_stack_program_start(
+        &mut self,
+        length: u64,
+        argv: Vec<JsValue>,
+    ) -> Result<u64, AxError> {
+        let mut stack_start: u64 = 0x1000;
+
+        loop {
+            if stack_start >= 0x7fff_ffff_ffff_ffff {
+                return Err(AxError::from(
+                    "Could not find a suitable stack start address",
+                ));
+            }
+
+            if self
+                .mem_init_zero_named(stack_start, length, "Stack".to_string())
+                .is_ok()
+            {
+                break;
+            }
+            stack_start <<= 1;
+        }
+
+        let mut stack_top = stack_start + length - 8;
+        let mut argv_pointers = Vec::new();
+
+        for arg in argv.iter().rev() {
+            let strarg = arg.as_string().unwrap();
+            stack_top -= strarg.len() as u64 + 1;
+            self.mem_write_bytes(stack_top, strarg.as_bytes())?;
+            self.mem_write_8(stack_top + strarg.len() as u64, 0)?;
+            argv_pointers.push(stack_top);
+        }
+
+        argv_pointers.reverse();
+
+        for ptr in argv_pointers.iter() {
+            stack_top -= 8;
+            self.mem_write_64(stack_top, *ptr)?;
+        }
+
+        self.reg_write_64(SupportedRegister::RSP, stack_top);
+        self.reg_write_64(SupportedRegister::RDI, argv_pointers.len() as u64);
+        self.reg_write_64(SupportedRegister::RSI, stack_top);
         self.stack_top = stack_start + length;
 
         Ok(stack_start)

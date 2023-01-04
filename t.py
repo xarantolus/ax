@@ -1010,9 +1010,9 @@ if __name__ == '__main__':
     print(f"Found {len(test_cases_str)} test cases for {assembly_code}")
 
     too_many = False
-    if len(test_cases_str) > 50:
-        print("Too many test cases, only a sample of 50 will be returned")
-        test_cases_str = random.sample(test_cases_str, 50)
+    if len(test_cases_str) > 25:
+        print("Too many test cases, only a sample of 25 will be returned")
+        test_cases_str = random.sample(test_cases_str, 25)
         too_many = True
 
     tests = "\n\n".join(test_cases_str)
@@ -1022,4 +1022,4 @@ if __name__ == '__main__':
 
     print(f"Copied {len(test_cases_str)} tests to clipboard")
     if too_many:
-        print("Note that too many test cases were generated, so only a sample of 50 was returned")
+        print("Note that too many test cases were generated, so only a sample of 25 was returned")

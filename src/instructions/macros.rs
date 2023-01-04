@@ -802,6 +802,62 @@ impl Axecutor {
         }
         Ok(())
     }
+
+    pub(crate) fn calculate_r_rm_32_16(
+        &mut self,
+        i: Instruction,
+        op: impl Fn(u32, u16) -> u32,
+        flags_to_set: u64,
+        flags_to_clear: u64,
+    ) -> Result<(), AxError> {
+        let (dest, src) = self.instruction_operands_2(i)?;
+        let src_val = match src {
+            Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
+            Operand::Register(r) => self.reg_read_16(r),
+            _ => fatal_error!(
+                "Invalid source operand {:?} for {:?} instruction",
+                dest,
+                i.mnemonic()
+            ),
+        };
+
+        let dest = dest.into();
+        let dest_val = self.reg_read_32(dest);
+        let result = op(dest_val as u32, src_val as u16);
+        self.set_flags_u32(flags_to_set, flags_to_clear, result);
+        if (flags_to_set & NO_WRITEBACK) == 0 {
+            self.reg_write_32(dest, result as u64);
+        }
+        Ok(())
+    }
+
+    pub(crate) fn calculate_r_rm_64_16(
+        &mut self,
+        i: Instruction,
+        op: impl Fn(u64, u16) -> u64,
+        flags_to_set: u64,
+        flags_to_clear: u64,
+    ) -> Result<(), AxError> {
+        let (dest, src) = self.instruction_operands_2(i)?;
+        let src_val = match src {
+            Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
+            Operand::Register(r) => self.reg_read_16(r),
+            _ => fatal_error!(
+                "Invalid source operand {:?} for {:?} instruction",
+                dest,
+                i.mnemonic()
+            ),
+        };
+
+        let dest = dest.into();
+        let dest_val = self.reg_read_64(dest);
+        let result = op(dest_val, src_val as u16);
+        self.set_flags_u64(flags_to_set, flags_to_clear, result);
+        if (flags_to_set & NO_WRITEBACK) == 0 {
+            self.reg_write_64(dest, result);
+        }
+        Ok(())
+    }
 }
 
 #[macro_export]
@@ -839,11 +895,17 @@ macro_rules! calculate_r_rm {
     [u32; $self:expr; $i:expr; $op:expr] => {
         calculate_r_rm![u32; $self; $i; $op; (set: 0; clear: 0)]
     };
+    [u32; u16; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
+        $self.calculate_r_rm_32_16($i, $op, $flags_to_set, $flags_to_clear)
+    };
     [u64; $self:expr; $i:expr; $op:expr] => {
         calculate_r_rm![u64; $self; $i; $op; (set: 0; clear: 0)]
     };
     [u64; u32; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         $self.calculate_r_rm_64_32($i, $op, $flags_to_set, $flags_to_clear)
+    };
+    [u64; u16; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
+        $self.calculate_r_rm_64_16($i, $op, $flags_to_set, $flags_to_clear)
     };
 }
 
