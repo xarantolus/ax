@@ -5,6 +5,17 @@ ifneq ($(MOLD_INSTALLED),)
   MOLD := mold -run
 endif
 
+PY_INSTALLED := $(shell which py 2> /dev/null)
+ifeq ($(PY_INSTALLED),)
+	ifeq ($(shell which python3 2> /dev/null),)
+		PY := python
+	else
+		PY := python3
+	endif
+else
+  PY := py -3
+endif
+
 build:
 	$(MOLD) wasm-pack build --target web --release
 
@@ -12,7 +23,7 @@ debug:
 	$(MOLD) wasm-pack build --target web --debug
 
 stats:
-	@py stats.py
+	@$(PY) stats.py
 
 example-programs:
 	cd examples/programs && make build
@@ -43,11 +54,11 @@ test:
 	$(MOLD) cargo test
 
 switch:
-	py generate.py switch
+	$(PY) generate.py switch
 
 dependencies:
 	cargo install cargo-tarpaulin cargo-watch python-launcher
-	py -m pip install pyperclip tqdm
+	$(PY) -m pip install pyperclip tqdm
 
 clean:
 	rm -rf pkg target examples/web/node_modules examples/web/dist
