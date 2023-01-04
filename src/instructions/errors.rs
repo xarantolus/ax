@@ -140,25 +140,25 @@ impl fmt::Debug for AxError {
 #[macro_export]
 macro_rules! fatal_error {
     ($message:expr, $($arg:tt)*) => {{
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(all(target_arch = "wasm32", not(test)))]
         {
             // In WASM we don't panic, as it's not possible to catch panics from JS
             return Err(AxError::from(format!($message, $($arg)*)));
         }
 
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(not(all(target_arch = "wasm32", not(test))))]
         {
             panic!($message, $($arg)*);
         }
     }};
     ($message:expr) => {{
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(all(target_arch = "wasm32", not(test)))]
         {
             // In WASM we don't panic, as it's not possible to catch panics from JS
             return Err(AxError::from($message));
         }
 
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(not(all(target_arch = "wasm32", not(test))))]
         {
             panic!($message);
         }

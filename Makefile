@@ -1,8 +1,19 @@
-.PHONY: build debug watch test clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats
+.PHONY: build debug watch test test-local test-node clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
   MOLD := mold -run
+endif
+
+PY_INSTALLED := $(shell which py 2> /dev/null)
+ifeq ($(PY_INSTALLED),)
+	ifeq ($(shell which python3 2> /dev/null),)
+		PY := python
+	else
+		PY := python3
+	endif
+else
+  PY := py -3
 endif
 
 build:
@@ -12,7 +23,7 @@ debug:
 	$(MOLD) wasm-pack build --target web --debug
 
 stats:
-	@py stats.py
+	@$(PY) stats.py
 
 example-programs:
 	cd examples/programs && make build
@@ -34,21 +45,33 @@ copy-programs: example-programs
 	cp -r $(shell find examples/programs -name "*.bin") examples/web/public/programs
 
 fmt:
-	$(MOLD) cargo fix --allow-staged && cargo fmt
+	$(MOLD) cargo fix --allow-staged && \
+	$(MOLD) cargo fix --allow-staged --tests && \
+	$(MOLD) cargo fmt
 
 coverage:
 	$(MOLD) cargo tarpaulin --out Lcov --skip-clean
 
-test:
+test: test-local test-node
+
+test-local:
+	@echo "Running tests on processor..."
 	$(MOLD) cargo test
 
+test-wasm: test-node
+
+test-node:
+	@echo "Running tests in Node/WASM..."
+	wasm-pack test --node
+
 switch:
-	py generate.py switch
+	$(PY) generate.py switch
 
 dependencies:
 	cargo install cargo-tarpaulin cargo-watch python-launcher
-	py -m pip install pyperclip tqdm
+	$(PY) -m pip install pyperclip tqdm
 
 clean:
 	rm -rf pkg target examples/web/node_modules examples/web/dist
 	cd examples/programs && make clean
+

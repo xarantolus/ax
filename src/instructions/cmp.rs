@@ -335,9 +335,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::super::axecutor::Axecutor;
-    use crate::{
-        assert_reg_value, ax_test, instructions::registers::SupportedRegister, write_reg_value,
-    };
+    use crate::{assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
     // cmp byte ptr [rax], bl
     ax_test![cmp_byte_ptr_rax_bl; 0x38, 0x18;

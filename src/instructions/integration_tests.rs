@@ -2,10 +2,7 @@
 mod test {
     // You can add more tests here using the a.py script, e.g. run `python3 a.py "mov rax, 0x1234567890abcdef; xor eax, eax"` (select "ts" for setup) to generate a test case
     use super::super::axecutor::Axecutor;
-    use crate::{
-        assert_reg_value, ax_test, debug_log, instructions::registers::SupportedRegister,
-        write_reg_value,
-    };
+    use crate::{assert_reg_value, ax_test, debug_log, write_reg_value};
     use iced_x86::Register::*;
 
     // push rax; xor rax, rax; pop rbx
@@ -178,11 +175,13 @@ mod test {
             // After running, the output should be reversed
             let output = a.mem_read_bytes(0x2000, STRING_REVERSE_INPUT_LEN).expect("Failed to read output area");
 
-            let output_str = String::from_utf8(output).expect("Failed to convert output to string");
-            let input_str = String::from_utf8(Vec::from(STRING_REVERSE_INPUT)).expect("Failed to convert input to string");
-
-            debug_log!("Reversed string {:?} to {:?}", input_str, output_str);
-            assert_eq!(output_str, STRING_REVERSE_INPUT.iter().rev().skip(1).map(|&b| b as char).collect::<String>() + "\n");
+            #[allow(unused_variables)]
+            {
+                let output_str = String::from_utf8(output).expect("Failed to convert output to string");
+                let input_str = String::from_utf8(Vec::from(STRING_REVERSE_INPUT)).expect("Failed to convert input to string");
+                debug_log!("Reversed string {:?} to {:?}", input_str, output_str);
+                assert_eq!(output_str, STRING_REVERSE_INPUT.iter().rev().skip(1).map(|&b| b as char).collect::<String>() + "\n");
+            }
         }
     ];
 }
