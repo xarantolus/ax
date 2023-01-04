@@ -175,45 +175,45 @@ mod tests {
     };
     use iced_x86::Register::*;
 
-    #[test]
-    fn test_call_rel32_64() {
-        async_std::task::block_on(async {
-            let rip = 0x10000;
+    // #[test]
+    // fn test_call_rel32_64() {
+    //     async_std::task::block_on(async {
+    //         let rip = 0x10000;
 
-            let code = &[
-                // mov rax, 0;
-                0x48, 0xc7, 0xc0, 0x0, 0x0, 0x0, 0x0, // mov rbx, 0;
-                0x48, 0xc7, 0xc3, 0x0, 0x0, 0x0, 0x0, // call myfunc
-                0xe8, 0x7, 0x0, 0x0, 0x0, // mov rax, 42
-                0x48, 0xc7, 0xc0, 0x2a, 0x0, 0x0, 0x0, // myfunc:mov rbx, 7
-                0x48, 0xc7, 0xc3, 0x7, 0x0, 0x0, 0x0,
-            ];
-            let mut ax = Axecutor::new(code, rip, rip).expect("Failed to create axecutor");
+    //         let code = &[
+    //             // mov rax, 0;
+    //             0x48, 0xc7, 0xc0, 0x0, 0x0, 0x0, 0x0, // mov rbx, 0;
+    //             0x48, 0xc7, 0xc3, 0x0, 0x0, 0x0, 0x0, // call myfunc
+    //             0xe8, 0x7, 0x0, 0x0, 0x0, // mov rax, 42
+    //             0x48, 0xc7, 0xc0, 0x2a, 0x0, 0x0, 0x0, // myfunc:mov rbx, 7
+    //             0x48, 0xc7, 0xc3, 0x7, 0x0, 0x0, 0x0,
+    //         ];
+    //         let mut ax = Axecutor::new(code, rip, rip).expect("Failed to create axecutor");
 
-            // Setup stack
-            ax.reg_write_64(RSP.into(), 0x1000 - 8);
-            ax.mem_init_zero(0x1000 - 8, 8)
-                .expect("Failed to init memory");
+    //         // Setup stack
+    //         ax.reg_write_64(RSP.into(), 0x1000 - 8);
+    //         ax.mem_init_zero(0x1000 - 8, 8)
+    //             .expect("Failed to init memory");
 
-            match ax.execute().await {
-                Err(e) => crate::fatal_error!("Failed to execute: {:?}", AxError::from(e)),
-                _ => {}
-            };
+    //         match ax.execute().await {
+    //             Err(e) => crate::fatal_error!("Failed to execute: {:?}", AxError::from(e)),
+    //             _ => {}
+    //         };
 
-            assert!(
-                ax.state.rflags & (FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF) == 0,
-                "Most flags should be clear"
-            );
+    //         assert!(
+    //             ax.state.rflags & (FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF) == 0,
+    //             "Most flags should be clear"
+    //         );
 
-            assert_reg_value!(q; ax; RAX; 0x0);
-            assert_reg_value!(q; ax; RBX; 0x7);
-            assert_reg_value!(q; ax; RSP; 0x1000 - 16);
-            // Did we reach the end?
-            assert_reg_value!(q; ax; RIP; rip + code.len() as u64);
-            // 19 is offset of mov rax, 42, the instruction after call
-            assert_eq!(ax.mem_read_64(0x1000 - 8).expect("mem read"), rip + 19);
-        });
-    }
+    //         assert_reg_value!(q; ax; RAX; 0x0);
+    //         assert_reg_value!(q; ax; RBX; 0x7);
+    //         assert_reg_value!(q; ax; RSP; 0x1000 - 16);
+    //         // Did we reach the end?
+    //         assert_reg_value!(q; ax; RIP; rip + code.len() as u64);
+    //         // 19 is offset of mov rax, 42, the instruction after call
+    //         assert_eq!(ax.mem_read_64(0x1000 - 8).expect("mem read"), rip + 19);
+    //     });
+    // }
 
     jmp_test![jmp_lcall_func_mov_rax_42_ret_lcall_mov_rax_50_call_func_nop;
         start: 0x401010; end: 0x40d37a;

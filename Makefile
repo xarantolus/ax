@@ -1,4 +1,4 @@
-.PHONY: build debug watch test clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats
+.PHONY: build debug watch test test-local test-node clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -50,8 +50,15 @@ fmt:
 coverage:
 	$(MOLD) cargo tarpaulin --out Lcov --skip-clean
 
-test:
+test: test-local test-node
+
+test-local:
+	@echo "Running tests on processor..."
 	$(MOLD) cargo test
+
+test-node:
+	@echo "Running tests in Node/WASM..."
+	wasm-pack test --node
 
 switch:
 	$(PY) generate.py switch

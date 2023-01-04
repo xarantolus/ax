@@ -1,8 +1,8 @@
 #[cfg(test)]
 use super::axecutor::Axecutor;
 
-#[cfg(test)]
 #[inline(never)]
+#[cfg(test)]
 pub(crate) fn ax_test_runner<S, A>(
     bytes: &[u8],
     mut setup: S,
@@ -10,10 +10,12 @@ pub(crate) fn ax_test_runner<S, A>(
     flags_to_set: u64,
     flags_not_to_set: u64,
 ) where
-    S: FnMut(&mut Axecutor) -> (),
-    A: FnMut(Axecutor) -> (),
+    S: FnMut(&mut Axecutor) -> () + 'static,
+    A: FnMut(Axecutor) -> () + 'static,
 {
-    async_std::task::block_on(async {
+    let copy = bytes.to_vec();
+
+    async_std::task::block_on(async move {
         use crate::instructions::errors::AxError;
         use rand::Rng;
 
@@ -21,7 +23,7 @@ pub(crate) fn ax_test_runner<S, A>(
         let random_rip = rand::thread_rng().gen::<u64>() & 0x0000_ffff_ffff_ffff | 0xf0000;
 
         let mut ax =
-            Axecutor::new(bytes, random_rip, random_rip).expect("Failed to create axecutor");
+            Axecutor::new(&*copy, random_rip, random_rip).expect("Failed to create axecutor");
 
         setup(&mut ax);
 
@@ -65,12 +67,23 @@ macro_rules! ax_test {
         ax_test!($test_name; $($bytes),*; |_: &mut Axecutor| {}; $asserts; ($flags_to_set; $flags_not_to_set));
     };
     [$test_name:ident; $($bytes:expr),*; $setup:expr; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
-		#[test]
-		fn $test_name () {
+        #[cfg(target_arch = "wasm32")]
+        #[wasm_bindgen_test::wasm_bindgen_test]
+        #[cfg(target_arch = "wasm32")]
+        fn $test_name () {
             #[allow(unused_imports)] // Some tests use these, some don't
             use crate::instructions::flags::*;
             crate::instructions::tests::ax_test_runner(&[$($bytes),*], $setup, $asserts, $flags_to_set, $flags_not_to_set);
-		}
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        #[test]
+        #[cfg(not(target_arch = "wasm32"))]
+        fn $test_name () {
+            #[allow(unused_imports)] // Some tests use these, some don't
+            use crate::instructions::flags::*;
+            crate::instructions::tests::ax_test_runner(&[$($bytes),*], $setup, $asserts, $flags_to_set, $flags_not_to_set);
+        }
     };
     [$test_name:ident; $($bytes:expr),*; $asserts:expr] => {
         // Call the other macro with empty setup code
@@ -86,7 +99,9 @@ macro_rules! ax_test {
 #[cfg(test)]
 macro_rules! test_async {
     ($test_name:ident; $test:expr) => {
+        #[cfg(not(target_arch = "wasm32"))]
         #[test]
+        #[cfg(not(target_arch = "wasm32"))]
         fn $test_name() {
             async_std::task::block_on(async {
                 $test.await;
@@ -197,6 +212,9 @@ macro_rules! jmp_test {
         ($flags_to_set; $flags_not_to_set)];
     };
     [$name:ident; start: $initial_rip:expr; end: $final_rip:expr; $($bytes_start:expr),*; $count:expr; $($bytes_end:expr),*; $setup:expr; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
+        #[cfg(all(target_arch = "wasm32", test))]
+        #[wasm_bindgen_test]
+        #[cfg(not(all(target_arch = "wasm32", test)))]
         #[test]
         fn $name() {
             async_std::task::block_on(async {
@@ -233,6 +251,10 @@ macro_rules! jmp_test {
                         assert!(flags & flag == 0, "FLAG_{} should not be set, but was", FLAG_TO_NAMES.get(&flag).expect("Flag not found"));
                     }
                 }
+
+
+                #[cfg(all(target_arch = "wasm32", test))]
+                return Ok(());
             });
         }
     };
