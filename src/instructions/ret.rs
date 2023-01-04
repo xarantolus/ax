@@ -154,9 +154,8 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, instructions::registers::SupportedRegister, jmp_test};
-    use iced_x86::Register::*;
+
+    use crate::jmp_test;
 
     // The same testcase is available for the call instruction
     jmp_test![jmp_lcall_func_mov_rax_42_ret_lcall_mov_rax_50_call_func_nop_ret;

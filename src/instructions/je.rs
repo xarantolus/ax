@@ -101,9 +101,8 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, instructions::registers::SupportedRegister, jmp_test};
-    use iced_x86::Register::*;
+
+    use crate::jmp_test;
 
     jmp_test![mov_rax_4_cmp_rax_3_je_end_mov_rax_42_end_nop_small_nojump;
         start: 0x401010; end: 0x401026;

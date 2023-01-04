@@ -167,13 +167,8 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{
-        assert_reg_value,
-        instructions::{errors::AxError, flags::*, registers::SupportedRegister},
-        jmp_test,
-    };
-    use iced_x86::Register::*;
+
+    use crate::jmp_test;
 
     // #[test]
     // fn test_call_rel32_64() {
