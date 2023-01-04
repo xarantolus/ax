@@ -22,6 +22,8 @@ build:
 debug:
 	$(MOLD) wasm-pack build --target web --debug
 
+precommit: switch stats fmt test
+
 stats:
 	@$(PY) stats.py
 

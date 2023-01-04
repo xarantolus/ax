@@ -92,6 +92,11 @@ export default defineComponent({
         binary: "exit_c.bin",
         source_name: "exit/exit_c.c",
       },
+      {
+        name: "Hello C",
+        binary: "hello_c.bin",
+        source_name: "hello_c/hello_c.c",
+      }
     ]
 
     await init();
@@ -103,6 +108,7 @@ export default defineComponent({
       programs,
       program_source_prefix: "https://github.com/xarantolus/ax/blob/main/examples/programs/",
       version: version(),
+      brk: 0n,
     }
   },
   methods: {
@@ -111,6 +117,8 @@ export default defineComponent({
       let rdi = ax.reg_read_64(Register.RDI);
       let rsi = ax.reg_read_64(Register.RSI);
       let rdx = ax.reg_read_64(Register.RDX);
+
+      console.log(`Syscall ${syscall_num} with args ${rdi}, ${rsi}, ${rdx}`);
 
       switch (syscall_num) {
         case 0n: {
@@ -151,6 +159,22 @@ export default defineComponent({
 
           return ax.unchanged();
         }
+        case 12n: {
+          // brk syscall
+          // if called with 0 rdi for the first time, we should make up some memory, probably a 4k page
+          if (rdi == 0n) {
+            if (this.brk == 0n) {
+              this.brk = ax.init_zero_anywhere(0x1000n);
+            }
+
+            ax.reg_write_64(Register.RAX, this.brk);
+
+            return ax.commit();
+          }
+
+          // Resizing memory is currently not supported
+          throw new Error("brk syscall: resizing memory is not supported");
+        }
         case 60n: {
           // EXIT syscall
           return ax.stop();
@@ -160,11 +184,11 @@ export default defineComponent({
         case 107n: // geteuid
         case 108n: // getegid
         case 158n: // arch_prctl
-        {
-          // just return dummy values for these
-          ax.reg_write_64(Register.RAX, 0n);
-          return ax.commit();
-        }
+          {
+            // just return dummy values for these
+            ax.reg_write_64(Register.RAX, 0n);
+            return ax.commit();
+          }
         default: {
           throw new Error("Syscall: unsupported RAX value " + syscall_num);
         }
@@ -199,6 +223,8 @@ export default defineComponent({
     },
     async runFile() {
       this.termReset();
+
+      this.brk = 0n;
 
       let ax;
       try {

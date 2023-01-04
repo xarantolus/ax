@@ -320,6 +320,25 @@ impl Axecutor {
         self.mem_init_area_named(start, vec![0; length as usize], Some(name))
     }
 
+    pub fn init_zero_anywhere(&mut self, length: u64) -> Result<u64, AxError> {
+        let mut start: u64 = 0x1000;
+
+        loop {
+            if start >= 0x7fff_ffff_ffff_ffff {
+                return Err(AxError::from(
+                    "Could not find a suitable memory start address",
+                ));
+            }
+
+            if self.mem_init_zero(start, length).is_ok() {
+                break;
+            }
+            start += length;
+        }
+
+        Ok(start)
+    }
+
     pub fn init_stack(&mut self, length: u64) -> Result<u64, AxError> {
         let mut stack_start: u64 = 0x1000;
 
