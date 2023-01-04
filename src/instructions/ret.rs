@@ -154,7 +154,6 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-
     use crate::jmp_test;
 
     // The same testcase is available for the call instruction

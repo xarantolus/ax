@@ -279,6 +279,7 @@ impl Axecutor {
             }
         }
 
+        #[allow(unused_variables)]
         #[cfg(debug_assertions)]
         let display_name = match &name {
             Some(n) => format!(" {}", n),
