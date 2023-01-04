@@ -227,7 +227,7 @@ impl Axecutor {
         let dest_val = match dest {
             Operand::Register(r) => self.reg_read_16(r),
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            _ => panic!(
+            _ => fatal_error!(
                 "Invalid destination operand {:?} for TEST r/m16, imm16",
                 dest
             ),
@@ -258,7 +258,7 @@ impl Axecutor {
         let dest_val = match dest {
             Operand::Register(r) => self.reg_read_32(r),
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
-            _ => panic!(
+            _ => fatal_error!(
                 "Invalid destination operand {:?} for TEST r/m32, imm32",
                 dest
             ),
@@ -289,7 +289,7 @@ impl Axecutor {
         let dest_val = match dest {
             Operand::Register(r) => self.reg_read_64(r),
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
-            _ => panic!(
+            _ => fatal_error!(
                 "Invalid destination operand {:?} for TEST r/m64, imm32",
                 dest
             ),

@@ -4,6 +4,7 @@ use iced_x86::Mnemonic::Syscall;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
+use crate::fatal_error;
 use crate::instructions::generated::SupportedMnemonic;
 
 impl Axecutor {
@@ -12,7 +13,7 @@ impl Axecutor {
 
         match i.code() {
             iced_x86::Code::Syscall => self.instr_syscall(i),
-            _ => panic!(
+            _ => fatal_error!(
                 "Invalid instruction code {:?} for mnemonic Syscall",
                 i.code()
             ),

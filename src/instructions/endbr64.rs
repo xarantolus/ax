@@ -1,6 +1,8 @@
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Endbr64;
 
+use crate::fatal_error;
+
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
@@ -10,7 +12,7 @@ impl Axecutor {
 
         match i.code() {
             iced_x86::Code::Endbr64 => self.instr_endbr64(i),
-            _ => panic!(
+            _ => fatal_error!(
                 "Invalid instruction code {:?} for mnemonic Endbr64",
                 i.code()
             ),

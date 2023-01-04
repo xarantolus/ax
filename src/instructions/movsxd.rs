@@ -4,6 +4,7 @@ use iced_x86::Mnemonic::Movsxd;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+use crate::fatal_error;
 use crate::instructions::flags::*;
 
 use crate::calculate_r_rm;
@@ -14,7 +15,7 @@ impl Axecutor {
 
         match i.code() {
             Movsxd_r64_rm32 => self.instr_movsxd_r64_rm32(i),
-            _ => panic!(
+            _ => fatal_error!(
                 "Invalid instruction code {:?} for mnemonic Movsxd",
                 i.code()
             ),
