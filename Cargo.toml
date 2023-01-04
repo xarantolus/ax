@@ -9,6 +9,7 @@ repository = "https://github.com/xarantolus/ax"
 description = "x86 emulator for running simple binaries in your browser"
 keywords = ["x86", "emulator", "wasm", "webassembly", "browser", "asm", "assembly", "elf"]
 readme = "README.md"
+build = "src/build.rs"
 
 
 [lib]

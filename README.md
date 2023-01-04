@@ -104,7 +104,7 @@ Please format the code using `make fmt` before submitting a pull request. Also m
 2. You should now be able to build the WebAssembly module with `make`
 3. You can run `make dependencies` to install `cargo-watch`, `cargo-tarpaulin` (for generating test coverage info files) and python script dependencies
 4. Try out running `cargo test` or `make watch-tests` to run tests
-5. Run `make watch` in one terminal to rebuild the WebAssembly module on changes, then run `make web` in another terminal to start the development server
+5. Run `make watch-debug` in one terminal to rebuild the WebAssembly module on changes, then run `make web` in another terminal to start the development server. You can also just run `make watch`, which runs both in the same terminal
 6. Open the local example site and make changes! (link should be in the `make web` output)
 
 #### How to implement a new mnemonic

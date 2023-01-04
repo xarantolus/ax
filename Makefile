@@ -31,6 +31,9 @@ example-programs:
 	cd examples/programs && make build
 
 watch:
+	make -j2 watch-debug web
+
+watch-debug:
 	$(MOLD) cargo watch -s "make debug"
 
 watch-tests:

@@ -2,7 +2,8 @@
   <div class="middle width-2-3">
     <h1>AX Test Site</h1>
     <p>
-      This is the demo site for <template v-if="version">v{{ version }} of </template><a href="https://github.com/xarantolus/ax">ax, an x86-64 emulator</a>.
+      This is the demo site for <a href="https://github.com/xarantolus/ax">ax, an x86-64 emulator</a>
+      <template v-if="version && commit"> (v{{ version }}, <a :href="'https://github.com/xarantolus/ax/commit/' + commit">commit</a>)</template>.
     </p>
     <br />
     <p>
@@ -32,7 +33,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
 import Terminal from './Terminal.vue';
-import { default as init, Axecutor, Mnemonic, Register, version } from 'ax-x86';
+import { default as init, Axecutor, Mnemonic, Register, version, commit } from 'ax-x86';
 
 export default defineComponent({
   components: {
@@ -108,6 +109,7 @@ export default defineComponent({
       programs,
       program_source_prefix: "https://github.com/xarantolus/ax/blob/main/examples/programs/",
       version: version(),
+      commit: commit(),
       brk: 0n,
     }
   },
