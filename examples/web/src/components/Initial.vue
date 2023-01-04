@@ -86,7 +86,12 @@ export default defineComponent({
         name: "String length",
         binary: "strlen.bin",
         source_name: "strlen/strlen.s",
-      }
+      },
+      {
+        name: "Exit Code (C)",
+        binary: "exit_c.bin",
+        source_name: "exit/exit_c.c",
+      },
     ]
 
     await init();

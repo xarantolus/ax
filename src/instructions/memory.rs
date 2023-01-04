@@ -262,12 +262,12 @@ impl Axecutor {
         name: Option<String>,
     ) -> Result<(), AxError> {
         // Make sure there's no overlapping area already defined, including code region
-        if start >= self.code_start_address && start < self.code_start_address + self.code_length {
-            return Err(AxError::from(format!(
-                "Cannot initialize memory area {} at {:#x} (len={}), as it overlaps with the code section starting at {:#x} (len={})",
-                name.unwrap_or("<unnamed>".to_string()), start, data.len(), self.code_start_address, self.code_length
-            )));
-        }
+        // if start >= self.code_start_address && start < self.code_start_address + self.code_length {
+        //     return Err(AxError::from(format!(
+        //         "Cannot initialize memory area {} at {:#x} (len={}), as it overlaps with the code section starting at {:#x} (len={})",
+        //         name.unwrap_or("<unnamed>".to_string()), start, data.len(), self.code_start_address, self.code_length
+        //     )));
+        // }
 
         for area in &self.state.memory {
             if start >= area.start && start < area.start + area.length {
