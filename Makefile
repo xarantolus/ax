@@ -22,7 +22,7 @@ build:
 debug:
 	$(MOLD) wasm-pack build --target web --debug
 
-precommit: switch stats fmt test
+precommit: switch stats fmt test build
 
 stats:
 	@$(PY) stats.py
