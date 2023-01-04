@@ -1,4 +1,4 @@
-.PHONY: build debug watch test clean switch coverage fmt example-programs example copy-programs dependencies web build-web
+.PHONY: build debug watch test clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -10,6 +10,9 @@ build:
 
 debug:
 	$(MOLD) wasm-pack build --target web --debug
+
+stats:
+	@py stats.py
 
 example-programs:
 	cd examples/programs && make build
