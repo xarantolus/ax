@@ -72,27 +72,6 @@ impl Axecutor {
             }
         }
 
-        // for section in obj_file.section_header_iter() {
-        //     if section.section_name() != b".text" && section.ph_type() & ProgramType::LOAD != 0 {
-        //         axecutor
-        //             .mem_init_area_named(
-        //                 section.addr(),
-        //                 section.content().to_vec(),
-        //                 Some(String::from_utf8(section.section_name().to_vec())?),
-        //             )
-        //             .map_err(|err| {
-        //                 AxError::from(format!(
-        //                     "ELF: initializing {} section: {}",
-        //                     match str::from_utf8(section.section_name()) {
-        //                         Ok(name) => name.to_string(),
-        //                         Err(e) => e.to_string(),
-        //                     },
-        //                     err
-        //                 ))
-        //             })?;
-        //     }
-        // }
-
         Ok(axecutor)
     }
 }
