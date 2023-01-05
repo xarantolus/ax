@@ -3,6 +3,7 @@ use std::fmt::{self};
 
 use wasm_bindgen::{JsError, JsValue};
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct AxError {
     detail: Option<String>,
     message: Option<String>,
@@ -11,6 +12,7 @@ pub struct AxError {
     pub(crate) signals_normal_finish: bool,
 }
 
+// Some convenience addons
 impl AxError {
     pub(crate) fn end_execution(&self) -> Self {
         Self {
@@ -20,9 +22,7 @@ impl AxError {
             detail: self.detail.clone(),
         }
     }
-}
 
-impl AxError {
     pub(crate) fn add_detail(&self, s: String) -> AxError {
         AxError {
             detail: Some(s),
@@ -33,6 +33,9 @@ impl AxError {
     }
 }
 
+// ----------------------------------------------------------------
+// Convert various types to AxErrors
+// ----------------------------------------------------------------
 impl From<&str> for AxError {
     fn from(message: &str) -> Self {
         Self {
@@ -74,126 +77,64 @@ impl From<JsValue> for AxError {
     }
 }
 
+// ----------------------------------------------------------------
+// Convert AxErrors to various types
+// ----------------------------------------------------------------
+
+fn stringify_js_value(js: JsValue) -> String {
+    match js.as_string() {
+        Some(s) => s,
+        None => match js.js_typeof().as_string() {
+            Some(s) => format!("JsValue of type {}", s),
+            None => "stringify_js_value: value not a string and cannot apply typeof".to_string(),
+        },
+    }
+}
+
+impl From<AxError> for String {
+    fn from(err: AxError) -> Self {
+        let js = err.js.map(stringify_js_value);
+        let msg = err.message;
+        let detail = err.detail;
+
+        let mut s = String::new();
+        if let Some(d) = detail {
+            s.push_str(&d);
+        }
+
+        if let Some(m) = msg {
+            s.push_str(&m);
+        }
+
+        if let Some(j) = js {
+            s.push_str(&j);
+        }
+
+        if s.is_empty() {
+            panic!("AxError is empty");
+        }
+
+        s
+    }
+}
+
 impl From<AxError> for JsValue {
     fn from(err: AxError) -> Self {
-        if let Some(v) = err.js {
-            v
-        } else if let Some(m) = err.message {
-            JsValue::from(m)
-        } else {
-            panic!("AxError is empty")
-        }
+        let info = String::from(err);
+        JsValue::from(info)
     }
 }
 
 impl From<AxError> for JsError {
     fn from(err: AxError) -> Self {
-        JsError::new(
-            if let Some(v) = err.js {
-                format!("{:?}", v)
-            } else if let Some(m) = err.message {
-                m
-            } else {
-                panic!("AxError is empty")
-            }
-            .as_str(),
-        )
+        let info: String = String::from(err);
+        JsError::new(info.as_str())
     }
 }
 
-// Implement std::fmt::Display for AxError
 impl fmt::Display for AxError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}{}",
-            if let Some(m) = &self.detail { m } else { "" },
-            if let Some(ref m) = self.message {
-                m.to_owned()
-            } else if let Some(ref v) = self.js {
-                format!("{:?}", v)
-            } else {
-                panic!("AxError is empty")
-            }
-        )
+        let s = String::from(self.clone());
+        write!(f, "{}", s)
     }
-}
-
-// Implement std::fmt::Debug for AxError
-impl fmt::Debug for AxError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}{}",
-            if let Some(m) = &self.detail { m } else { "" },
-            if let Some(ref m) = self.message {
-                m.to_owned()
-            } else if let Some(ref v) = self.js {
-                format!("{:?}", v)
-            } else {
-                panic!("AxError is empty")
-            }
-        )
-    }
-}
-
-#[macro_export]
-macro_rules! fatal_error {
-    ($message:expr, $($arg:tt)*) => {{
-        #[cfg(all(target_arch = "wasm32", not(test)))]
-        {
-            // In WASM we don't panic, as it's not possible to catch panics from JS
-            return Err(AxError::from(format!($message, $($arg)*)));
-        }
-
-        #[cfg(not(all(target_arch = "wasm32", not(test))))]
-        {
-            panic!($message, $($arg)*);
-        }
-    }};
-    ($message:expr) => {{
-        #[cfg(all(target_arch = "wasm32", not(test)))]
-        {
-            // In WASM we don't panic, as it's not possible to catch panics from JS
-            return Err(AxError::from($message));
-        }
-
-        #[cfg(not(all(target_arch = "wasm32", not(test))))]
-        {
-            panic!($message);
-        }
-    }};
-}
-
-#[macro_export]
-macro_rules! assert_fatal {
-    ($cond:expr, $message:expr, $($arg:tt)*) => {{
-        if !($cond) {
-            crate::fatal_error!($message, $($arg)*);
-        }
-    }};
-    ($cond:expr, $message:expr) => {{
-        if !($cond) {
-            crate::fatal_error!($message);
-        }
-    }};
-}
-
-#[macro_export]
-macro_rules! opcode_unimplemented {
-    ($message:expr) => {{
-        #[cfg(target_arch = "wasm32")]
-        {
-            // In WASM we don't panic, as it's not possible to catch panics from JS
-            return Err(AxError::from(format!(
-                "Executed unimplemented opcode: {}",
-                $message
-            )));
-        }
-
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            panic!("Executed unimplemented opcode: {}", $message);
-        }
-    }};
 }

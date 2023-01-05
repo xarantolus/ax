@@ -1,7 +1,7 @@
 PROGRAM_NAME=exit_c
 
 $(PROGRAM_NAME).bin: $(PROGRAM_NAME).c
-	gcc $^ -m64 -Os -o $@ -static
+	gcc $^ -g -m64 -Os -o $@ -static
 
 run: $(PROGRAM_NAME).bin
 	./$(PROGRAM_NAME).bin

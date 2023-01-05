@@ -1733,3 +1733,64 @@ macro_rules! calculate_rm {
         $self.calculate_rm_64f($i, $op, $flags_to_set, $flags_to_clear)
     };
 }
+
+#[macro_export]
+macro_rules! fatal_error {
+    ($message:expr, $($arg:tt)*) => {{
+        #[cfg(all(target_arch = "wasm32", not(test)))]
+        {
+            // In WASM we don't panic, as it's not possible to catch panics from JS
+            return Err(AxError::from(format!($message, $($arg)*)));
+        }
+
+        #[cfg(not(all(target_arch = "wasm32", not(test))))]
+        {
+            panic!($message, $($arg)*);
+        }
+    }};
+    ($message:expr) => {{
+        #[cfg(all(target_arch = "wasm32", not(test)))]
+        {
+            // In WASM we don't panic, as it's not possible to catch panics from JS
+            return Err(AxError::from($message));
+        }
+
+        #[cfg(not(all(target_arch = "wasm32", not(test))))]
+        {
+            panic!($message);
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! assert_fatal {
+    ($cond:expr, $message:expr, $($arg:tt)*) => {{
+        if !($cond) {
+            crate::fatal_error!($message, $($arg)*);
+        }
+    }};
+    ($cond:expr, $message:expr) => {{
+        if !($cond) {
+            crate::fatal_error!($message);
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! opcode_unimplemented {
+    ($message:expr) => {{
+        #[cfg(target_arch = "wasm32")]
+        {
+            // In WASM we don't panic, as it's not possible to catch panics from JS
+            return Err(AxError::from(format!(
+                "Executed unimplemented opcode: {}",
+                $message
+            )));
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            panic!("Executed unimplemented opcode: {}", $message);
+        }
+    }};
+}

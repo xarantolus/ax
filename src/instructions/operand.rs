@@ -107,7 +107,6 @@ impl Axecutor {
         }
 
         // This overflow is explicitly allowed, as x86-64 encodes negative values as signed integers
-        // TODO: Does this work correctly on platforms that don't use two's complement? (there's a test for it, so it should fail if this assumption is false)
         addr = addr.wrapping_add(displacement);
 
         addr

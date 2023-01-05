@@ -126,14 +126,14 @@ impl Axecutor {
             && address < self.code_start_address + self.code_length
         {
             return Err(AxError::from(format!(
-                "Could not read memory from code area at address {:#x}",
-                address
+                "Could not read memory of length {} from code area at address {:#x}",
+                length, address
             )));
         }
 
         Err(AxError::from(format!(
-            "Could not read memory at address {:#x}",
-            address
+            "Could not read memory of length {} at address {:#x}",
+            length, address
         )))
     }
 
@@ -405,6 +405,8 @@ impl Axecutor {
             stack_top -= 8;
             self.mem_write_64(stack_top, *ptr)?;
         }
+
+        // TODO: probably have to write a final null pointer in argv?, see https://man7.org/linux/man-pages/man2/execve.2.html
 
         self.reg_write_64(SupportedRegister::RSP, stack_top);
         self.reg_write_64(SupportedRegister::RDI, argv_pointers.len() as u64);

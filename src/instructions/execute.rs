@@ -4,7 +4,10 @@ use iced_x86::{Decoder, DecoderOptions, Instruction, Register};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsError;
 
-use crate::{debug_log, instructions::registers::SupportedRegister};
+use crate::{
+    debug_log,
+    instructions::{generated::SupportedMnemonic, registers::SupportedRegister},
+};
 
 use super::{axecutor::Axecutor, errors::AxError};
 
@@ -54,17 +57,21 @@ impl Axecutor {
         }
 
         // Fetch the next instruction
-        let instr = self.decode_next()?;
+        let instr = self
+            .decode_next()
+            .map_err(|e| AxError::from(format!("decoding instruction: {}", e)))?;
         debug_log!("Fetched instruction {}", instr);
 
         self.reg_write_64(SupportedRegister::RIP, instr.next_ip());
 
-        let mnem = instr.mnemonic().try_into()?;
+        let mnem: SupportedMnemonic = instr.mnemonic().try_into()?;
 
         let hooks = self.mnemonic_hooks(mnem);
         if let Some(ref h) = hooks {
             debug_log!("Calling before hooks for mnemonic {:?}", mnem);
-            h.run_before(self, mnem).await?;
+            h.run_before(self, mnem)
+                .await
+                .map_err(|e| AxError::from(format!("running before hooks for {}: {}", instr, e)))?;
             debug_log!("Finished running before hooks for mnemonic {:?}", mnem);
         }
 
@@ -76,16 +83,19 @@ impl Axecutor {
                 debug_log!("Marked execution as finished due to instruction indicating so");
             } else {
                 debug_log!(
-                    "Error executing instruction {}: {}",
+                    "Error executing instruction {} (after {} steps): {}",
+                    instr,
                     self.executed_instructions_count,
                     e
                 );
                 let err_info = e.add_detail(format!(
-                    "Error while executing instruction {} ({:?}, {}): ",
+                    "executing instruction {} ({:?}, {}): ",
                     instr,
                     instr.code(),
                     self.executed_instructions_count
                 ));
+
+                debug_log!("Throwing error: {}", err_info);
 
                 // In tests, `.into` panics with a very non-helpful message, so we just panic before with a helpful message
                 #[cfg(test)]
@@ -113,7 +123,9 @@ impl Axecutor {
 
         if let Some(ref h) = hooks {
             debug_log!("Calling after hooks for mnemonic {:?}", mnem);
-            h.run_after(self, mnem).await?;
+            h.run_after(self, mnem)
+                .await
+                .map_err(|e| AxError::from(format!("running after hooks for {}: {}", instr, e)))?;
             debug_log!("Finished running after hooks for mnemonic {:?}", mnem);
         }
 
