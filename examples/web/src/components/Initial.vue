@@ -181,11 +181,30 @@ export default defineComponent({
           // EXIT syscall
           return ax.stop();
         }
+        case 158n: { // arch_prctl
+          console.log("FS arch_prctl: " + rdi.toString(16) + " " + rsi.toString(16))
+          if (rdi === 0x1002n) {
+            // ARCH_SET_FS
+            console.log("Setting FS to " + rsi.toString(16));
+            ax.write_fs(rsi);
+            ax.reg_write_64(Register.RAX, 0n);
+            return ax.commit();
+          } else if (rdi === 0x1003n) {
+            // ARCH_GET_FS
+            ax.reg_write_64(Register.RAX, ax.read_fs());
+            return ax.commit();
+          } else if (rdi == 0x3001n) {
+            // still works if we just return -1
+            ax.reg_write_64(Register.RAX, 0xffffffffffffffffn);
+            return ax.commit();
+          }
+
+          throw "arch_prctl: unsupported rdi value " + rdi.toString(16);
+        }
         case 102n: // getuid
         case 104n: // getgid
         case 107n: // geteuid
         case 108n: // getegid
-        case 158n: // arch_prctl
           {
             // just return dummy values for these
             ax.reg_write_64(Register.RAX, 0n);

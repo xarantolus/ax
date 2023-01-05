@@ -1,7 +1,7 @@
 PROGRAM_NAME=exit_c
 
 $(PROGRAM_NAME).bin: $(PROGRAM_NAME).c
-	gcc $^ -g -m64 -Os -o $@ -static
+	gcc $^ -fno-stack-protector -fcf-protection=none -g -m64 -Os -o $@ -static
 
 run: $(PROGRAM_NAME).bin
 	./$(PROGRAM_NAME).bin

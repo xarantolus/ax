@@ -1,4 +1,8 @@
+use std::convert::TryFrom;
+
 use iced_x86::Instruction;
+
+use crate::debug_log;
 
 use super::{axecutor::Axecutor, errors::AxError, registers::SupportedRegister};
 
@@ -6,8 +10,34 @@ use super::{axecutor::Axecutor, errors::AxError, registers::SupportedRegister};
 pub struct MemOperand {
     base: Option<SupportedRegister>,
     index: Option<SupportedRegister>,
+    segment: Option<SupportedSegmentRegister>,
     scale: u32,
     displacement: u64,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum SupportedSegmentRegister {
+    DS,
+    ES,
+    SS,
+    FS,
+}
+
+impl TryFrom<iced_x86::Register> for SupportedSegmentRegister {
+    type Error = AxError;
+
+    fn try_from(value: iced_x86::Register) -> Result<Self, Self::Error> {
+        match value {
+            iced_x86::Register::DS => Ok(SupportedSegmentRegister::DS),
+            iced_x86::Register::ES => Ok(SupportedSegmentRegister::ES),
+            iced_x86::Register::SS => Ok(SupportedSegmentRegister::SS),
+            iced_x86::Register::FS => Ok(SupportedSegmentRegister::FS),
+            _ => Err(AxError::from(format!(
+                "Unsupported segment register: {:?}",
+                value
+            ))),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -97,6 +127,7 @@ impl Axecutor {
             index,
             scale,
             displacement,
+            segment,
         } = o;
         let mut addr: u64 = 0;
         if let Some(base) = base {
@@ -108,6 +139,17 @@ impl Axecutor {
 
         // This overflow is explicitly allowed, as x86-64 encodes negative values as signed integers
         addr = addr.wrapping_add(displacement);
+
+        if let Some(reg) = segment {
+            if reg == SupportedSegmentRegister::FS {
+                debug_log!(
+                    "Adding FS segment offset {:#x} to memory address: {:#x}",
+                    self.state.fs,
+                    addr
+                );
+                addr = addr.wrapping_add(self.state.fs);
+            }
+        }
 
         addr
     }
@@ -149,11 +191,18 @@ impl Axecutor {
                 let scale = i.memory_index_scale();
                 let displacement = i.memory_displacement64();
 
+                let segment = if i.memory_segment() == iced_x86::Register::None {
+                    None
+                } else {
+                    Some(SupportedSegmentRegister::try_from(i.memory_segment())?)
+                };
+
                 Ok(Operand::Memory(MemOperand {
                     base,
                     index,
                     scale,
                     displacement,
+                    segment,
                 }))
             }
             iced_x86::OpKind::Register => Ok(Operand::Register(SupportedRegister::from(
@@ -208,7 +257,7 @@ impl Axecutor {
 mod tests {
     use iced_x86::Register;
 
-    use crate::instructions::operand::MemOperand;
+    use crate::instructions::operand::{MemOperand, SupportedSegmentRegister};
 
     use super::{Axecutor, Operand, Operand::*};
 
@@ -269,6 +318,7 @@ mod tests {
                 index: None,
                 scale: 1,
                 displacement: 0,
+                segment: Some(SupportedSegmentRegister::DS),
             }),
             Immediate { data: 1, size: 1 },
         ]
@@ -283,6 +333,7 @@ mod tests {
                 index: None,
                 scale: 1,
                 displacement: 0,
+                segment: Some(SupportedSegmentRegister::SS),
             })),
             Immediate { data: 1, size: 1 },
         ];
@@ -304,6 +355,7 @@ mod tests {
                 index: None,
                 scale: 1,
                 displacement: 0,
+                segment: Some(SupportedSegmentRegister::SS),
             }),
             Immediate { data: 1, size: 4 },
         ];
@@ -325,6 +377,7 @@ mod tests {
                 index: None,
                 scale: 1,
                 displacement: 1,
+                segment: Some(SupportedSegmentRegister::SS),
             }),
             Register(Register::R15D.into()),
         ];
@@ -347,6 +400,7 @@ mod tests {
                 index: None,
                 scale: 1,
                 displacement: u64::MAX,
+                segment: Some(SupportedSegmentRegister::SS),
             }),
             Register(Register::R15D.into()),
         ];
@@ -368,6 +422,7 @@ mod tests {
                 index: Some(Register::RCX.into()),
                 scale: 4,
                 displacement: 0,
+                segment: Some(SupportedSegmentRegister::DS),
             }),
             Immediate { data: 1, size: 8 },
         ];
@@ -391,6 +446,7 @@ mod tests {
                 scale: 1,
                 // RIP + Instruction size + Displacement
                 displacement: TEST_RIP_VALUE + 0x7 + 0x5,
+                segment: Some(SupportedSegmentRegister::DS),
             }),
             Register(Register::RBX.into()),
         ];
@@ -411,6 +467,7 @@ mod tests {
                 index: None,
                 scale: 1,
                 displacement: TEST_RIP_VALUE + 0x7 - 0x20,
+                segment: Some(SupportedSegmentRegister::DS),
             }),
             Immediate { data: 5, size: 1 },
         ];

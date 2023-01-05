@@ -46,6 +46,7 @@ pub(crate) struct MachineState {
     pub(crate) memory: Vec<MemoryArea>,
     pub(crate) registers: HashMap<SupportedRegister, u64>,
     pub(crate) rflags: u64,
+    pub(crate) fs: u64,
 }
 
 #[wasm_bindgen]
@@ -132,6 +133,7 @@ impl Axecutor {
                 // Intel SDM 3.4.3 EFLAGS Register mentions "0x00000002" as default value, but this conflicts with some test cases.
                 // Also the initial value shouldn't matter much
                 rflags: 0,
+                fs: 0,
             },
         })
     }

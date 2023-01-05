@@ -547,4 +547,18 @@ impl Axecutor {
 
         return reg_value;
     }
+
+    pub fn read_fs(&self) -> u64 {
+        let value = self.state.fs;
+
+        debug_log!("Read FS value 0x{:x}", value);
+
+        return value;
+    }
+
+    pub fn write_fs(&mut self, value: u64) {
+        self.state.fs = value;
+
+        debug_log!("Wrote FS value 0x{:x}", value);
+    }
 }
