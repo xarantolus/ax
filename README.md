@@ -22,7 +22,7 @@ npm i ax-x86
 Before using any functions, you have to make sure the WASM binary has been downloaded using the default `init` function:
 
 ```js
-import { default as init, version } from 'ax-x86';
+import init, { version } from 'ax-x86';
 // This will download the WASM binary and initialize the module
 await init();
 // Now you can use the module
@@ -41,7 +41,7 @@ The following is a simple example that executes a few instructions and prints th
 <summary>Open for more info on the example</summary>
 
 ```js
-import { default as init, Axecutor, Mnemonic, Register, version } from 'ax-x86';
+import init, { Axecutor, Mnemonic, Register, version } from 'ax-x86';
 await init();
 
 // Define bytes for x86 instructions:
@@ -105,6 +105,7 @@ The emulator also has some convenience functions for handling Linux/ELF binaries
 
 <details>
 <summary>Open for more info on how to emulate ELF files</summary>
+
 One thing to note is that binaries usually exit via the `exit` syscall, which is not implemented by default (same as any other syscall). You must handle it yourself, like in the following example:
 
 ```js

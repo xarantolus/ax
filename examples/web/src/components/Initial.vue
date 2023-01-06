@@ -33,7 +33,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
 import Terminal from './Terminal.vue';
-import { default as init, Axecutor, Mnemonic, Register, version, commit } from 'ax-x86';
+import init, { Axecutor, Mnemonic, Register, version, commit } from 'ax-x86';
 
 export default defineComponent({
   components: {
