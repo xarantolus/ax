@@ -29,11 +29,8 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@v3
 
-    - name: Build
-      run: make build
-
-    - name: Run tests
-      run: make test
+    - name: Run precommit checks
+      run: make precommit
 
     - name: Display mnemonic stats
       run: make stats
