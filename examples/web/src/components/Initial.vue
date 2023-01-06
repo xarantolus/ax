@@ -97,6 +97,11 @@ export default defineComponent({
         name: "Hello C",
         binary: "hello_c.bin",
         source_name: "hello_c/hello_c.c",
+      },
+      {
+        name: "thread_local errno (C)",
+        binary: "thread_local.bin",
+        source_name: "thread_local_c/thread_local.c",
       }
     ]
 
@@ -114,6 +119,10 @@ export default defineComponent({
     }
   },
   methods: {
+    toTwosComplement(num: bigint): bigint {
+      return ~num + 1n;
+    },
+
     async syscallHandler(ax: Axecutor) {
       let syscall_num = ax.reg_read_64(Register.RAX);
       let rdi = ax.reg_read_64(Register.RDI);
@@ -182,24 +191,23 @@ export default defineComponent({
           return ax.stop();
         }
         case 158n: { // arch_prctl
-          console.log("FS arch_prctl: " + rdi.toString(16) + " " + rsi.toString(16))
+          console.log("FS arch_prctl: operation 0x" + rdi.toString(16) + ", addr 0x" + rsi.toString(16))
           if (rdi === 0x1002n) {
             // ARCH_SET_FS
             console.log("Setting FS to " + rsi.toString(16));
             ax.write_fs(rsi);
+
+            if (ax.read_fs() !== rsi) {
+              throw "arch_prctl: failed to set FS";
+            }
+
+            console.log("Set FS to " + ax.read_fs().toString(16));
             ax.reg_write_64(Register.RAX, 0n);
-            return ax.commit();
-          } else if (rdi === 0x1003n) {
-            // ARCH_GET_FS
-            ax.reg_write_64(Register.RAX, ax.read_fs());
-            return ax.commit();
-          } else if (rdi == 0x3001n) {
-            // still works if we just return -1
-            ax.reg_write_64(Register.RAX, 0xffffffffffffffffn);
             return ax.commit();
           }
 
-          throw "arch_prctl: unsupported rdi value " + rdi.toString(16);
+          ax.reg_write_64(Register.RAX, this.toTwosComplement(-1n));
+          return ax.commit();
         }
         case 102n: // getuid
         case 104n: // getgid
