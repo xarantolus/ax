@@ -19,7 +19,7 @@ The recommended approach is to just install the [NPM module](https://www.npmjs.c
 npm i ax-x86
 ```
 
-To actually emulate programs, you have to make sure the WASM binary has been downloaded using the default `init` function:
+Before using any functions, you have to make sure the WASM binary has been downloaded using the default `init` function:
 
 ```js
 import { default as init, version } from 'ax-x86';
@@ -29,7 +29,16 @@ await init();
 console.log("ax version:", version());
 ```
 
-Here is a simple example that executes a few instructions and prints the result:
+Two warnings/pitfalls when using this emulator:
+* Make sure that all numbers are passed as `bigint`, which can be done using an `n` suffix. `0x1000n` is a `bigint` literal (which is what we want), `0x1000` is a `number` (which will *not* work)
+* When using frontend frameworks, it is recommended to await the `init` function before your components are mounted, e.g. in a `setup` function. This will make sure the WASM binary is downloaded before the component is rendered. You can look at the [this Vue component](examples/web/src/components/Initial.vue) for an example.
+
+
+### Simple emulation of instruction
+The following is a simple example that executes a few instructions and prints the calculated result.
+
+<details>
+<summary>Open for more info on the example</summary>
 
 ```js
 import { default as init, Axecutor, Mnemonic, Register, version } from 'ax-x86';
@@ -87,9 +96,80 @@ console.log("Final state:", ax.toString());
 console.log("RAX:", ax.reg_read_64(Register.RAX));
 ```
 
-Warning: Make sure that all numbers are passed as `bigint`, hence the `n` suffix!
+The emulator will just stop when reaching the end of the code.
 
-When using frontend frameworks, it is recommended to await the `init` function before your components are mounted, e.g. in a `setup` function. This will make sure the WASM binary is downloaded before the component is rendered. You can look at the [this Vue component](examples/web/src/components/Initial.vue) for an example.
+</details>
+
+### Emulate ELF binaries
+The emulator also has some convenience functions for handling Linux/ELF binaries. The [test site](https://ax.010.one) uses these convenience functions to emulate programs.
+
+<details>
+<summary>Open for more info on how to emulate ELF files</summary>
+One thing to note is that binaries usually exit via the `exit` syscall, which is not implemented by default (same as any other syscall). You must handle it yourself, like in the following example:
+
+```js
+let ax = Axecutor.from_binary(/* elf file content as Uint8Array */);
+
+// Set up the stack according to the System V ABI.
+// This sets up memory locations for command-line arguments and environment variables
+// and writes the stack pointer to RSP
+ax.init_stack_program_start(
+  8n * 1024n, // Stack size
+  ["/bin/my_binary", "arg1", "arg2"],
+  [ /* environment variables */ ]
+);
+
+
+let syscallHandler = async function (ax: Axecutor) {
+  let syscall_num = ax.reg_read_64(Register.RAX);
+  let rdi = ax.reg_read_64(Register.RDI);
+  let rsi = ax.reg_read_64(Register.RSI);
+  let rdx = ax.reg_read_64(Register.RDX);
+
+  console.log(`Syscall ${syscall_num} with args ${rdi}, ${rsi}, ${rdx}`);
+
+  switch (syscall_num) {
+    case 1n: {
+      // WRITE syscall MUST write to stdout or stderr (stdin supported for compatibility)
+      if (rdi != 0n && rdi != 1n && rdi != 2n) {
+        throw new Error(`WRITE syscall: cannot write non-std{out,err} (!= 1,2) fds, but tried ${rdi}`);
+      }
+
+      // Read whatever was
+      let result_buf = ax.mem_read_bytes(rsi, rdx);
+
+      // Convert to string
+      let result_str = new TextDecoder().decode(result_buf);
+
+      // Do something with the string
+      console.log("WRITE syscall:", result_str);
+
+      // Return the number of bytes that were written in RAX,
+      // that way the program knows it worked
+      ax.reg_write_64(Register.RAX, rdx);
+
+      return ax.commit();
+    }
+    case 60n: {
+      // EXIT syscall
+      console.log("EXIT syscall: exiting with code " + rdi);
+      return ax.stop();
+    }
+  }
+
+  throw `Unhandled syscall ${syscall_num}`;
+}
+
+// Register the syscall handler
+ax.hook_before_mnemonic(Mnemonic.Syscall, syscallHandler);
+
+// Execute the program
+await ax.execute();
+```
+
+If your binaries need more syscalls, you can look at the [example site implementation](examples/web/src/components/Initial.vue) or get more details [here](https://syscalls.w3challs.com/?arch=x86_64).
+
+</details>
 
 ## Contributing
 If you want to contribute to this project, that's great! A good way to involved is using the emulator and finding things that could be improved :)

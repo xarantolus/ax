@@ -89,10 +89,11 @@ export default defineComponent({
         source_name: "strlen/strlen.s",
       },
       {
-        name: "argc",
-        binary: "argc.bin",
-        source_name: "argc/argc.s",
+        name: "Print command-line arguments",
+        binary: "args.bin",
+        source_name: "args/args.S",
       },
+      /*
       {
         name: "Exit Code (C)",
         binary: "exit_c.bin",
@@ -108,6 +109,7 @@ export default defineComponent({
         binary: "thread_local.bin",
         source_name: "thread_local_c/thread_local.c",
       }
+      */
     ]
 
     await init();
@@ -176,6 +178,11 @@ export default defineComponent({
 
           return ax.unchanged();
         }
+        case 60n: {
+          console.log("EXIT syscall: exiting with code " + rdi.toString(16));
+          // EXIT syscall
+          return ax.stop();
+        }
         case 12n: {
           // brk syscall
 
@@ -214,11 +221,6 @@ export default defineComponent({
           ax.reg_write_64(Register.RAX, this.brk_start + this.brk_len);
 
           return ax.commit();
-        }
-        case 60n: {
-          console.log("EXIT syscall: exiting with code " + rdi.toString(16));
-          // EXIT syscall
-          return ax.stop();
         }
         case 158n: { // arch_prctl
           console.log("FS arch_prctl: operation 0x" + rdi.toString(16) + ", addr 0x" + rsi.toString(16))

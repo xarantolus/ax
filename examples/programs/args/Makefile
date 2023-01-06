@@ -1,4 +1,4 @@
-PROGRAM_NAME=argc
+PROGRAM_NAME=args
 
 $(PROGRAM_NAME).bin: $(PROGRAM_NAME).S
 	gcc $^ -m64 -o $@ -nostdlib -static
