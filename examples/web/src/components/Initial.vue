@@ -1,6 +1,6 @@
 <template >
   <div class="middle width-2-3">
-    <h1>AX Test Site</h1>
+    <h1><a href="https://github.com/xarantolus/ax">AX Demo Site</a></h1>
     <p>
       This is the demo site for <a href="https://github.com/xarantolus/ax">ax, an x86-64 emulator</a>
       <template v-if="version && commit"> (v{{ version }}, <a :href="'https://github.com/xarantolus/ax/commit/' + commit">commit</a>)</template>.

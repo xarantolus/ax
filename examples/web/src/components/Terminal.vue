@@ -64,6 +64,17 @@ export default defineComponent({
 			term.onKey(keyInputHandler);
 		});
 
+		term.attachCustomKeyEventHandler((arg) => {
+			if (arg.ctrlKey && arg.code === "KeyC" && arg.type === "keydown") {
+				const selection = term.getSelection();
+				if (selection) {
+					navigator.clipboard.writeText(selection);
+					return false;
+				}
+			}
+			return true;
+		});
+
 		let readByte = () => {
 			let readFirstBufferByte = () => {
 				let byte = termBuffer[0];
