@@ -21,9 +21,6 @@ pub struct Axecutor {
     // code_length is the length of the encoded instructions in bytes
     pub(crate) code_length: u64,
 
-    // executed_instructions_count is the number of instructions that have been executed so far
-    pub(crate) executed_instructions_count: u64,
-
     // code holds the encoded instructions
     pub(crate) code: Vec<u8>,
 
@@ -47,6 +44,8 @@ pub(crate) struct MachineState {
     pub(crate) fs: u64,
     // finished is true if the execution has finished. State may be mutated or read after execution, but no further step-calls must be made
     pub(crate) finished: bool,
+    // executed_instructions_count is the number of instructions that have been executed so far
+    pub(crate) executed_instructions_count: u64,
 }
 
 #[wasm_bindgen]
@@ -99,6 +98,22 @@ impl MachineState {
 
         s.push_str(&format!("{}    ],\n", " ".repeat(i * 4)));
 
+        s.push_str(&format!(
+            "{}    fs: {:#018x},\n",
+            " ".repeat(i * 4),
+            self.fs
+        ));
+        s.push_str(&format!(
+            "{}    finished: {},\n",
+            " ".repeat(i * 4),
+            self.finished
+        ));
+        s.push_str(&format!(
+            "{}    executed_instructions_count: {},\n",
+            " ".repeat(i * 4),
+            self.executed_instructions_count
+        ));
+
         s.push_str(&format!("{}}}", " ".repeat(i * 4)));
 
         s
@@ -124,10 +139,10 @@ impl Axecutor {
             code_length: code.len() as u64,
             code: code.to_vec(),
             stack_top: 0,
-            executed_instructions_count: 0,
             hooks: HookProcessor::default(),
             state: MachineState {
                 finished: false,
+                executed_instructions_count: 0,
                 memory: Vec::new(),
                 registers: randomized_register_set(initial_rip),
                 // Intel SDM 3.4.3 EFLAGS Register mentions "0x00000002" as default value, but this conflicts with some test cases.

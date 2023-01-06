@@ -95,14 +95,14 @@ impl Axecutor {
                 debug_log!(
                     "Error executing instruction {} (after {} steps): {}",
                     instr,
-                    self.executed_instructions_count,
+                    self.state.executed_instructions_count,
                     e
                 );
                 let err_info = e.add_detail(format!(
                     "executing instruction {} ({:?}, {}): ",
                     instr,
                     instr.code(),
-                    self.executed_instructions_count
+                    self.state.executed_instructions_count
                 ));
 
                 debug_log!("Throwing error: {}", err_info);
@@ -121,7 +121,7 @@ impl Axecutor {
             }
         }
 
-        self.executed_instructions_count += 1;
+        self.state.executed_instructions_count += 1;
 
         // If we reached the last instruction (and no jump has been performed etc.), we're done
         if self.reg_read_64(Register::RIP.into())
