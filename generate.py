@@ -4,7 +4,7 @@ import json
 import os
 import subprocess
 import sys
-from typing import List
+from typing import List, Union
 
 # Run cargo metadata
 output = subprocess.run(
@@ -48,7 +48,7 @@ def index_of_first(lst, pred):
 
 
 # read_mnemonics reads all mnemonic names from the iced-x86 crate
-def read_mnemonics(with_codes: bool) -> List[str] | List:
+def read_mnemonics(with_codes: bool) -> Union[list[str], list]:
     mnemonic_rs_path = os.path.join(iced_package_dir, "mnemonic.rs")
     with open(mnemonic_rs_path, "r", encoding='utf8') as f:
         mnemonic_rs = f.readlines()

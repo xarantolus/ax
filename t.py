@@ -1,5 +1,6 @@
 from multiprocessing.dummy import Pool
 import re
+import shutil
 import pyperclip
 import abc
 from curses.ascii import isspace
@@ -9,7 +10,7 @@ import subprocess
 from tqdm import tqdm
 import sys
 import tempfile
-from typing import List, Literal
+from typing import List, Literal, Union
 import unittest
 
 qword_registers = ["rip", "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp",
@@ -37,6 +38,17 @@ FLAGS = [
     (FLAG_SF, "SF"),
     (FLAG_OF, "OF"),
 ]
+
+# test if /dev/shm is available by writing a file
+temp_dir_filesystem = "/dev/shm"
+delete_at_exit = False
+try:
+    with open(os.path.join(temp_dir_filesystem, "test"), "w") as f:
+        f.write("test")
+    os.remove(os.path.join(temp_dir_filesystem, "test"))
+except:
+    temp_dir_filesystem = tempfile.gettempdir()
+    delete_at_exit = True
 
 
 class Operand(abc.ABC):
@@ -159,7 +171,7 @@ class MemoryOperand(Operand):
                 raise ValueError("cannot have offset and index register")
 
     @staticmethod
-    def parse(argument: str, other_operand: Operand | None):
+    def parse(argument: str, other_operand: Union[Operand, None]):
         original_argument = argument
         argument = argument.lower()
 
@@ -249,7 +261,7 @@ class MemoryOperand(Operand):
 
 
 class Instruction:
-    def __init__(self, mnemonic: str, arguments: List[Operand], additional_imm: ImmediateOperand | None, implicit: List[Operand] = []):
+    def __init__(self, mnemonic: str, arguments: List[Operand], additional_imm: Union[ImmediateOperand, None], implicit: List[Operand] = []):
         self.mnemonic = mnemonic.lower()
         self.arguments = arguments
         self.implicit_arguments = implicit
@@ -257,13 +269,12 @@ class Instruction:
         assert len(self.arguments) + len(self.implicit_arguments) <= 2
         self.additional_imm = additional_imm
 
-
     def set_implicit(self, implicit: List[Operand]):
         self.implicit_arguments = implicit
         assert len(self.arguments) + len(self.implicit_arguments) <= 2
 
     @staticmethod
-    def parse_operand(argument: str, other_operand: Operand | None):
+    def parse_operand(argument: str, other_operand: Union[Operand, None]):
         # try to parse as register
         try:
             return RegisterOperand(argument)
@@ -468,7 +479,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(instr.arguments, [])
 
 
-def assemble(instruction: Instruction | str):
+def assemble(instruction: Union[Instruction, str]):
     # create temporary directory
     with tempfile.TemporaryDirectory(prefix="ax_assemble", dir="/dev/shm") as tmpdir:
         # write assembly code to file
@@ -515,7 +526,7 @@ def assemble(instruction: Instruction | str):
         return hex_arr
 
 
-def test_id(instruction: Instruction | str, flags_set, inputs=None):
+def test_id(instruction: Union[Instruction, str], flags_set, inputs=None):
     def map_flags(f):
         # remove the FLAG_ prefix from each flag
         return [x[5:] for x in f]
@@ -626,6 +637,8 @@ class TestCase:
             raise NotImplementedError()
 
     NEWLINE = "\n"
+
+    last_exception = None
 
     @staticmethod
     def learn_single_flags(i: int, assembled, instruction: Instruction, operand_values: List[int], tmpdir: str):
@@ -794,7 +807,8 @@ class TestCase:
             else:
                 raise ValueError(
                     "invalid number of dynamic operands")
-        except Exception:
+        except Exception as e:
+            TestCase.last_exception = e
             return None
 
     @staticmethod
@@ -834,7 +848,9 @@ class TestCase:
 
             if len(results) == 0:
                 raise ValueError(
-                    f"Could not learn any flags for instruction {instruction}, likely due to some bug with with the flag learner")
+                    f"""Could not learn any flags for instruction {instruction}, likely due to some bug with with the flag learner
+                    Here's the last exception:
+                    {TestCase.last_exception}""")
         return results
 
     def test_id(self):
@@ -932,7 +948,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
             raise ValueError("invalid number of dynamic operands")
 
 
-if __name__ == '__main__':
+def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Generate tests for axecutor')
@@ -1023,3 +1039,11 @@ if __name__ == '__main__':
     print(f"Copied {len(test_cases_str)} tests to clipboard")
     if too_many:
         print("Note that too many test cases were generated, so only a sample of 25 was returned")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    finally:
+        if delete_at_exit:
+            shutil.rmtree(temp_dir_filesystem)
