@@ -511,7 +511,11 @@ impl Axecutor {
 
         self.reg_write_64(SupportedRegister::RSP, stack_top);
 
-        debug_log!("Initialized stack, stack_top={:#x}, self.stack_top={:#x}", stack_top, self.stack_top);
+        debug_log!(
+            "Initialized stack, stack_top={:#x}, self.stack_top={:#x}",
+            stack_top,
+            self.stack_top
+        );
         self.stack_top = stack_top;
 
         Ok(stack_start)

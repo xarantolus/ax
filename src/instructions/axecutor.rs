@@ -27,8 +27,6 @@ pub struct Axecutor {
     // code holds the encoded instructions
     pub(crate) code: Vec<u8>,
 
-    // finished is true if the execution has finished. State may be mutated or read after execution, but no further step-calls must be made
-    pub(crate) finished: bool,
     // stack_initial_rsp is the initial RSP address when starting, this allows top-level `ret`s to finish without errors. It's set by init_stack
     pub(crate) stack_top: u64,
 
@@ -47,6 +45,8 @@ pub(crate) struct MachineState {
     pub(crate) registers: HashMap<SupportedRegister, u64>,
     pub(crate) rflags: u64,
     pub(crate) fs: u64,
+    // finished is true if the execution has finished. State may be mutated or read after execution, but no further step-calls must be made
+    pub(crate) finished: bool,
 }
 
 #[wasm_bindgen]
@@ -120,7 +120,6 @@ impl Axecutor {
 
         debug_log!("Creating Axecutor");
         Ok(Self {
-            finished: false,
             code_start_address: code_start_addr,
             code_length: code.len() as u64,
             code: code.to_vec(),
@@ -128,6 +127,7 @@ impl Axecutor {
             executed_instructions_count: 0,
             hooks: HookProcessor::default(),
             state: MachineState {
+                finished: false,
                 memory: Vec::new(),
                 registers: randomized_register_set(initial_rip),
                 // Intel SDM 3.4.3 EFLAGS Register mentions "0x00000002" as default value, but this conflicts with some test cases.
@@ -143,13 +143,11 @@ impl Axecutor {
         debug_log!("Calling Axecutor::to_string");
         format!(
             "Axecutor {{
-    ran: {},
     code_start_address: {:#0x},
     code_length: {:#x},
     hooks: {},
     state: {},
 }}",
-            self.finished,
             self.code_start_address,
             self.code_length,
             self.prefix_each_line(self.hooks.to_string().as_str(), "    "),
@@ -176,7 +174,7 @@ impl Axecutor {
     pub fn commit(&self) -> Result<JsValue, JsError> {
         debug_log!(
             "Calling Axecutor::commit, finished: {}, hooks_running: {}",
-            self.finished,
+            self.state.finished,
             self.hooks.running
         );
         if !self.hooks.running {
@@ -195,14 +193,14 @@ impl Axecutor {
     pub fn stop(&mut self) -> Result<JsValue, JsError> {
         debug_log!(
             "Calling Axecutor::stop, finished: {}, hooks_running: {}",
-            self.finished,
+            self.state.finished,
             self.hooks.running
         );
         if !self.hooks.running {
             return Err(JsError::new("Cannot call stop() outside of a hook"));
         }
 
-        self.finished = true;
+        self.state.finished = true;
 
         self.commit()
     }
@@ -210,7 +208,7 @@ impl Axecutor {
     pub fn unchanged(&self) -> JsValue {
         debug_log!(
             "Calling Axecutor::unchanged, finished: {}, hooks_running: {}",
-            self.finished,
+            self.state.finished,
             self.hooks.running
         );
         JsValue::NULL
@@ -219,7 +217,7 @@ impl Axecutor {
     pub(crate) fn state_from_committed(&mut self, value: JsValue) -> Result<(), JsError> {
         debug_log!(
             "Calling Axecutor::state_from_committed, finished: {}, hooks_running: {}",
-            self.finished,
+            self.state.finished,
             self.hooks.running
         );
 
@@ -269,6 +267,6 @@ mod tests {
         if let Err(e) = ax.execute().await {
             crate::fatal_error!("Failed to execute: {:?}", AxError::from(e));
         }
-        assert!(ax.finished);
+        assert!(ax.state.finished);
     }];
 }

@@ -56,11 +56,11 @@ impl Axecutor {
     pub async fn step(&mut self) -> Result<bool, JsError> {
         debug_log!(
             "Calling Axecutor::step, finished={}, rip={:#x}",
-            self.finished,
+            self.state.finished,
             self.reg_read_64(Register::RIP.into())
         );
 
-        if self.finished {
+        if self.state.finished {
             return Err(
                 AxError::from("Cannot advance after execution has already finished").into(),
             );
@@ -89,7 +89,7 @@ impl Axecutor {
         if let Err(e) = self.switch_instruction_mnemonic(instr) {
             // This is so e.g. the ret instruction can end execution
             if e.signals_normal_finish {
-                self.finished = true;
+                self.state.finished = true;
                 debug_log!("Marked execution as finished due to instruction indicating so");
             } else {
                 debug_log!(
@@ -127,7 +127,7 @@ impl Axecutor {
         if self.reg_read_64(Register::RIP.into())
             == self.code_start_address + self.code.len() as u64
         {
-            self.finished = true;
+            self.state.finished = true;
             debug_log!("Marked execution as finished due to reaching end of instruction sequence");
         }
 
@@ -139,8 +139,8 @@ impl Axecutor {
             debug_log!("Finished running after hooks for mnemonic {:?}", mnem);
         }
 
-        debug_log!("Finished Axecutor::step, finished={}", self.finished);
-        Ok(!self.finished)
+        debug_log!("Finished Axecutor::step, finished={}", self.state.finished);
+        Ok(!self.state.finished)
     }
 
     pub async fn execute(&mut self) -> Result<(), JsError> {
