@@ -22,7 +22,8 @@ build:
 debug:
 	$(MOLD) wasm-pack build --target web --debug
 
-precommit: switch stats fmt test build
+# fmt will fail if switch or stats are not up to date
+precommit: switch stats fmt test build build-web
 
 stats:
 	@$(PY) stats.py
