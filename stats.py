@@ -52,7 +52,8 @@ files = os.listdir("src/instructions")
 
 total_opcodes = 0
 total_implemented = 0
-total_mnemonics = 0
+total_partial = 0
+total_full = 0
 
 for file in files:
     with open("src/instructions/" + file, "r") as f:
@@ -68,8 +69,10 @@ for file in files:
         total_opcodes += opcodes
         total_implemented += implemented
 
-        if implemented > 0:
-            total_mnemonics += 1
+        if implemented == opcodes:
+            total_full += 1
+        elif implemented > 0:
+            total_partial += 1
 
 def replace_in_readme(mnemonic_count, opcode_count):
     # Replace the text between the two "<!-- stats-count-marker -->"
@@ -93,6 +96,6 @@ print(fmt.format("-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15))
 print(fmt.format("Total", total_opcodes, total_implemented, total_opcodes - total_implemented, "{:.2f}%".format(total_implemented / total_opcodes * 100)))
 
 
-print("Number of at least partially implemented mnemonics:", total_mnemonics)
+print(f"{total_full} implemented mnemonics, {total_partial} partially implemented mnemonics -> {total_full + total_partial} implemented mnemonics")
 
-replace_in_readme(total_mnemonics, total_implemented)
+replace_in_readme(total_full + total_partial, total_implemented)
