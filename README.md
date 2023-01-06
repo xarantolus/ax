@@ -31,7 +31,7 @@ console.log("ax version:", version());
 
 Two warnings/pitfalls when using this emulator:
 * Make sure that all numbers are passed as `bigint`, which can be done using an `n` suffix. `0x1000n` is a `bigint` literal (which is what we want), `0x1000` is a `number` (which will *not* work)
-* When using frontend frameworks, it is recommended to await the `init` function before your components are mounted, e.g. in a `setup` function. This will make sure the WASM binary is downloaded before the component is rendered. You can look at the [this Vue component](examples/web/src/components/Initial.vue) for an example.
+* When using frontend frameworks, it is recommended to await the `init` function before your components are mounted, e.g. in a `setup` function. This will make sure the WASM binary is downloaded before the component is rendered. You can look at the [this Vue component](examples/web/src/components/Demo.vue) for an example.
 
 
 ### Simple emulation of instruction
@@ -168,7 +168,7 @@ ax.hook_before_mnemonic(Mnemonic.Syscall, syscallHandler);
 await ax.execute();
 ```
 
-If your binaries need more syscalls, you can look at the [example site implementation](examples/web/src/components/Initial.vue) or get more details [here](https://syscalls.w3challs.com/?arch=x86_64).
+If your binaries need more syscalls, you can look at the [example site implementation](examples/web/src/components/Demo.vue) or get more details [here](https://syscalls.w3challs.com/?arch=x86_64).
 
 </details>
 
