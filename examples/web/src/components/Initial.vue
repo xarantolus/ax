@@ -89,6 +89,11 @@ export default defineComponent({
         source_name: "strlen/strlen.s",
       },
       {
+        name: "argc",
+        binary: "argc.bin",
+        source_name: "argc/argc.s",
+      },
+      {
         name: "Exit Code (C)",
         binary: "exit_c.bin",
         source_name: "exit/exit_c.c",
@@ -115,7 +120,8 @@ export default defineComponent({
       program_source_prefix: "https://github.com/xarantolus/ax/blob/main/examples/programs/",
       version: version(),
       commit: commit(),
-      brk: 0n,
+      brk_start: 0n,
+      brk_len: 0n,
     }
   },
   methods: {
@@ -172,21 +178,45 @@ export default defineComponent({
         }
         case 12n: {
           // brk syscall
+
+          console.log("brk syscall: called with rdi = " + rdi.toString(16));
+
           // if called with 0 rdi for the first time, we should make up some memory, probably a 4k page
           if (rdi == 0n) {
-            if (this.brk == 0n) {
-              this.brk = ax.init_zero_anywhere(0x1000n);
+            if (this.brk_start == 0n) {
+              const len = 0x1000n;
+              let start_addr = ax.init_zero_anywhere(len);
+              this.brk_start = start_addr;
+              this.brk_len = len;
+
+              console.log("brk syscall: initialized memory at " + start_addr.toString(16) + " with length " + len.toString(16));
             }
 
-            ax.reg_write_64(Register.RAX, this.brk);
+            console.log("brk syscall: returning " + this.brk_start.toString(16) + " as brk start");
+          } else {
+            // called with a non-zero rdi, we should resize the memory
+            let new_length = rdi - this.brk_start;
+            if (new_length < 0n) {
+              throw new Error("brk syscall: cannot resize memory to a negative length");
+            }
 
-            return ax.commit();
+            if (new_length < this.brk_len) {
+              throw new Error("brk syscall: cannot resize memory to a smaller length");
+            }
+
+            console.log("brk syscall: resizing memory from " + this.brk_len.toString(16) + " to " + new_length.toString(16));
+
+            ax.resize_section(this.brk_start, new_length);
+
+            this.brk_len = new_length;
           }
 
-          // Resizing memory is currently not supported
-          throw new Error("brk syscall: resizing memory is not supported");
+          ax.reg_write_64(Register.RAX, this.brk_start + this.brk_len);
+
+          return ax.commit();
         }
         case 60n: {
+          console.log("EXIT syscall: exiting with code " + rdi.toString(16));
           // EXIT syscall
           return ax.stop();
         }
@@ -253,7 +283,7 @@ export default defineComponent({
     async runFile() {
       this.termReset();
 
-      this.brk = 0n;
+      this.brk_start = 0n;
 
       let ax;
       try {
@@ -277,17 +307,7 @@ export default defineComponent({
         return;
       }
       try {
-        ax.init_stack_program_start(8n * 1024n, ["/bin/my_binary", "arg1", "arg2"]);
-        let rsp = ax.reg_read_64(Register.RSP);
-        ax.reg_write_64(Register.RSP, rsp - 1024n);
-        ax.hook_before_mnemonic(Mnemonic.Ret, (ax: Axecutor) => {
-          console.log("before RET @ " + ax.reg_read_64(Register.RIP));
-          return ax.unchanged();
-        });
-        ax.hook_after_mnemonic(Mnemonic.Ret, (ax: Axecutor) => {
-          console.log("after RET @ " + ax.reg_read_64(Register.RIP));
-          return ax.unchanged();
-        });
+        ax.init_stack_program_start(8n * 1024n, ["/bin/my_binary", "arg1", "arg2"], []);
         ax.hook_before_mnemonic(Mnemonic.Syscall, this.syscallHandler);
       }
       catch (e) {

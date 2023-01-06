@@ -254,6 +254,56 @@ impl Axecutor {
         self.mem_write_bytes(address, &[data as u8])
     }
 
+    pub fn resize_section(&mut self, start_addr: u64, new_size: u64) -> Result<(), AxError> {
+        debug_log!(
+            "Calling Axecutor::resize_section, start_addr={:#x}, new_size={}",
+            start_addr,
+            new_size
+        );
+
+        // Iterate all areas once and save the index of the area to resize
+        let mut area_to_resize = None;
+
+        // Also make sure there's no overlapping area already defined, including code region
+        for (i, area) in self.state.memory.iter().enumerate() {
+            if start_addr == area.start {
+                area_to_resize = Some(i);
+            }
+
+            // Make sure the new length doesn't overlap with any other area after it
+            if start_addr + new_size > area.start {
+                return Err(AxError::from(format!(
+                    "Cannot resize section at address {:#x} to length {}, as it overlaps with another section starting at {:#x} (len={})",
+                    start_addr, new_size, area.start, area.length
+                )));
+            }
+        }
+
+        // No overlap with code section
+        if start_addr + new_size > self.code_start_address {
+            return Err(AxError::from(format!(
+                "Cannot resize section at address {:#x} to length {}, as it overlaps with the code section starting at {:#x}",
+                start_addr, new_size, self.code_start_address
+            )));
+        }
+
+        if let Some(i) = area_to_resize {
+            // allocate a new buffer, copy the old data into it, and replace the old buffer
+            let mut new_data = vec![0; new_size as usize];
+            new_data.copy_from_slice(&self.state.memory[i].data);
+
+            self.state.memory[i].data = new_data;
+            self.state.memory[i].length = new_size;
+
+            return Ok(());
+        }
+
+        Err(AxError::from(format!(
+            "No section has start address {:#x}",
+            start_addr
+        )))
+    }
+
     #[must_use]
     pub fn mem_init_area_named(
         &mut self,
@@ -339,6 +389,25 @@ impl Axecutor {
         Ok(start)
     }
 
+    pub fn init_anywhere(&mut self, data: Vec<u8>) -> Result<u64, AxError> {
+        let mut start: u64 = 0x1000;
+
+        loop {
+            if start >= 0x7fff_ffff_ffff_ffff {
+                return Err(AxError::from(
+                    "Could not find a suitable memory start address",
+                ));
+            }
+
+            if self.mem_init_area(start, data.clone()).is_ok() {
+                break;
+            }
+            start += data.len() as u64;
+        }
+
+        Ok(start)
+    }
+
     pub fn init_stack(&mut self, length: u64) -> Result<u64, AxError> {
         let mut stack_start: u64 = 0x1000;
 
@@ -368,8 +437,16 @@ impl Axecutor {
     pub fn init_stack_program_start(
         &mut self,
         length: u64,
-        argv: Vec<JsValue>,
+        argv: Vec<JsValue>, // Vec<String>
+        envp: Vec<JsValue>, // Vec<String>
     ) -> Result<u64, AxError> {
+        debug_log!(
+            "Initializing stack with length {}, argv: {:?}, envp: {:?}",
+            length,
+            argv,
+            envp
+        );
+
         let mut stack_start: u64 = 0x1000;
 
         loop {
@@ -389,29 +466,53 @@ impl Axecutor {
         }
 
         let mut stack_top = stack_start + length - 8;
-        let mut argv_pointers = Vec::new();
 
-        for arg in argv.iter().rev() {
-            let strarg = arg.as_string().unwrap();
-            stack_top -= strarg.len() as u64 + 1;
-            self.mem_write_bytes(stack_top, strarg.as_bytes())?;
-            self.mem_write_8(stack_top + strarg.len() as u64, 0)?;
-            argv_pointers.push(stack_top);
+        let stack_layout = &mut Vec::new();
+
+        // First comes argc -- if the first instruction of the program is
+        // pop rdi, then rdi should contain the argc value
+        stack_layout.push(argv.len() as u64);
+
+        // argv
+        for arg in argv {
+            let arg = arg.as_string().ok_or(AxError::from(
+                "Invalid argument in init_stack_program_start: argv contains non-string value",
+            ))?;
+            let mut arg_bytes = Vec::from(arg.as_bytes());
+            arg_bytes.push(0);
+
+            // Allocate space for the string
+            let str_addr = self.init_anywhere(arg_bytes)?;
+            stack_layout.push(str_addr);
+        }
+        // argv[argc] = NULL
+        stack_layout.push(0);
+
+        // envp
+        for env in envp {
+            let env = env.as_string().ok_or(AxError::from(
+                "Invalid argument in init_stack_program_start: envp contains non-string value",
+            ))?;
+            let mut env_bytes = Vec::from(env.as_bytes());
+            env_bytes.push(0);
+
+            // Allocate space for the string
+            let str_addr = self.init_anywhere(env_bytes)?;
+            stack_layout.push(str_addr);
         }
 
-        argv_pointers.reverse();
+        // envp[0] = NULL
+        stack_layout.push(0);
 
-        for ptr in argv_pointers.iter() {
+        for val in stack_layout.iter().rev() {
+            self.mem_write_64(stack_top, *val)?;
             stack_top -= 8;
-            self.mem_write_64(stack_top, *ptr)?;
         }
-
-        // TODO: probably have to write a final null pointer in argv?, see https://man7.org/linux/man-pages/man2/execve.2.html
 
         self.reg_write_64(SupportedRegister::RSP, stack_top);
-        self.reg_write_64(SupportedRegister::RDI, argv_pointers.len() as u64);
-        self.reg_write_64(SupportedRegister::RSI, stack_top);
-        self.stack_top = stack_start + length;
+
+        debug_log!("Initialized stack, stack_top={:#x}, self.stack_top={:#x}", stack_top, self.stack_top);
+        self.stack_top = stack_top;
 
         Ok(stack_start)
     }

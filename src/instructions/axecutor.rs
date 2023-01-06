@@ -183,6 +183,8 @@ impl Axecutor {
             return Err(JsError::new("Cannot call commit() outside of a hook"));
         }
 
+        debug_log!("FS value in commit: {:#x}", self.state.fs);
+
         let s = serde_wasm_bindgen::Serializer::new().serialize_large_number_types_as_bigints(true);
 
         self.state
@@ -196,10 +198,13 @@ impl Axecutor {
             self.finished,
             self.hooks.running
         );
+        if !self.hooks.running {
+            return Err(JsError::new("Cannot call stop() outside of a hook"));
+        }
 
         self.finished = true;
 
-        return self.commit();
+        self.commit()
     }
 
     pub fn unchanged(&self) -> JsValue {
@@ -230,7 +235,7 @@ impl Axecutor {
 
         let state: MachineState = serde_wasm_bindgen::from_value(value).map_err(|e| {
             JsError::new(&*format!(
-                "state_from_committed: failed to deserialize state: {}\nNote that you *must* return either null or Axecutor.commit() from your hook",
+                "state_from_committed: failed to deserialize state: {}\nNote that you *must* return either Axecutor.unchanged(), Axecutor.stop() or Axecutor.commit() from your hook",
                 e,
             ))
         })?;

@@ -16,6 +16,16 @@ impl Axecutor {
     pub(crate) fn decode_next(&self) -> Result<Instruction, AxError> {
         let rip = self.reg_read_64(SupportedRegister::RIP);
 
+        if rip < self.code_start_address || rip >= self.code_start_address + self.code.len() as u64
+        {
+            return Err(AxError::from(format!(
+                "Instruction pointer is out of bounds: RIP value {:#x} is not in [{:#x}, {:#x})",
+                rip,
+                self.code_start_address,
+                self.code_start_address + self.code.len() as u64
+            )));
+        }
+
         let code_offset = (rip - self.code_start_address) as usize;
 
         // x86 instructions are at most 15 bytes long; make sure we don't read past the end of the code
