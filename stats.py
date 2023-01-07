@@ -6,6 +6,9 @@ def is_instruction_file(content):
            "pub fn mnemonic" in content and \
            "match i.code" in content
 
+def count_test_cases(content):
+    return content.count("ax_test!") + content.count("test_async!") + content.count("jmp_test!")
+
 def extract_instruction_functions(content):
     # find all lines starting with "fn instr_" and ending with "{"
     regex = re.compile(r"fn instr_.*?\{", re.DOTALL)
@@ -40,39 +43,9 @@ def info_mnemonic(content):
         len(functions),
         len(functions) - unimplemented,
         unimplemented,
+        count_test_cases(content)
     )
 
-
-fmt = "{: <15} | {: <15} | {: <15} | {: <15} | {: <15}"
-
-print(fmt.format("File", "Available", "Implemented", "Unimplemented", "Ratio Implemented"))
-print(fmt.format("-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15))
-
-files = os.listdir("src/instructions")
-
-total_opcodes = 0
-total_implemented = 0
-total_partial = 0
-total_full = 0
-
-for file in files:
-    with open("src/instructions/" + file, "r") as f:
-        content = f.read()
-
-        if not is_instruction_file(content):
-            continue
-
-        opcodes, implemented, unimplemented = info_mnemonic(content)
-
-        print(fmt.format(file, opcodes, implemented, unimplemented, "{:.2f}%".format(implemented / opcodes * 100)))
-
-        total_opcodes += opcodes
-        total_implemented += implemented
-
-        if implemented == opcodes:
-            total_full += 1
-        elif implemented > 0:
-            total_partial += 1
 
 def replace_in_readme(mnemonic_count, opcode_count):
     # Replace the text between the two "<!-- stats-count-marker -->"
@@ -91,9 +64,43 @@ def replace_in_readme(mnemonic_count, opcode_count):
         f.write(new_content)
 
 
-print(fmt.format("-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15))
 
-print(fmt.format("Total", total_opcodes, total_implemented, total_opcodes - total_implemented, "{:.2f}%".format(total_implemented / total_opcodes * 100)))
+fmt = "{: <15} | {: <15} | {: <15} | {: <15} | {: <15} | {: <15}"
+
+print(fmt.format("File", "Available", "Implemented", "Unimplemented", "% Implemented", "Test Cases"))
+print(fmt.format("-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15))
+
+files = os.listdir("src/instructions")
+
+total_opcodes = 0
+total_implemented = 0
+total_partial = 0
+total_full = 0
+total_test_cases = 0
+
+for file in files:
+    with open("src/instructions/" + file, "r") as f:
+        content = f.read()
+
+        if not is_instruction_file(content):
+            continue
+
+        opcodes, implemented, unimplemented, tests = info_mnemonic(content)
+
+        print(fmt.format(file, opcodes, implemented, unimplemented, "{:.2f}%".format(implemented / opcodes * 100), tests))
+
+        total_opcodes += opcodes
+        total_implemented += implemented
+        total_test_cases += tests
+
+        if implemented == opcodes:
+            total_full += 1
+        elif implemented > 0:
+            total_partial += 1
+
+print(fmt.format("-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15))
+
+print(fmt.format("Total", total_opcodes, total_implemented, total_opcodes - total_implemented, "{:.2f}%".format(total_implemented / total_opcodes * 100), total_test_cases))
 
 
 print(f"{total_full} implemented mnemonics, {total_partial} partially implemented mnemonics -> {total_full + total_partial} implemented mnemonics")
