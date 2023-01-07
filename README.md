@@ -34,8 +34,8 @@ Two warnings/pitfalls when using this emulator:
 * When using frontend frameworks, it is recommended to await the `init` function before your components are mounted, e.g. in a `setup` function. This will make sure the WASM binary is downloaded before the component is rendered. You can look at the [this Vue component](examples/web/src/components/Demo.vue) for an example.
 
 
-### Simple emulation of instruction
-The following is a simple example that executes a few instructions and prints the calculated result.
+### Simple emulation of instructions
+The following is a simple example that executes a few instructions and logs the calculated result.
 
 <details>
 <summary>Open for more info on the example</summary>
@@ -92,7 +92,7 @@ await ax.execute();
 // Log the final state of the emulator
 console.log("Final state:", ax.toString());
 
-// Prints "15"
+// Outputs "15"
 console.log("RAX:", ax.reg_read_64(Register.RAX));
 ```
 
