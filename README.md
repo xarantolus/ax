@@ -268,4 +268,4 @@ See [issue 1](https://github.com/xarantolus/ax/issues/1) for some ideas for futu
 
 
 ## [License](LICENSE)
-GPL-3.0
+AGPL v3
