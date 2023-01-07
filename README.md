@@ -116,8 +116,8 @@ let ax = Axecutor.from_binary(/* elf file content as Uint8Array */);
 // and writes the stack pointer to RSP
 ax.init_stack_program_start(
   8n * 1024n, // Stack size
-  ["/bin/my_binary", "arg1", "arg2"],
-  [ /* environment variables */ ]
+  ["/bin/my_binary", "arg1", "arg2"], // argv
+  ["COLORTERM=truecolor", "TERM=xterm-256color" ] // environment variables
 );
 
 

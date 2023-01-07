@@ -8,7 +8,7 @@
     <br />
     <p>
       Please select an ELF binary compiled with <code>-m64 -nostdlib -static</code> that only interacts with std{in,out,err}.
-      Some binaries (especially the ones that use libc) will not work due to the ELF loader being very basic right now.
+      Some binaries, especially the ones that use libc, might not work.
     </p>
     <div>
       <input type="file" ref="file">
@@ -16,12 +16,13 @@
     </div>
     <br />
     <div v-if="programs.length > 0">
-      You can also load one of the following binaries:
+      Click to load one of the following binaries:
       <ul>
         <li v-for="program in programs" :key="program.name">
-          <a :href="'/programs/' + program.binary" @click.prevent="setBinary(program.binary)">{{ program.name }}</a> (<a :href="program_source_prefix + program.source_name" target="_blank">Source</a>)
+          <a :href="'/programs/' + program.binary" @click.prevent="setBinary(program.binary)">{{ program.name }}</a>: {{ program.description }} (<a :href="program_source_prefix + program.source_name" target="_blank">Source</a>)
         </li>
       </ul>
+      <br />
       You can also download these binaries and run them on Linux. This of course shows that the emulator can run some real binaries without any modifications.
     </div>
     <br />
@@ -59,39 +60,46 @@ export default defineComponent({
 
     const programs = [
       {
+        name: "Exit Code",
+        binary: "exit_code.bin",
+        source_name: "exit/exit_code.s",
+        description: "Exits with exit code 13",
+      },
+      {
         name: "Hello World",
         binary: "hello_world.bin",
         source_name: "hello_world/hello_world.s",
+        description: "Prints \"Hello World!\" to stdout",
       },
       {
         name: "Alphabet",
         binary: "alphabet.bin",
         source_name: "alphabet/alphabet.s",
-      },
-      {
-        name: "Exit Code",
-        binary: "exit_code.bin",
-        source_name: "exit/exit_code.s",
+        description: "Prints the alphabet to stdout",
       },
       {
         name: "Input to uppercase",
         binary: "uppercase_naive.bin",
         source_name: "uppercase/uppercase_naive.s",
+        description: "Repeatedly reads a single character from stdin and prints the uppercase representation",
       },
       {
         name: "Byte to hex",
         binary: "hex_naive.bin",
         source_name: "hex/hex_naive.s",
+        description: "Repeatedly reads a single byte from stdin and prints the hex representation",
       },
       {
         name: "String length",
         binary: "strlen.bin",
         source_name: "strlen/strlen.s",
+        description: "Reads a string from stdin and prints its length",
       },
       {
         name: "Print command-line arguments",
         binary: "args.bin",
         source_name: "args/args.S",
+        description: "Prints all command-line arguments and environment variables",
       },
       /*
       {
@@ -309,7 +317,11 @@ export default defineComponent({
         return;
       }
       try {
-        ax.init_stack_program_start(8n * 1024n, ["/bin/my_binary", "arg1", "arg2"], []);
+        ax.init_stack_program_start(8n * 1024n, ["/bin/my_binary", "arg1", "arg2"], [
+          "USER=demo-user",
+          "COLORTERM=truecolor",
+          "TERM=xterm-256color",
+        ]);
         ax.hook_before_mnemonic(Mnemonic.Syscall, this.syscallHandler);
       }
       catch (e) {
