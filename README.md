@@ -241,8 +241,11 @@ Another script for testing jumps ([`j.py`](j.py)) is also available, but it's no
 If you want to adjust `t.py` for testing your own emulator, you should adjust the `__str__` method of the `TestCase` class to generate different syntax with the same information.
 
 ### Links
+Here are some useful links for more information about x86-64/AMD64 and the System V ABI:
+
 * [Intel x64 Manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
 * [AMD64 Developer Guides](https://developer.amd.com/resources/developer-guides-manuals/)
+* [System V ABI](https://www.uclibc.org/docs/psABI-x86_64.pdf)
 
 ### Limitations
 Here are some limitations that could be inspiration for future features:
