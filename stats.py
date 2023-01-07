@@ -103,6 +103,6 @@ print(fmt.format("-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15))
 print(fmt.format("Total", total_opcodes, total_implemented, total_opcodes - total_implemented, "{:.2f}%".format(total_implemented / total_opcodes * 100), total_test_cases))
 
 
-print(f"{total_full} implemented mnemonics, {total_partial} partially implemented mnemonics -> {total_full + total_partial} implemented mnemonics")
+print(f"{total_full} fully implemented, {total_partial} partially implemented mnemonics -> {total_full + total_partial} total")
 
 replace_in_readme(total_full + total_partial, total_implemented)
