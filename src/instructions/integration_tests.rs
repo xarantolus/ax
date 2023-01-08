@@ -12,14 +12,14 @@ mod test {
             write_reg_value!(q; a; RBX; 0x031591385913u64);
 
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000);
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0);
             assert_reg_value!(q; a; RBX; 0x1234567890ABCDEFu64);
 
-            let rsp = a.reg_read_64(RSP.into());
+            let rsp = a.reg_read_64(RSP.into()).unwrap();
             assert_eq!(rsp, 0x1000);
 
             assert_eq!(a.mem_read_64(rsp).unwrap(), 0x1234567890ABCDEFu64);
@@ -127,7 +127,7 @@ mod test {
             write_reg_value!(q; a; RAX; 0x50f01be8d7485109u64);
 
             // Setup stack for address
-            a.reg_write_64(RSP.into(), 0x1000);
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
             a.mem_init_zero(0x1000, 8).expect("Failed to initialize memory");
         };
         |a: Axecutor| {

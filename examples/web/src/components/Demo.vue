@@ -249,6 +249,7 @@ export default defineComponent({
           ax.reg_write_64(Register.RAX, this.toTwosComplement(-1n));
           return ax.commit();
         }
+        // TODO: make sure that all syscalls return something sensible, the following might not
         case 102n: // getuid
         case 104n: // getgid
         case 107n: // geteuid

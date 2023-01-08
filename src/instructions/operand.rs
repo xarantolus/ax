@@ -131,10 +131,15 @@ impl Axecutor {
         } = o;
         let mut addr: u64 = 0;
         if let Some(base) = base {
-            addr += self.reg_read_64(base) as u64;
+            addr += self
+                .reg_read_64(base)
+                .expect("reading memory operand base register") as u64;
         }
         if let Some(index) = index {
-            addr += self.reg_read_64(index) * (scale as u64);
+            addr += self
+                .reg_read_64(index)
+                .expect("reading memory operand index register")
+                * (scale as u64);
         }
 
         // This overflow is explicitly allowed, as x86-64 encodes negative values as signed integers
@@ -339,7 +344,7 @@ mod tests {
         ];
         |a: &mut Axecutor| {
             use iced_x86::Register::*;
-            a.reg_write_64(RSP.into(), 0x1000)
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
         };
         vec![
             0x1000
@@ -361,7 +366,7 @@ mod tests {
         ];
         |a: &mut Axecutor| {
             use iced_x86::Register::*;
-            a.reg_write_64(RSP.into(), 0x1000)
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
         };
         vec![
             0x1000
@@ -383,7 +388,7 @@ mod tests {
         ];
         |a: &mut Axecutor| {
             use iced_x86::Register::*;
-            a.reg_write_64(RSP.into(), 0x1000)
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
         };
         vec![
             0x1001
@@ -406,7 +411,7 @@ mod tests {
         ];
         |a: &mut Axecutor| {
             use iced_x86::Register::*;
-            a.reg_write_64(RSP.into(), 0x1000)
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
         };
         vec![
             0x0fff
@@ -428,8 +433,8 @@ mod tests {
         ];
         |a: &mut Axecutor| {
             use iced_x86::Register::*;
-            a.reg_write_64(R11.into(), 0x8001);
-            a.reg_write_64(RCX.into(), 5);
+            a.reg_write_64(R11.into(), 0x8001).unwrap();
+            a.reg_write_64(RCX.into(), 5).unwrap();
         };
         vec![
             0x8015

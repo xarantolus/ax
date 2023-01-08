@@ -26,14 +26,14 @@ impl Axecutor {
     fn instr_cpuid(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Code::Cpuid);
 
-        // let eax = self.reg_read_32(SupportedRegister::EAX);
-        // let ecx = self.reg_read_32(SupportedRegister::ECX);
+        // let eax = self.reg_read_32(SupportedRegister::EAX)?;
+        // let ecx = self.reg_read_32(SupportedRegister::ECX)?;
 
         // just write dummy values for now. Not sure if this even makes sense
-        self.reg_write_32(SupportedRegister::EAX, 0);
-        self.reg_write_32(SupportedRegister::EBX, 0);
-        self.reg_write_32(SupportedRegister::ECX, 0);
-        self.reg_write_32(SupportedRegister::EDX, 0);
+        self.reg_write_32(SupportedRegister::EAX, 0)?;
+        self.reg_write_32(SupportedRegister::EBX, 0)?;
+        self.reg_write_32(SupportedRegister::ECX, 0)?;
+        self.reg_write_32(SupportedRegister::EDX, 0)?;
 
         Ok(())
     }

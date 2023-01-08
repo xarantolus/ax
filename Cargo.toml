@@ -1,9 +1,9 @@
 [package]
 name = "ax-x86"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["xarantolus <xarantolus@protonmail.com>"]
 edition = "2018"
-license = "GPL-3.0"
+license = "AGPL-3.0"
 homepage = "https://ax.010.one"
 repository = "https://github.com/xarantolus/ax"
 description = "x86 emulator for running simple binaries in your browser"

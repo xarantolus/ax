@@ -37,11 +37,11 @@ impl Axecutor {
 
         let reg: SupportedRegister = i.op0_register().into();
 
-        let value = self.reg_read_16(reg);
-        let rsp = self.reg_read_64(Register::RSP.into());
+        let value = self.reg_read_16(reg)?;
+        let rsp = self.reg_read_64(Register::RSP.into())?;
 
         self.mem_write_16(rsp, value)?;
-        self.reg_write_64(Register::RSP.into(), rsp - 2);
+        self.reg_write_64(Register::RSP.into(), rsp - 2)?;
 
         Ok(())
     }
@@ -63,11 +63,11 @@ impl Axecutor {
 
         let reg: SupportedRegister = i.op0_register().into();
 
-        let value = self.reg_read_64(reg);
-        let rsp = self.reg_read_64(Register::RSP.into());
+        let value = self.reg_read_64(reg)?;
+        let rsp = self.reg_read_64(Register::RSP.into())?;
 
         self.mem_write_64(rsp, value)?;
-        self.reg_write_64(Register::RSP.into(), rsp - 8);
+        self.reg_write_64(Register::RSP.into(), rsp - 8)?;
 
         Ok(())
     }
@@ -79,10 +79,10 @@ impl Axecutor {
         debug_assert_eq!(i.code(), Push_imm16);
 
         let value = i.immediate16() as u64;
-        let rsp = self.reg_read_64(Register::RSP.into());
+        let rsp = self.reg_read_64(Register::RSP.into())?;
 
         self.mem_write_16(rsp, value)?;
-        self.reg_write_64(Register::RSP.into(), rsp - 2);
+        self.reg_write_64(Register::RSP.into(), rsp - 2)?;
 
         Ok(())
     }
@@ -94,15 +94,15 @@ impl Axecutor {
         debug_assert_eq!(i.code(), Push_rm16);
 
         let src = match self.instruction_operand(i, 0)? {
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for PUSH r/m16", i.op0_kind()),
         };
 
-        let rsp = self.reg_read_64(Register::RSP.into());
+        let rsp = self.reg_read_64(Register::RSP.into())?;
 
         self.mem_write_16(rsp, src)?;
-        self.reg_write_64(Register::RSP.into(), rsp - 2);
+        self.reg_write_64(Register::RSP.into(), rsp - 2)?;
 
         Ok(())
     }
@@ -136,24 +136,24 @@ impl Axecutor {
             // TODO: not sure if 16 and 32-bit are required here, but AMD manual says so
             OpKind::Immediate8to16 => {
                 let value = i.immediate8to16();
-                let rsp = self.reg_read_64(Register::RSP.into());
+                let rsp = self.reg_read_64(Register::RSP.into())?;
 
                 self.mem_write_16(rsp, value as u16 as u64)?;
-                self.reg_write_64(Register::RSP.into(), rsp - 2);
+                self.reg_write_64(Register::RSP.into(), rsp - 2)?;
             }
             OpKind::Immediate8to32 => {
                 let value = i.immediate8to32();
-                let rsp = self.reg_read_64(Register::RSP.into());
+                let rsp = self.reg_read_64(Register::RSP.into())?;
 
                 self.mem_write_32(rsp, value as u32 as u64)?;
-                self.reg_write_64(Register::RSP.into(), rsp - 4);
+                self.reg_write_64(Register::RSP.into(), rsp - 4)?;
             }
             OpKind::Immediate8to64 => {
                 let value = i.immediate8to64();
-                let rsp = self.reg_read_64(Register::RSP.into());
+                let rsp = self.reg_read_64(Register::RSP.into())?;
 
                 self.mem_write_64(rsp, value as u64)?;
-                self.reg_write_64(Register::RSP.into(), rsp - 8);
+                self.reg_write_64(Register::RSP.into(), rsp - 8)?;
             }
             _ => fatal_error!("Invalid operand {:?} for PUSH imm8", i.op0_kind()),
         }
@@ -172,10 +172,10 @@ impl Axecutor {
             OpKind::Immediate32to64 => {
                 // Sign-extend the 32-bit immediate to 64-bit
                 let value = i.immediate32to64() as u64;
-                let rsp = self.reg_read_64(Register::RSP.into());
+                let rsp = self.reg_read_64(Register::RSP.into())?;
 
                 self.mem_write_64(rsp, value)?;
-                self.reg_write_64(Register::RSP.into(), rsp - 8);
+                self.reg_write_64(Register::RSP.into(), rsp - 8)?;
             }
             _ => fatal_error!("Invalid operand {:?} for PUSH imm64", i.op0_kind()),
         }
@@ -196,13 +196,13 @@ mod tests {
             write_reg_value!(w; a; AX; 0x1234);
 
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000);
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
             a.mem_init_zero(0x1000, 2).unwrap();
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x1234);
 
-            assert_eq!(a.reg_read_64(RSP.into()), 0x1000-2);
+            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-2);
             assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1234);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -214,13 +214,13 @@ mod tests {
             write_reg_value!(q; a; RBX; 0x1234567890ABCDEF);
 
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000);
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RBX; 0x1234567890ABCDEFu64);
 
-            assert_eq!(a.reg_read_64(RSP.into()), 0x1000-8);
+            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1234567890ABCDEF);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -230,11 +230,11 @@ mod tests {
     ax_test![push_0x1234; 0x68, 0x34, 0x12, 0x0, 0x0;
         |a: &mut Axecutor| {
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000);
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
-            assert_eq!(a.reg_read_64(RSP.into()), 0x1000-8);
+            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1234);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -244,11 +244,11 @@ mod tests {
     ax_test![push_0xff; 0x6a, 0xff;
         |a: &mut Axecutor| {
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000);
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
-            assert_eq!(a.reg_read_64(RSP.into()), 0x1000-8);
+            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xffffffffffffffff);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -258,11 +258,11 @@ mod tests {
     ax_test![push_0x7f; 0x6a, 0x7f;
         |a: &mut Axecutor| {
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000);
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
-            assert_eq!(a.reg_read_64(RSP.into()), 0x1000-8);
+            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x7f);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -272,11 +272,11 @@ mod tests {
     ax_test![push_0xfffffff; 0x68, 0xff, 0xff, 0xff, 0x0;
         |a: &mut Axecutor| {
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000);
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
-            assert_eq!(a.reg_read_64(RSP.into()), 0x1000-8);
+            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xffffff);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -286,11 +286,11 @@ mod tests {
     ax_test![push_0x7fffffff; 0x68, 0xff, 0xff, 0xff, 0x7f;
         |a: &mut Axecutor| {
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000);
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
-            assert_eq!(a.reg_read_64(RSP.into()), 0x1000-8);
+            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
             assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x7fffffff);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)

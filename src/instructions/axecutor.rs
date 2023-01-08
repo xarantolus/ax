@@ -15,6 +15,15 @@ extern crate console_error_panic_hook;
 
 #[wasm_bindgen]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Axecutor is the main struct that is used for emulation.
+///
+/// It can be instantiated in JavaScript using one of the following methods:
+///  - `let ax = new Axecutor(code: Uint8Array, code_start_addr: bigint, initial_rip: bigint)`
+///  - `let ax = Axecutor.fromBinary(elf_binary: Uint8Array)`.
+///
+/// Afterwards, one can register hooks before/after instructions:
+///  - `ax.hook_before_mnemonic(Mnemonic.Syscall, (axInstance: Axecutor) => {...});`
+///  - `ax.hook_after_mnemonic(Mnemonic.Syscall, (axInstance: Axecutor) => {...});`
 pub struct Axecutor {
     // code_start_address is the memory address/RIP of the first instruction, which isn't necessarily the entrypoint (can be set by writing to RIP)
     pub(crate) code_start_address: u64,
@@ -123,6 +132,7 @@ impl MachineState {
 #[wasm_bindgen]
 impl Axecutor {
     #[wasm_bindgen(constructor)]
+    /// Creates a new Axecutor instance from the given x86-64 instruction bytes, writing the code to memory at `code_start_addr` and setting the initial RIP to `initial_rip`.
     pub fn new(code: &[u8], code_start_addr: u64, initial_rip: u64) -> Result<Axecutor, AxError> {
         debug_log!("Calling Axecutor::new");
 
@@ -186,14 +196,15 @@ impl Axecutor {
         result
     }
 
-    pub fn commit(&self) -> Result<JsValue, JsError> {
+    /// This function should be returned from a hook to indicate the state should be kept and execution should continue.
+    pub fn commit(&self) -> Result<JsValue, AxError> {
         debug_log!(
             "Calling Axecutor::commit, finished: {}, hooks_running: {}",
             self.state.finished,
             self.hooks.running
         );
         if !self.hooks.running {
-            return Err(JsError::new("Cannot call commit() outside of a hook"));
+            return Err(AxError::from("Cannot call commit() outside of a hook"));
         }
 
         debug_log!("FS value in commit: {:#x}", self.state.fs);
@@ -202,17 +213,18 @@ impl Axecutor {
 
         self.state
             .serialize(&s)
-            .map_err(|e| JsError::new(&*format!("Failed to serialize: {}", e)))
+            .map_err(|e| AxError::from(&*format!("Failed to serialize: {}", e)))
     }
 
-    pub fn stop(&mut self) -> Result<JsValue, JsError> {
+    /// This function should be returned from a hook to indicate the state should be kept and execution should stop.
+    pub fn stop(&mut self) -> Result<JsValue, AxError> {
         debug_log!(
             "Calling Axecutor::stop, finished: {}, hooks_running: {}",
             self.state.finished,
             self.hooks.running
         );
         if !self.hooks.running {
-            return Err(JsError::new("Cannot call stop() outside of a hook"));
+            return Err(AxError::from("Cannot call stop() outside of a hook"));
         }
 
         self.state.finished = true;
@@ -220,6 +232,7 @@ impl Axecutor {
         self.commit()
     }
 
+    /// This function should be returned from a hook to indicate the state should *not* be kept, but execution should continue.
     pub fn unchanged(&self) -> JsValue {
         debug_log!(
             "Calling Axecutor::unchanged, finished: {}, hooks_running: {}",
@@ -229,7 +242,7 @@ impl Axecutor {
         JsValue::NULL
     }
 
-    pub(crate) fn state_from_committed(&mut self, value: JsValue) -> Result<(), JsError> {
+    pub(crate) fn state_from_committed(&mut self, value: JsValue) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::state_from_committed, finished: {}, hooks_running: {}",
             self.state.finished,
@@ -237,17 +250,17 @@ impl Axecutor {
         );
 
         if !self.hooks.running {
-            return Err(JsError::new(
+            return Err(AxError::from(
                 "Cannot call state_from_committed() outside of a hook",
             ));
         }
 
         if value.is_falsy() {
-            return Err(JsError::new("Cannot call state_from_committed() with falsy value. Note that you *must* return either null or Axecutor.commit() from your hook"));
+            return Err(AxError::from("Cannot call state_from_committed() with falsy value. Note that you *must* return either null or Axecutor.commit() from your hook"));
         }
 
         let state: MachineState = serde_wasm_bindgen::from_value(value).map_err(|e| {
-            JsError::new(&*format!(
+            AxError::from(&*format!(
                 "state_from_committed: failed to deserialize state: {}\nNote that you *must* return either Axecutor.unchanged(), Axecutor.stop() or Axecutor.commit() from your hook",
                 e,
             ))
@@ -271,7 +284,7 @@ mod tests {
         let instruction = ax.decode_next().expect("Failed to get instruction");
         assert_eq!(instruction.ip(), 0x1000);
         assert_eq!(instruction.next_ip(), 0x1000 + code.len() as u64);
-        assert_eq!(ax.reg_read_64(Register::RIP.into()), 0x1000);
+        assert_eq!(ax.reg_read_64(Register::RIP.into()).unwrap(), 0x1000);
     }
 
     test_async![top_lvl_return_with_stack_setup; async {

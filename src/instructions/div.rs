@@ -28,11 +28,11 @@ impl Axecutor {
     fn instr_div_rm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Div_rm8);
 
-        let ax = self.reg_read_16(AX) as u16;
+        let ax = self.reg_read_16(AX)? as u16;
 
         let op = self.instruction_operand(i, 0)?;
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_8(r),
+            Operand::Register(r) => self.reg_read_8(r)?,
             Operand::Memory(m) => self.mem_read_8(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Div_rm8", op),
         } as u16;
@@ -46,8 +46,8 @@ impl Axecutor {
 
         let (quotient, remainder) = (ax / src_val, ax % src_val);
 
-        self.reg_write_8(AL, quotient as u8 as u64);
-        self.reg_write_8(AH, remainder as u8 as u64);
+        self.reg_write_8(AL, quotient as u8 as u64)?;
+        self.reg_write_8(AH, remainder as u8 as u64)?;
 
         Ok(())
     }
@@ -61,7 +61,7 @@ impl Axecutor {
         let op = self.instruction_operand(i, 0)?;
 
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Div_rm16", op),
         } as u32;
@@ -73,12 +73,12 @@ impl Axecutor {
             )));
         }
 
-        let dst_val = self.reg_read_16(AX) as u32 | ((self.reg_read_16(DX) as u32) << 16);
+        let dst_val = self.reg_read_16(AX)? as u32 | ((self.reg_read_16(DX)? as u32) << 16);
 
         let (quotient, remainder) = (dst_val / src_val, dst_val % src_val);
 
-        self.reg_write_16(AX, quotient as u16 as u64);
-        self.reg_write_16(DX, remainder as u16 as u64);
+        self.reg_write_16(AX, quotient as u16 as u64)?;
+        self.reg_write_16(DX, remainder as u16 as u64)?;
 
         Ok(())
     }
@@ -92,7 +92,7 @@ impl Axecutor {
         let op = self.instruction_operand(i, 0)?;
 
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Register(r) => self.reg_read_32(r)?,
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Div_rm32", op),
         } as u64;
@@ -104,12 +104,12 @@ impl Axecutor {
             )));
         }
 
-        let dst_val = self.reg_read_32(EAX) as u64 | ((self.reg_read_32(EDX) as u64) << 32);
+        let dst_val = self.reg_read_32(EAX)? as u64 | ((self.reg_read_32(EDX)? as u64) << 32);
 
         let (quotient, remainder) = (dst_val / src_val, dst_val % src_val);
 
-        self.reg_write_32(EAX, quotient as u32 as u64);
-        self.reg_write_32(EDX, remainder as u32 as u64);
+        self.reg_write_32(EAX, quotient as u32 as u64)?;
+        self.reg_write_32(EDX, remainder as u32 as u64)?;
 
         Ok(())
     }
@@ -123,7 +123,7 @@ impl Axecutor {
         let op = self.instruction_operand(i, 0)?;
 
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Register(r) => self.reg_read_64(r)?,
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Div_rm64", op),
         } as u128;
@@ -135,12 +135,12 @@ impl Axecutor {
             )));
         }
 
-        let dst_val = (self.reg_read_64(RAX) as u128) | ((self.reg_read_64(RDX) as u128) << 64);
+        let dst_val = (self.reg_read_64(RAX)? as u128) | ((self.reg_read_64(RDX)? as u128) << 64);
 
         let (quotient, remainder) = (dst_val / src_val, dst_val % src_val);
 
-        self.reg_write_64(RAX, quotient as u64);
-        self.reg_write_64(RDX, remainder as u64);
+        self.reg_write_64(RAX, quotient as u64)?;
+        self.reg_write_64(RDX, remainder as u64)?;
 
         Ok(())
     }
@@ -156,7 +156,7 @@ mod tests {
 
     async fn assert_divide_by_zero_error(code: &[u8]) {
         let mut ax = Axecutor::new(code, 0x1000, 0x1000).expect("Failed to create Axecutor");
-        ax.reg_write_64(SupportedRegister::RAX, 0);
+        ax.reg_write_64(SupportedRegister::RAX, 0).unwrap();
         let _ = ax.execute().await;
     }
 

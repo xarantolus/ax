@@ -619,7 +619,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; EDX; 0x10);
 
-            let rip = a.reg_read_64(RIP.into());
+            let rip = a.reg_read_64(RIP.into()).unwrap();
             a.mem_init_zero(rip+0x35353 + 6, 4).unwrap();
             a.mem_write_32(rip+0x35353 +6, 0x12345678).unwrap();
         };
@@ -627,7 +627,7 @@ mod tests {
             assert_reg_value!(d; a; EDX; 0x12345678^0x10);
 
             // Note that rip has advanced by instruction length 6
-            let rip = a.reg_read_64(RIP.into());
+            let rip = a.reg_read_64(RIP.into()).unwrap();
             assert_eq!(a.mem_read_32(rip+0x35353).unwrap(), 0x12345678);
         };
         (0; FLAG_PF | FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
@@ -638,7 +638,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x10);
 
-            let rip = a.reg_read_64(RIP.into());
+            let rip = a.reg_read_64(RIP.into()).unwrap();
             a.mem_init_zero(rip+0x35353 + 7, 8).unwrap();
             a.mem_write_64(rip+0x35353 +7, 0x12345678).unwrap();
         };
@@ -646,7 +646,7 @@ mod tests {
             assert_reg_value!(q; a; RAX; 0x12345678^0x10);
 
             // Note that rip has advanced by instruction length 7
-            let rip = a.reg_read_64(RIP.into());
+            let rip = a.reg_read_64(RIP.into()).unwrap();
             assert_eq!(a.mem_read_64(rip+0x35353).unwrap(), 0x12345678);
         };
         (0; FLAG_PF | FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)

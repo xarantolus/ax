@@ -2,7 +2,7 @@ extern crate lazy_static;
 use js_sys::{self, Array, Function};
 
 use std::{collections::HashMap, fmt::Formatter};
-use wasm_bindgen::{prelude::*, JsCast};
+use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 
 use std::fmt::Debug;
@@ -124,25 +124,31 @@ impl HookProcessor {
 
 #[wasm_bindgen]
 impl Axecutor {
+    /// Register a function to be called before a mnemonic is executed. The function will be called with the Axecutor object as first argument.
+    /// The function may be sync or async and *MUST* return the result of one of the following functions:
+    ///  - instance.commit(): Continue execution, keep data
+    ///  - instance.stop(): Stop execution, keep data
+    ///  - instance.unchanged(): Continue execution, but discard data changed in the hook
+    /// You can register multiple functions for the same mnemonic, the order of execution is however not defined.
     pub fn hook_before_mnemonic(
         &mut self,
         mnemonic: SupportedMnemonic,
         cb: JsValue,
-    ) -> Result<(), JsError> {
+    ) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::hook_before_mnemonic, hooks_running={}",
             self.hooks.running
         );
 
         if self.hooks.running {
-            return Err(JsError::new(
+            return Err(AxError::from(
                 "Cannot add hooks while another hook is running",
             ));
         }
 
         if cb.has_type::<js_sys::Function>() {
             let function = cb.dyn_into::<Function>().map_err(|_| {
-                JsError::new("The provided callback is not a function. Please provide a function.")
+                AxError::from("The provided callback is not a function. Please provide a function.")
             })?;
 
             debug_log!(
@@ -165,31 +171,37 @@ impl Axecutor {
             Ok(())
         } else {
             debug_log!("hook_before_mnemonic: Provided callback is not a function");
-            Err(JsError::new(&*format!(
+            Err(AxError::from(&*format!(
                 "hook_before_mnemonic: expected function or async function argument, but got {:?}",
                 cb
             )))
         }
     }
 
+    /// Register a function to be called after a mnemonic is executed. The function will be called with the Axecutor object as first argument.
+    /// The function may be sync or async and *MUST* return the result of one of the following functions:
+    ///  - instance.commit(): Continue execution, keep data
+    ///  - instance.stop(): Stop execution, keep data
+    ///  - instance.unchanged(): Continue execution, but discard data changed in the hook
+    /// You can register multiple functions for the same mnemonic, the order of execution is however not defined.
     pub fn hook_after_mnemonic(
         &mut self,
         mnemonic: SupportedMnemonic,
         cb: JsValue,
-    ) -> Result<(), JsError> {
+    ) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::hook_after_mnemonic, hooks_running={}",
             self.hooks.running
         );
         if self.hooks.running {
-            return Err(JsError::new(
+            return Err(AxError::from(
                 "Cannot add hooks while another hook is running",
             ));
         }
 
         if cb.has_type::<js_sys::Function>() {
             let function = cb.dyn_into::<Function>().map_err(|_| {
-                JsError::new("The provided callback is not a function. Please provide a function.")
+                AxError::from("The provided callback is not a function. Please provide a function.")
             })?;
 
             debug_log!(
@@ -209,7 +221,7 @@ impl Axecutor {
             );
             Ok(())
         } else {
-            Err(JsError::new(&*format!(
+            Err(AxError::from(&*format!(
                 "hook_after_mnemonic: expected function or async function argument, but got {:?}",
                 cb
             )))
