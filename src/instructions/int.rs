@@ -24,7 +24,7 @@ impl Axecutor {
     fn instr_int_imm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Int_imm8);
 
-        if let Some(_) = self.mnemonic_hooks(SupportedMnemonic::Int) {
+        if self.mnemonic_hooks(SupportedMnemonic::Int).is_some() {
             return Ok(());
         }
 

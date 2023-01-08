@@ -6,7 +6,7 @@ use crate::debug_log;
 
 use super::{axecutor::Axecutor, errors::AxError, registers::SupportedRegister};
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct MemOperand {
     base: Option<SupportedRegister>,
     index: Option<SupportedRegister>,
@@ -15,7 +15,7 @@ pub struct MemOperand {
     displacement: u64,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum SupportedSegmentRegister {
     DS,
     ES,
@@ -40,7 +40,7 @@ impl TryFrom<iced_x86::Register> for SupportedSegmentRegister {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Operand {
     Memory(MemOperand),
     Register(SupportedRegister),

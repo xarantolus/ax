@@ -10,26 +10,24 @@ pub(crate) fn ax_test_runner<S, A>(
     flags_to_set: u64,
     flags_not_to_set: u64,
 ) where
-    S: FnMut(&mut Axecutor) -> () + 'static,
-    A: FnMut(Axecutor) -> () + 'static,
+    S: FnMut(&mut Axecutor) + 'static,
+    A: FnMut(Axecutor) + 'static,
 {
     let copy = bytes.to_vec();
 
     async_std::task::block_on(async move {
-        use crate::instructions::errors::AxError;
         use rand::Rng;
 
         // Always use a random rip, but make sure it doesn't overlap with memory that is often allocated at 0x1000 in tests
         let random_rip = rand::thread_rng().gen::<u64>() & 0x0000_ffff_ffff_ffff | 0xf0000;
 
         let mut ax =
-            Axecutor::new(&*copy, random_rip, random_rip).expect("Failed to create axecutor");
+            Axecutor::new(&copy, random_rip, random_rip).expect("Failed to create axecutor");
 
         setup(&mut ax);
 
-        match ax.execute().await {
-            Err(e) => panic!("Failed to execute: {:?}", AxError::from(e)),
-            _ => {}
+        if let Err(e) = ax.execute().await {
+            panic!("Failed to execute: {:?}", e)
         };
 
         let flags = ax.state.rflags;
@@ -72,8 +70,8 @@ macro_rules! ax_test {
         #[cfg(target_arch = "wasm32")]
         fn $test_name () {
             #[allow(unused_imports)] // Some tests use these, some don't
-            use crate::instructions::flags::*;
-            crate::instructions::tests::ax_test_runner(&[$($bytes),*], $setup, $asserts, $flags_to_set, $flags_not_to_set);
+            use $crate::instructions::flags::*;
+            $crate::instructions::tests::ax_test_runner(&[$($bytes),*], $setup, $asserts, $flags_to_set, $flags_not_to_set);
         }
 
         #[cfg(not(target_arch = "wasm32"))]
@@ -81,8 +79,8 @@ macro_rules! ax_test {
         #[cfg(not(target_arch = "wasm32"))]
         fn $test_name () {
             #[allow(unused_imports)] // Some tests use these, some don't
-            use crate::instructions::flags::*;
-            crate::instructions::tests::ax_test_runner(&[$($bytes),*], $setup, $asserts, $flags_to_set, $flags_not_to_set);
+            use $crate::instructions::flags::*;
+            $crate::instructions::tests::ax_test_runner(&[$($bytes),*], $setup, $asserts, $flags_to_set, $flags_not_to_set);
         }
     };
     [$test_name:ident; $($bytes:expr),*; $asserts:expr] => {
@@ -123,7 +121,7 @@ macro_rules! test_async {
 #[cfg(test)]
 macro_rules! assert_reg_value {
     [b; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = crate::instructions::registers::SupportedRegister::from($reg);
+        let wrap = $crate::instructions::registers::SupportedRegister::from($reg);
         assert!($reg.is_gpr8(), "Register must be 8 bit wide");
         let val = $axecutor.reg_read_8(wrap).expect("could not read 8-bit register") as u8;
         assert_eq!(
@@ -133,7 +131,7 @@ macro_rules! assert_reg_value {
         );
     };
     [w; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = crate::instructions::registers::SupportedRegister::from($reg);
+        let wrap = $crate::instructions::registers::SupportedRegister::from($reg);
         assert!($reg.is_gpr16(), "Register must be 16 bit wide");
         let val = $axecutor.reg_read_16(wrap).expect("could not read 16-bit register") as u16;
         assert_eq!(
@@ -143,7 +141,7 @@ macro_rules! assert_reg_value {
         );
     };
     [d; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = crate::instructions::registers::SupportedRegister::from($reg);
+        let wrap = $crate::instructions::registers::SupportedRegister::from($reg);
         assert!($reg.is_gpr32(), "Register must be 32 bit wide");
         let val = $axecutor.reg_read_32(wrap).expect("could not read 32-bit register") as u32;
         assert_eq!(
@@ -153,7 +151,7 @@ macro_rules! assert_reg_value {
         );
     };
     [q; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = crate::instructions::registers::SupportedRegister::from($reg);
+        let wrap = $crate::instructions::registers::SupportedRegister::from($reg);
         assert!($reg.is_gpr64() || $reg.is_ip(), "Register must be 64 bit wide");
         let val = $axecutor.reg_read_64(wrap).expect("could not read 64-bit register");
         assert_eq!(
@@ -168,28 +166,28 @@ macro_rules! assert_reg_value {
 #[cfg(test)]
 macro_rules! write_reg_value {
     (b; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = crate::instructions::registers::SupportedRegister::from($reg);
+        let wrap = $crate::instructions::registers::SupportedRegister::from($reg);
         assert!($reg.is_gpr8(), "Register must be 8 bit wide");
         $axecutor
             .reg_write_8(wrap, $value as u64)
             .expect("could not write 8-bit register");
     };
     (w; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = crate::instructions::registers::SupportedRegister::from($reg);
+        let wrap = $crate::instructions::registers::SupportedRegister::from($reg);
         assert!($reg.is_gpr16(), "Register must be 16 bit wide");
         $axecutor
             .reg_write_16(wrap, $value as u64)
             .expect("could not write 16-bit register");
     };
     (d; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = crate::instructions::registers::SupportedRegister::from($reg);
+        let wrap = $crate::instructions::registers::SupportedRegister::from($reg);
         assert!($reg.is_gpr32(), "Register must be 32 bit wide");
         $axecutor
             .reg_write_32(wrap, $value as u64)
             .expect("could not write 32-bit register");
     };
     (q; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = crate::instructions::registers::SupportedRegister::from($reg);
+        let wrap = $crate::instructions::registers::SupportedRegister::from($reg);
         assert!($reg.is_gpr64(), "Register must be 64 bit wide");
         $axecutor
             .reg_write_64(wrap, $value as u64)
@@ -234,11 +232,11 @@ macro_rules! jmp_test {
         #[cfg(not(target_arch = "wasm32"))]
         fn $name() {
             async_std::task::block_on(async {
-                use crate::instructions::errors::AxError;
-                use crate::code_with_nops;
-                use crate::fatal_error;
-                use crate::instructions::axecutor::Axecutor;
-                use crate::assert_reg_value;
+                use $crate::instructions::errors::AxError;
+                use $crate::code_with_nops;
+                use $crate::fatal_error;
+                use $crate::instructions::axecutor::Axecutor;
+                use $crate::assert_reg_value;
                 use iced_x86::Register::*;
 
                 let bytes = code_with_nops!($($bytes_start),*; $count; $($bytes_end),*);
@@ -259,13 +257,15 @@ macro_rules! jmp_test {
                 $asserts(ax);
 
                 // Check flags
-                use crate::instructions::flags::*;
+                use $crate::instructions::flags::*;
                 for flag in FLAG_LIST {
                     // If the flag should be set, it must be != 0
+                    #[allow(clippy::bad_bit_mask)]
                     if $flags_to_set & flag != 0 {
                         assert!(flags & flag != 0, "FLAG_{} should be set, but wasn't", FLAG_TO_NAMES.get(&flag).expect("Flag not found"));
                     }
 
+                    #[allow(clippy::bad_bit_mask)]
                     if $flags_not_to_set & flag != 0 {
                         assert!(flags & flag == 0, "FLAG_{} should not be set, but was", FLAG_TO_NAMES.get(&flag).expect("Flag not found"));
                     }

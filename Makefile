@@ -51,9 +51,9 @@ copy-programs: example-programs
 	cp -r $(shell find examples/programs -name "*.bin") examples/web/public/programs
 
 fmt:
-	$(MOLD) cargo fix --allow-staged && \
-	$(MOLD) cargo fix --allow-staged --tests && \
-	$(MOLD) cargo fmt
+	$(MOLD) cargo fix --allow-staged --all --all-features && \
+	$(MOLD) cargo fmt --all && \
+	$(MOLD) cargo clippy --all-targets --all-features --fix --allow-staged
 
 coverage:
 	$(MOLD) cargo tarpaulin --out Lcov --skip-clean

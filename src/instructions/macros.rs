@@ -1766,12 +1766,12 @@ macro_rules! fatal_error {
 macro_rules! assert_fatal {
     ($cond:expr, $message:expr, $($arg:tt)*) => {{
         if !($cond) {
-            crate::fatal_error!($message, $($arg)*);
+            $crate::fatal_error!($message, $($arg)*);
         }
     }};
     ($cond:expr, $message:expr) => {{
         if !($cond) {
-            crate::fatal_error!($message);
+            $crate::fatal_error!($message);
         }
     }};
 }

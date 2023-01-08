@@ -19,7 +19,7 @@ impl MemoryArea {
     pub fn to_string_ident(&self, i: usize) -> String {
         let mut s = String::new();
 
-        s.push_str(&format!("MemoryArea {{\n"));
+        s.push_str("MemoryArea {\n");
         s.push_str(&format!(
             "{}    name: {:?},\n",
             " ".repeat(i * 4),
@@ -59,7 +59,6 @@ impl MemoryArea {
 #[wasm_bindgen]
 impl Axecutor {
     // TODO: Currently cannot read consecutive sections of memory
-    #[must_use]
     /// Reads `length` bytes from memory at `address`
     pub fn mem_read_bytes(&self, address: u64, length: u64) -> Result<Vec<u8>, AxError> {
         debug_log!(
@@ -168,7 +167,6 @@ impl Axecutor {
 
     // TODO: Currently cannot write consecutive sections of memory
     // It would also make sense to give better error messages, e.g. if the write start address is within an area, but the data is too long
-    #[must_use]
     /// Writes bytes of `data` to memory at `address`
     pub fn mem_write_bytes(&mut self, address: u64, data: &[u8]) -> Result<(), AxError> {
         debug_log!(
@@ -317,7 +315,6 @@ impl Axecutor {
         )))
     }
 
-    #[must_use]
     /// Initialize a memory area with the given data and name.
     /// The name is used for logging and debugging purposes.
     pub fn mem_init_area_named(
@@ -336,10 +333,13 @@ impl Axecutor {
 
         for area in &self.state.memory {
             if start >= area.start && start < area.start + area.length {
-                let overlap_name = area.name.to_owned().unwrap_or("<unnamed>".to_string());
+                let overlap_name = area
+                    .name
+                    .to_owned()
+                    .unwrap_or_else(|| "<unnamed>".to_string());
                 return Err(AxError::from(format!(
                     "cannot create memory area {} with start={:#x}, length={:#x}: overlaps with area {} with start={:#x}, length={:#x}",
-                    name.unwrap_or("<unnamed>".to_string()), start, data.len(), overlap_name, area.start, area.length
+                    name.unwrap_or_else(||"<unnamed>".to_string()), start, data.len(), overlap_name, area.start, area.length
                 )));
             }
         }
@@ -500,9 +500,11 @@ impl Axecutor {
 
         // argv
         for arg in argv {
-            let arg = arg.as_string().ok_or(AxError::from(
-                "Invalid argument in init_stack_program_start: argv contains non-string value",
-            ))?;
+            let arg = arg.as_string().ok_or_else(|| {
+                AxError::from(
+                    "Invalid argument in init_stack_program_start: argv contains non-string value",
+                )
+            })?;
             let mut arg_bytes = Vec::from(arg.as_bytes());
             arg_bytes.push(0);
 
@@ -515,9 +517,11 @@ impl Axecutor {
 
         // envp
         for env in envp {
-            let env = env.as_string().ok_or(AxError::from(
-                "Invalid argument in init_stack_program_start: envp contains non-string value",
-            ))?;
+            let env = env.as_string().ok_or_else(|| {
+                AxError::from(
+                    "Invalid argument in init_stack_program_start: envp contains non-string value",
+                )
+            })?;
             let mut env_bytes = Vec::from(env.as_bytes());
             env_bytes.push(0);
 

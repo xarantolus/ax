@@ -91,7 +91,7 @@ impl Axecutor {
                 self.reg_write_64(RSP, rsp - 8)?;
 
                 let offset = i.near_branch64() as i64 as u64;
-                self.reg_write_64(RIP.into(), offset)?;
+                self.reg_write_64(RIP, offset)?;
                 Ok(())
             }
             _ => fatal_error!("Invalid op0_kind for CALL rel32: {:?}", i.op0_kind()),
@@ -132,7 +132,7 @@ impl Axecutor {
         };
 
         push_rip!(self);
-        self.reg_write_64(RIP.into(), target)?;
+        self.reg_write_64(RIP, target)?;
 
         Ok(())
     }
@@ -169,7 +169,7 @@ impl Axecutor {
 mod tests {
     use crate::{
         assert_reg_value,
-        instructions::{axecutor::Axecutor, errors::AxError, flags::*},
+        instructions::{axecutor::Axecutor, flags::*},
         jmp_test, test_async,
     };
     use iced_x86::Register::*;
@@ -192,10 +192,9 @@ mod tests {
         ax.mem_init_zero(0x1000 - 8, 8)
             .expect("Failed to init memory");
 
-        match ax.execute().await {
-            Err(e) => crate::fatal_error!("Failed to execute: {:?}", AxError::from(e)),
-            _ => {}
-        };
+        if let Err(e) = ax.execute().await {
+            crate::fatal_error!("Failed to execute: {:?}", e);
+        }
 
         assert!(
             ax.state.rflags & (FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF) == 0,

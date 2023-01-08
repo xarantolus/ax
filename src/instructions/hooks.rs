@@ -1,7 +1,10 @@
 extern crate lazy_static;
 use js_sys::{self, Array, Function};
 
-use std::{collections::HashMap, fmt::Formatter};
+use std::{
+    collections::HashMap,
+    fmt::{Display, Formatter},
+};
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 
@@ -101,24 +104,23 @@ impl HookProcessor {
             running: false,
         }
     }
+}
 
-    pub(crate) fn to_string(&self) -> String {
-        let mut s = String::new();
-
-        s.push_str("{\n");
-
+impl Display for HookProcessor {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        // Same as code above
+        write!(f, "{{")?;
         for (mnem, hook) in self.mnemonic_hooks.iter() {
-            s.push_str(&format!(
-                "    {:?}: {{ before: {}, after: {} }}\n",
+            writeln!(
+                f,
+                "    {:?}: {{ before: {}, after: {} }}",
                 mnem,
                 hook.before.len(),
                 hook.after.len()
-            ));
+            )?;
         }
 
-        s.push_str("}");
-
-        s
+        write!(f, "}}")
     }
 }
 

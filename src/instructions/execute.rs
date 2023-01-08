@@ -114,7 +114,7 @@ impl Axecutor {
                 // Throw normal JS exception when running in browser
                 #[allow(unreachable_code)]
                 {
-                    return Err(err_info.into());
+                    return Err(err_info);
                 }
             }
         }

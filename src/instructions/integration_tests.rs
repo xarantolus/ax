@@ -151,7 +151,7 @@ mod test {
     0x02, 0x88, 0x03, 0x49, 0xff, 0xc7, 0x5b, 0x58, 0xc3, 0x53, 0x49, 0x8d, 0x1b, 0x4c, 0x01, 0xe3, 0x8a, 0x1b, 0x41, 0x88, 0x1a, 0x49, 0xff, 0xc4, 0x5b, 0xc3;
     |a: &mut Axecutor| {
             assert!(STRING_REVERSE_INPUT.ends_with(b"\n"));
-            assert!(STRING_REVERSE_INPUT.len() > 0);
+            assert!(!STRING_REVERSE_INPUT.is_empty());
 
             // Set up input data
             a.mem_init_area(STRING_REVERSE_INPUT_START_ADDR, Vec::from(STRING_REVERSE_INPUT)).expect("Failed to initialize input area memory");

@@ -164,6 +164,7 @@ impl Axecutor {
     }
 
     #[wasm_bindgen(js_name = toString)]
+    #[allow(clippy::inherent_to_string)]
     pub fn to_string(&self) -> String {
         debug_log!("Calling Axecutor::to_string");
         format!(
@@ -186,7 +187,7 @@ impl Axecutor {
         // Prefix each line except for the first
         for (idx, line) in s.lines().enumerate() {
             if idx != 0 {
-                result.push_str("\n");
+                result.push('\n');
                 result.push_str(prefix);
             }
 
@@ -293,7 +294,7 @@ mod tests {
         let mut ax = Axecutor::new(&code, 0x1000, 0x1000).unwrap();
         ax.init_stack(0).expect("Failed to init stack");
         if let Err(e) = ax.execute().await {
-            crate::fatal_error!("Failed to execute: {:?}", AxError::from(e));
+            crate::fatal_error!("Failed to execute: {:?}", e);
         }
         assert!(ax.state.finished);
     }];

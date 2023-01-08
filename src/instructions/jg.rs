@@ -93,7 +93,7 @@ impl Axecutor {
             match i.op0_kind() {
                 OpKind::NearBranch64 => {
                     let offset = i.near_branch64() as i64 as u64;
-                    self.reg_write_64(RIP.into(), offset)?;
+                    self.reg_write_64(RIP, offset)?;
                 }
                 _ => fatal_error!("Invalid op0_kind {:?} for JG rel32_64", i.op0_kind()),
             }
