@@ -78,6 +78,7 @@ dependencies:
 	$(PY) -m pip install pyperclip tqdm
 
 clean:
-	rm -rf pkg target examples/web/node_modules examples/web/dist
+	rm -rf pkg target examples/web/node_modules examples/web/dist .vite
 	cd examples/programs && make clean
+	rm -f lcov.info
 
