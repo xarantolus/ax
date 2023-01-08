@@ -35,11 +35,11 @@ impl Axecutor {
     fn instr_jrcxz_rel8_64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jrcxz_rel8_64);
 
-        if self.reg_read_64(SupportedRegister::RCX) == 0 {
+        if self.reg_read_64(SupportedRegister::RCX)? == 0 {
             match i.op0_kind() {
                 OpKind::NearBranch64 => {
                     let offset = i.near_branch64() as i64 as u64;
-                    self.reg_write_64(SupportedRegister::RIP, offset);
+                    self.reg_write_64(SupportedRegister::RIP, offset)?;
 
                     return Ok(());
                 }

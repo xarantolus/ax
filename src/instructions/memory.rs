@@ -451,7 +451,7 @@ impl Axecutor {
         }
 
         let initial_rsp = stack_start + length - 8;
-        self.reg_write_64(SupportedRegister::RSP, initial_rsp);
+        self.reg_write_64(SupportedRegister::RSP, initial_rsp)?;
         self.stack_top = stack_start + length;
 
         Ok(stack_start)
@@ -534,7 +534,7 @@ impl Axecutor {
             stack_top -= 8;
         }
 
-        self.reg_write_64(SupportedRegister::RSP, stack_top);
+        self.reg_write_64(SupportedRegister::RSP, stack_top)?;
 
         debug_log!(
             "Initialized stack, stack_top={:#x}, self.stack_top={:#x}",

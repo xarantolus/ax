@@ -2,7 +2,6 @@ use std::{cmp::min, convert::TryInto};
 
 use iced_x86::{Decoder, DecoderOptions, Instruction, Register};
 use wasm_bindgen::prelude::wasm_bindgen;
-use wasm_bindgen::JsError;
 
 use crate::{
     debug_log,
@@ -14,7 +13,7 @@ use super::{axecutor::Axecutor, errors::AxError};
 #[wasm_bindgen]
 impl Axecutor {
     pub(crate) fn decode_next(&self) -> Result<Instruction, AxError> {
-        let rip = self.reg_read_64(SupportedRegister::RIP);
+        let rip = self.reg_read_64(SupportedRegister::RIP)?;
 
         if rip < self.code_start_address || rip >= self.code_start_address + self.code.len() as u64
         {
@@ -52,17 +51,17 @@ impl Axecutor {
     }
 
     /// Execute the next instruction (including all registered hooks), returning if the execution has stopped
-    pub async fn step(&mut self) -> Result<bool, JsError> {
+    pub async fn step(&mut self) -> Result<bool, AxError> {
         debug_log!(
             "Calling Axecutor::step, finished={}, rip={:#x}",
             self.state.finished,
-            self.reg_read_64(Register::RIP.into())
+            self.reg_read_64(Register::RIP.into())?
         );
 
         if self.state.finished {
-            return Err(
-                AxError::from("Cannot advance after execution has already finished").into(),
-            );
+            return Err(AxError::from(
+                "Cannot advance after execution has already finished",
+            ));
         }
 
         // Fetch the next instruction
@@ -71,7 +70,7 @@ impl Axecutor {
             .map_err(|e| AxError::from(format!("decoding instruction: {}", e)))?;
         debug_log!("Fetched instruction {}", instr);
 
-        self.reg_write_64(SupportedRegister::RIP, instr.next_ip());
+        self.reg_write_64(SupportedRegister::RIP, instr.next_ip())?;
 
         let mnem: SupportedMnemonic = instr.mnemonic().try_into()?;
 
@@ -123,7 +122,7 @@ impl Axecutor {
         self.state.executed_instructions_count += 1;
 
         // If we reached the last instruction (and no jump has been performed etc.), we're done
-        if self.reg_read_64(Register::RIP.into())
+        if self.reg_read_64(Register::RIP.into())?
             == self.code_start_address + self.code.len() as u64
         {
             self.state.finished = true;
@@ -144,7 +143,7 @@ impl Axecutor {
 
     /// Execute all instructions until the execution has stopped.
     /// This is the same as calling `step` in a loop, but staying in WASM should be more efficient.
-    pub async fn execute(&mut self) -> Result<(), JsError> {
+    pub async fn execute(&mut self) -> Result<(), AxError> {
         debug_log!("Calling Axecutor::execute");
         while self.step().await? {}
         Ok(())
