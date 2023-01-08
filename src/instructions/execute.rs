@@ -51,8 +51,7 @@ impl Axecutor {
         Ok(instr)
     }
 
-    // step executes the next instruction, returning if the execution can continue running
-    #[wasm_bindgen]
+    /// Execute the next instruction (including all registered hooks), returning if the execution has stopped
     pub async fn step(&mut self) -> Result<bool, JsError> {
         debug_log!(
             "Calling Axecutor::step, finished={}, rip={:#x}",
@@ -143,6 +142,8 @@ impl Axecutor {
         Ok(!self.state.finished)
     }
 
+    /// Execute all instructions until the execution has stopped.
+    /// This is the same as calling `step` in a loop, but staying in WASM should be more efficient.
     pub async fn execute(&mut self) -> Result<(), JsError> {
         debug_log!("Calling Axecutor::execute");
         while self.step().await? {}

@@ -8,7 +8,11 @@ Additionally, this repository contains scripts that should be interesting for an
 ## Try it out!
 You can try out the emulator right now by visiting [the website](https://ax.010.one), selecting a suitable ELF binary and clicking "Run". The emulator will then execute the binary and show the output. Note that currently support for ELF binaries is limited/buggy (there are some problems getting libc to work), you can however use binaries from the [`examples/programs`](examples/programs) directory. The source code for this site is in the [`examples/web`](examples/web) directory.
 
-Other than that, you can also find it in use on the [MemeAssembly Playground](https://memeasm.010.one). MemeAssembly is a meme programming language that compiles to x86-64 instructions, which are executed by this emulator. The site also emulates some syscalls like `read`, `write` and `exit` to make the programs work.
+
+### Usage on the web
+* The [demo site](https://ax.010.one) uses `ax` to run ELF binaries in the browser
+* [MemeAssembly](https://kammt.github.io/MemeAssembly/) is a meme programming language that compiles to x86-64 instructions. My [MemeAssembly Playground](https://memeasm.010.one) uses `ax` to run this language right in the browser, emulating some syscalls like `read`, `write` and `exit` to make the programs work.
+* Maybe you? If you use `ax` in a project, please let me know and I'll add it here! :)
 
 ## How to use
 The emulator is compiled to WebAssembly and can be used as a JavaScript Module. This works in modern browsers.
@@ -136,10 +140,10 @@ let syscallHandler = async function (ax: Axecutor) {
         throw new Error(`WRITE syscall: cannot write non-std{out,err} (!= 1,2) fds, but tried ${rdi}`);
       }
 
-      // Read whatever was
+      // Read data we should write from memory
       let result_buf = ax.mem_read_bytes(rsi, rdx);
 
-      // Convert to string
+      // Decode to string
       let result_str = new TextDecoder().decode(result_buf);
 
       // Do something with the string

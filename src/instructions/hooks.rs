@@ -124,6 +124,12 @@ impl HookProcessor {
 
 #[wasm_bindgen]
 impl Axecutor {
+    /// Register a function to be called before a mnemonic is executed. The function will be called with the Axecutor object as first argument.
+    /// The function may be sync or async and *MUST* return the result of one of the following functions:
+    ///  - instance.commit(): Continue execution, keep data
+    ///  - instance.stop(): Stop execution, keep data
+    ///  - instance.unchanged(): Continue execution, but discard data changed in the hook
+    /// You can register multiple functions for the same mnemonic, the order of execution is however not defined.
     pub fn hook_before_mnemonic(
         &mut self,
         mnemonic: SupportedMnemonic,
@@ -172,6 +178,12 @@ impl Axecutor {
         }
     }
 
+    /// Register a function to be called after a mnemonic is executed. The function will be called with the Axecutor object as first argument.
+    /// The function may be sync or async and *MUST* return the result of one of the following functions:
+    ///  - instance.commit(): Continue execution, keep data
+    ///  - instance.stop(): Stop execution, keep data
+    ///  - instance.unchanged(): Continue execution, but discard data changed in the hook
+    /// You can register multiple functions for the same mnemonic, the order of execution is however not defined.
     pub fn hook_after_mnemonic(
         &mut self,
         mnemonic: SupportedMnemonic,
