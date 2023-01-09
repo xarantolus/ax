@@ -490,7 +490,7 @@ impl Axecutor {
             stack_start <<= 1;
         }
 
-        let mut stack_top = stack_start + length - 8;
+        let mut stack_top = stack_start + length - 16;
 
         let stack_layout = &mut Vec::new();
 
