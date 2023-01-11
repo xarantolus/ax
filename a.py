@@ -3,6 +3,7 @@ import random
 import subprocess
 import sys
 import tempfile
+from typing import Union
 import pyperclip
 
 FLAG_CF: int = 0x0001
@@ -218,7 +219,7 @@ def stringify_flags(flags):
         return " | ".join(flags)
 
 
-def hexify(number: str | int, register_size=None):
+def hexify(number: Union[str, int], register_size=None):
     if isinstance(number, str):
         number = int(number, base=0)
 
@@ -311,8 +312,11 @@ let code = new Uint8Array([{", ".join(hex_arr)}]);
         print("Invalid input")
         sys.exit(1)
 
-    pyperclip.copy(code)
-    print(f"Copied code for \"{assembly_code}\" to clipboard!")
+    try:
+        pyperclip.copy(code)
+        print(f"Copied code for \"{assembly_code}\" to clipboard!")
+    except:
+        print(code)
 
 
 if __name__ == '__main__':

@@ -50,6 +50,7 @@ try:
 except:
     temp_dir_filesystem = tempfile.gettempdir()
     delete_at_exit = True
+    print("WARNING: /dev/shm not available, using non-RAM " + temp_dir_filesystem)
 
 
 class Operand(abc.ABC):
@@ -748,14 +749,21 @@ class TestCase:
             subprocess.run(["as", "-moperand-check=error", "-o", object_path, assembly_path],
                            stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, check=True)
 
+            # We instantly remove non-needed things as in the devcontainer /dev/shm is very limited
+            os.remove(assembly_path)
+
             # turn into executable with gcc, symbol _start
             executable_path = os.path.join(tmpdir, f"{i}")
             subprocess.run(["gcc", "-m64", "-nostdlib", "-static",
                             "-o", executable_path, object_path], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, check=True)
 
+            os.remove(object_path)
+
             # run executable and capture 24 bytes of output
             output = subprocess.run(
                 [executable_path], stdout=subprocess.PIPE).stdout
+
+            os.remove(executable_path)
 
             assert len(output) == 24, "Output is not 24 bytes long"
 
@@ -1033,11 +1041,14 @@ def main():
         too_many = True
 
     tests = "\n\n".join(test_cases_str)
-    pyperclip.copy(tests)
+    try:
+        pyperclip.copy(tests)
+        print(f"Copied {len(test_cases_str)} tests to clipboard")
+    except:
+        pass
 
     print(tests)
 
-    print(f"Copied {len(test_cases_str)} tests to clipboard")
     if too_many:
         print("Note that too many test cases were generated, so only a sample of 25 was returned")
 

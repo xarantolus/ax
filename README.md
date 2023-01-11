@@ -186,6 +186,8 @@ The [`Makefile`](Makefile) has a lot of targets that can be useful for developme
 Please format the code using `make fmt` before submitting a pull request. Also make sure that `make precommit` passes.
 
 ### Development setup
+If you want to develop in a Docker container, there's a [Dev Container](https://containers.dev) configuration provided in the repository. I would however recommend setting up the development tools on your native machine:
+
 1. Make sure you have installed Rust/Cargo, [`wasm-pack`](https://rustwasm.github.io/wasm-pack/installer/), Node.js, NPM, Python, PIP, Make, GCC and the GNU Assembler
    - You can optionally install [mold](https://github.com/rui314/mold) to speed up link times (mostly for tests); the Makefile will automatically use it if it's installed
 2. You should now be able to build the WebAssembly module with `make`

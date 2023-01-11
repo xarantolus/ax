@@ -201,5 +201,8 @@ if __name__ == '__main__':
         testcase = JumpTestCase.create(code_start, padding, code_end)
         tc_str = testcase.no_setup_asserts()
 
-    pyperclip.copy(tc_str)
-    print("Copied test case to clipboard!")
+    try:
+        pyperclip.copy(tc_str)
+        print("Copied test case to clipboard!")
+    except:
+        print(tc_str)
