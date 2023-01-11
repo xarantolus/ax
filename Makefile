@@ -1,4 +1,4 @@
-.PHONY: build debug watch test test-local test-node test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt
+.PHONY: build debug watch test test-local test-node test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -25,7 +25,7 @@ debug:
 # fmt will fail if switch or stats are not up to date
 precommit: build-web switch stats fmt test test-scripts build
 
-test-scripts:
+test-scripts: python-dependencies
 	$(PY) t.py --test
 
 stats:
@@ -76,9 +76,11 @@ test-node:
 switch:
 	$(PY) generate.py switch
 
-dependencies:
+dependencies: python-dependencies
 	cargo install cargo-tarpaulin cargo-watch python-launcher
-	$(PY) -m pip install pyperclip tqdm
+
+python-dependencies:
+	@$(PY) -m pip install --quiet pyperclip tqdm
 
 clean:
 	rm -rf pkg target examples/web/node_modules examples/web/dist .vite
