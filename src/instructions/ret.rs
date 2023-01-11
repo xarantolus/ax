@@ -10,13 +10,13 @@ use crate::{fatal_error, opcode_unimplemented};
 
 macro_rules! pop_rip {
     ($self:ident) => {{
-        let rsp = $self.reg_read_64(RSP) + 8;
+        let rsp = $self.reg_read_64(RSP)? + 8;
         if rsp == $self.stack_top {
             return Err(AxError::from("Cannot pop from empty stack").end_execution());
         }
         let rip = $self.mem_read_64(rsp)?;
-        $self.reg_write_64(RIP, rip);
-        $self.reg_write_64(RSP, rsp);
+        $self.reg_write_64(RIP, rip)?;
+        $self.reg_write_64(RSP, rsp)?;
     }};
 }
 
@@ -163,7 +163,7 @@ mod tests {
         50000; // 50000 bytes of 0x90 (nop) as padding
         0x48, 0xc7, 0xc0, 0x32, 0x0, 0x0, 0x0, 0xe8, 0x9c, 0x3c, 0xff, 0xff, 0x90; // Lcall: mov rax, 50; call func; nop
         |a: &mut Axecutor| {
-            a.reg_write_64(RSP.into(), 0x8000);
+            a.reg_write_64(RSP.into(), 0x8000).unwrap();
             a.mem_init_zero(0x8000, 8).expect("Failed to init memory");
         };
         |a: Axecutor| {

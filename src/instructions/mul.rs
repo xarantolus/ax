@@ -31,18 +31,18 @@ impl Axecutor {
         let op = self.instruction_operand(i, 0)?;
 
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_8(r),
+            Operand::Register(r) => self.reg_read_8(r)?,
             Operand::Memory(m) => self.mem_read_8(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Mul_rm8", op),
         };
 
-        let dst_val = self.reg_read_8(AL);
+        let dst_val = self.reg_read_8(AL)?;
 
         let result = (dst_val as u16).wrapping_mul(src_val as u16);
 
         let upper = (result >> 8) as u8;
 
-        self.reg_write_16(AX, result as u64);
+        self.reg_write_16(AX, result as u64)?;
 
         self.set_flags_u8(
             if upper == 0 { 0 } else { FLAG_CF | FLAG_OF },
@@ -62,19 +62,19 @@ impl Axecutor {
         let op = self.instruction_operand(i, 0)?;
 
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Mul_rm16", op),
         };
 
-        let dst_val = self.reg_read_16(AX);
+        let dst_val = self.reg_read_16(AX)?;
 
         let result = (dst_val as u32).wrapping_mul(src_val as u32);
 
         let upper = (result >> 16) as u16;
 
-        self.reg_write_16(AX, result as u16 as u64);
-        self.reg_write_16(DX, upper as u64);
+        self.reg_write_16(AX, result as u16 as u64)?;
+        self.reg_write_16(DX, upper as u64)?;
 
         self.set_flags_u8(
             if upper == 0 { 0 } else { FLAG_CF | FLAG_OF },
@@ -94,19 +94,19 @@ impl Axecutor {
         let op = self.instruction_operand(i, 0)?;
 
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Register(r) => self.reg_read_32(r)?,
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Mul_rm32", op),
         };
 
-        let dst_val = self.reg_read_32(EAX);
+        let dst_val = self.reg_read_32(EAX)?;
 
         let result = (dst_val as u64).wrapping_mul(src_val as u64);
 
         let upper = (result >> 32) as u32;
 
-        self.reg_write_32(EAX, result as u32 as u64);
-        self.reg_write_32(EDX, upper as u64);
+        self.reg_write_32(EAX, result as u32 as u64)?;
+        self.reg_write_32(EDX, upper as u64)?;
 
         self.set_flags_u8(
             if upper == 0 { 0 } else { FLAG_CF | FLAG_OF },
@@ -126,19 +126,19 @@ impl Axecutor {
         let op = self.instruction_operand(i, 0)?;
 
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Register(r) => self.reg_read_64(r)?,
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Mul_rm64", op),
         };
 
-        let dst_val = self.reg_read_64(RAX);
+        let dst_val = self.reg_read_64(RAX)?;
 
         let result = (dst_val as u128).wrapping_mul(src_val as u128);
 
         let upper = (result >> 64) as u64;
 
-        self.reg_write_64(RAX, result as u64);
-        self.reg_write_64(RDX, upper);
+        self.reg_write_64(RAX, result as u64)?;
+        self.reg_write_64(RDX, upper)?;
 
         self.set_flags_u8(
             if upper == 0 { 0 } else { FLAG_CF | FLAG_OF },

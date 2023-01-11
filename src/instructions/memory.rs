@@ -19,7 +19,7 @@ impl MemoryArea {
     pub fn to_string_ident(&self, i: usize) -> String {
         let mut s = String::new();
 
-        s.push_str(&format!("MemoryArea {{\n"));
+        s.push_str("MemoryArea {\n");
         s.push_str(&format!(
             "{}    name: {:?},\n",
             " ".repeat(i * 4),
@@ -59,7 +59,7 @@ impl MemoryArea {
 #[wasm_bindgen]
 impl Axecutor {
     // TODO: Currently cannot read consecutive sections of memory
-    #[must_use]
+    /// Reads `length` bytes from memory at `address`
     pub fn mem_read_bytes(&self, address: u64, length: u64) -> Result<Vec<u8>, AxError> {
         debug_log!(
             "Calling Axecutor::mem_read_bytes, address={:#x}, length={}",
@@ -137,24 +137,28 @@ impl Axecutor {
         )))
     }
 
+    /// Reads a 64-bit value from memory at `address`
     pub fn mem_read_64(&self, address: u64) -> Result<u64, AxError> {
         let bytes = self.mem_read_bytes(address, 8)?;
 
         Ok(u64::from_le_bytes(bytes.try_into().unwrap()))
     }
 
+    /// Reads a 32-bit value from memory at `address`
     pub fn mem_read_32(&self, address: u64) -> Result<u64, AxError> {
         let bytes = self.mem_read_bytes(address, 4)?;
 
         Ok(u32::from_le_bytes(bytes.try_into().unwrap()) as u64)
     }
 
+    /// Reads a 16-bit value from memory at `address`
     pub fn mem_read_16(&self, address: u64) -> Result<u64, AxError> {
         let bytes = self.mem_read_bytes(address, 2)?;
 
         Ok(u16::from_le_bytes(bytes.try_into().unwrap()) as u64)
     }
 
+    /// Reads an 8-bit value from memory at `address`
     pub fn mem_read_8(&self, address: u64) -> Result<u64, AxError> {
         let bytes = self.mem_read_bytes(address, 1)?;
 
@@ -163,7 +167,7 @@ impl Axecutor {
 
     // TODO: Currently cannot write consecutive sections of memory
     // It would also make sense to give better error messages, e.g. if the write start address is within an area, but the data is too long
-    #[must_use]
+    /// Writes bytes of `data` to memory at `address`
     pub fn mem_write_bytes(&mut self, address: u64, data: &[u8]) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::mem_write_bytes, address={:#x}, data_len={:?}",
@@ -221,10 +225,12 @@ impl Axecutor {
         )))
     }
 
+    /// Writes a 64-bit value to memory at `address`
     pub fn mem_write_64(&mut self, address: u64, data: u64) -> Result<(), AxError> {
         self.mem_write_bytes(address, &data.to_le_bytes())
     }
 
+    /// Writes a 32-bit value to memory at `address`
     pub fn mem_write_32(&mut self, address: u64, data: u64) -> Result<(), AxError> {
         crate::assert_fatal!(
             data <= u32::MAX as u64,
@@ -235,6 +241,7 @@ impl Axecutor {
         self.mem_write_bytes(address, &(data as u32).to_le_bytes())
     }
 
+    /// Writes a 16-bit value to memory at `address`
     pub fn mem_write_16(&mut self, address: u64, data: u64) -> Result<(), AxError> {
         crate::assert_fatal!(
             data <= u16::MAX as u64,
@@ -244,6 +251,7 @@ impl Axecutor {
         self.mem_write_bytes(address, &(data as u16).to_le_bytes())
     }
 
+    /// Writes an 8-bit value to memory at `address`
     pub fn mem_write_8(&mut self, address: u64, data: u64) -> Result<(), AxError> {
         crate::assert_fatal!(
             data <= u8::MAX as u64,
@@ -254,6 +262,9 @@ impl Axecutor {
         self.mem_write_bytes(address, &[data as u8])
     }
 
+    /// Resize the already existing section of memory with start address `start_addr` to `new_size`
+    /// It is not possible the reduce the size of a section.
+    /// The code section cannot be resized.
     pub fn resize_section(&mut self, start_addr: u64, new_size: u64) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::resize_section, start_addr={:#x}, new_size={}",
@@ -304,7 +315,8 @@ impl Axecutor {
         )))
     }
 
-    #[must_use]
+    /// Initialize a memory area with the given data and name.
+    /// The name is used for logging and debugging purposes.
     pub fn mem_init_area_named(
         &mut self,
         start: u64,
@@ -321,10 +333,13 @@ impl Axecutor {
 
         for area in &self.state.memory {
             if start >= area.start && start < area.start + area.length {
-                let overlap_name = area.name.to_owned().unwrap_or("<unnamed>".to_string());
+                let overlap_name = area
+                    .name
+                    .to_owned()
+                    .unwrap_or_else(|| "<unnamed>".to_string());
                 return Err(AxError::from(format!(
                     "cannot create memory area {} with start={:#x}, length={:#x}: overlaps with area {} with start={:#x}, length={:#x}",
-                    name.unwrap_or("<unnamed>".to_string()), start, data.len(), overlap_name, area.start, area.length
+                    name.unwrap_or_else(||"<unnamed>".to_string()), start, data.len(), overlap_name, area.start, area.length
                 )));
             }
         }
@@ -354,13 +369,16 @@ impl Axecutor {
         Ok(())
     }
 
+    /// Initialize a memory area with the given data.
     pub fn mem_init_area(&mut self, start: u64, data: Vec<u8>) -> Result<(), AxError> {
         self.mem_init_area_named(start, data, None)
     }
+    /// Initialize a memory area with the given length.
     pub fn mem_init_zero(&mut self, start: u64, length: u64) -> Result<(), AxError> {
         self.mem_init_area_named(start, vec![0; length as usize], None)
     }
 
+    /// Initialize a memory area with the given length and name.
     pub fn mem_init_zero_named(
         &mut self,
         start: u64,
@@ -370,6 +388,8 @@ impl Axecutor {
         self.mem_init_area_named(start, vec![0; length as usize], Some(name))
     }
 
+    /// Initialize a memory area of the given length at a random address.
+    /// The start address is returned.
     pub fn init_zero_anywhere(&mut self, length: u64) -> Result<u64, AxError> {
         let mut start: u64 = 0x1000;
 
@@ -389,6 +409,8 @@ impl Axecutor {
         Ok(start)
     }
 
+    /// Initialize a memory area with the given data at a random address.
+    /// The start address is returned.
     pub fn init_anywhere(&mut self, data: Vec<u8>) -> Result<u64, AxError> {
         let mut start: u64 = 0x1000;
 
@@ -408,6 +430,7 @@ impl Axecutor {
         Ok(start)
     }
 
+    /// Initializes the stack at a random location with the given length.
     pub fn init_stack(&mut self, length: u64) -> Result<u64, AxError> {
         let mut stack_start: u64 = 0x1000;
 
@@ -428,12 +451,14 @@ impl Axecutor {
         }
 
         let initial_rsp = stack_start + length - 8;
-        self.reg_write_64(SupportedRegister::RSP, initial_rsp);
+        self.reg_write_64(SupportedRegister::RSP, initial_rsp)?;
         self.stack_top = stack_start + length;
 
         Ok(stack_start)
     }
 
+    /// Initializes the stack with the given length, command-line arguments and environment variables according to the System V ABI.
+    /// This is useful for emulating ELF binaries.
     pub fn init_stack_program_start(
         &mut self,
         length: u64,
@@ -465,7 +490,7 @@ impl Axecutor {
             stack_start <<= 1;
         }
 
-        let mut stack_top = stack_start + length - 8;
+        let mut stack_top = stack_start + length - 16;
 
         let stack_layout = &mut Vec::new();
 
@@ -475,9 +500,11 @@ impl Axecutor {
 
         // argv
         for arg in argv {
-            let arg = arg.as_string().ok_or(AxError::from(
-                "Invalid argument in init_stack_program_start: argv contains non-string value",
-            ))?;
+            let arg = arg.as_string().ok_or_else(|| {
+                AxError::from(
+                    "Invalid argument in init_stack_program_start: argv contains non-string value",
+                )
+            })?;
             let mut arg_bytes = Vec::from(arg.as_bytes());
             arg_bytes.push(0);
 
@@ -490,9 +517,11 @@ impl Axecutor {
 
         // envp
         for env in envp {
-            let env = env.as_string().ok_or(AxError::from(
-                "Invalid argument in init_stack_program_start: envp contains non-string value",
-            ))?;
+            let env = env.as_string().ok_or_else(|| {
+                AxError::from(
+                    "Invalid argument in init_stack_program_start: envp contains non-string value",
+                )
+            })?;
             let mut env_bytes = Vec::from(env.as_bytes());
             env_bytes.push(0);
 
@@ -509,7 +538,7 @@ impl Axecutor {
             stack_top -= 8;
         }
 
-        self.reg_write_64(SupportedRegister::RSP, stack_top);
+        self.reg_write_64(SupportedRegister::RSP, stack_top)?;
 
         debug_log!(
             "Initialized stack, stack_top={:#x}, self.stack_top={:#x}",

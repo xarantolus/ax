@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::debug_log;
+use crate::{assert_fatal, debug_log, instructions::errors::AxError};
 
 use super::axecutor::Axecutor;
 
@@ -114,11 +114,13 @@ pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<SupportedRegist
 
     map.insert(SupportedRegister::RIP, rip_value);
 
-    return map;
+    map
 }
 
 #[wasm_bindgen(js_name = Register)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+/// All registers supported by the emulator
+#[allow(clippy::upper_case_acronyms)]
 pub enum SupportedRegister {
     // 64-bit registers
     RIP,
@@ -363,22 +365,23 @@ impl SupportedRegister {
 
 #[wasm_bindgen]
 impl Axecutor {
-    pub fn reg_write_8(&mut self, reg: SupportedRegister, value: u64) {
-        assert!(
+    /// Writes an 8-bit value to a 8-bit wide register. Out-of-range values or invalid registers lead to exceptions.
+    pub fn reg_write_8(&mut self, reg: SupportedRegister, value: u64) -> Result<(), AxError> {
+        assert_fatal!(
             value <= 0xFF,
             "reg_write_8: value {:x} is too large to fit in 8 bits",
             value
         );
 
         let r: Register = reg.into();
-        assert!(r.is_gpr8(), "{:?} is not a valid 8-bit register", r);
+        assert_fatal!(r.is_gpr8(), "{:?} is not a valid 8-bit register", r);
 
         // Map 8-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
 
         // Depending on the register, we either set the lowest or second lowest byte
         let is_high = HIGHER_BYTE_REGISTERS.contains(&reg);
-        let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
+        let reg_value = *self.state.registers.get(qword_register).unwrap();
 
         let result_value: u64 = if is_high {
             (reg_value & 0xFFFF_FFFF_FFFF_00FF) | (value << 8)
@@ -396,22 +399,25 @@ impl Axecutor {
             result_value,
             reg_value
         );
+
+        Ok(())
     }
 
-    pub fn reg_write_16(&mut self, reg: SupportedRegister, value: u64) {
-        assert!(
+    /// Writes a 16-bit value to a 16-bit wide register. Out-of-range values or invalid registers lead to exceptions.
+    pub fn reg_write_16(&mut self, reg: SupportedRegister, value: u64) -> Result<(), AxError> {
+        assert_fatal!(
             value <= 0xFFFF,
             "reg_write_16: value {:x} is too large to fit in 16 bits",
             value
         );
 
         let r: Register = reg.into();
-        assert!(r.is_gpr16(), "{:?} is not a valid 16-bit register", r);
+        assert_fatal!(r.is_gpr16(), "{:?} is not a valid 16-bit register", r);
 
         // Map 16-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
 
-        let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
+        let reg_value = *self.state.registers.get(qword_register).unwrap();
 
         let result_value = (reg_value & 0xFFFF_FFFF_FFFF_0000) | value;
         self.state.registers.insert(*qword_register, result_value);
@@ -424,17 +430,21 @@ impl Axecutor {
             result_value,
             reg_value
         );
+
+        Ok(())
     }
 
-    pub fn reg_write_32(&mut self, reg: SupportedRegister, value: u64) {
-        assert!(
+    /// Writes a 32-bit value to a 32-bit wide register. Out-of-range values or invalid registers lead to exceptions.
+    /// Note that on x86-64 writes to 32-bit registers clear the upper 32 bits of the corresponding 64-bit register.
+    pub fn reg_write_32(&mut self, reg: SupportedRegister, value: u64) -> Result<(), AxError> {
+        assert_fatal!(
             value <= 0xFFFF_FFFF,
             "reg_write_32: value {:x} is too large to fit in 32 bits",
             value
         );
 
         let r: Register = reg.into();
-        assert!(r.is_gpr32(), "{:?} is not a valid 32-bit register", r);
+        assert_fatal!(r.is_gpr32(), "{:?} is not a valid 32-bit register", r);
 
         // Map 32-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
@@ -455,11 +465,14 @@ impl Axecutor {
                 Option::None => "".to_string(),
             }
         );
+
+        Ok(())
     }
 
-    pub fn reg_write_64(&mut self, reg: SupportedRegister, value: u64) {
+    /// Writes a 64-bit value to a 64-bit wide register. Out-of-range values or invalid registers lead to exceptions.
+    pub fn reg_write_64(&mut self, reg: SupportedRegister, value: u64) -> Result<(), AxError> {
         let r: Register = reg.into();
-        assert!(
+        assert_fatal!(
             r.is_gpr64() || r.is_ip(),
             "{:?} is not a valid 64-bit register",
             r
@@ -477,18 +490,21 @@ impl Axecutor {
                 Option::None => "".to_string(),
             }
         );
+
+        Ok(())
     }
 
-    pub fn reg_read_8(&self, reg: SupportedRegister) -> u64 {
+    /// Reads an 8-bit value from a 8-bit wide register. Invalid registers lead to exceptions.
+    pub fn reg_read_8(&self, reg: SupportedRegister) -> Result<u64, AxError> {
         let r: Register = reg.into();
-        assert!(r.is_gpr8(), "{:?} is not a valid 8-bit register", r);
+        assert_fatal!(r.is_gpr8(), "{:?} is not a valid 8-bit register", r);
 
         // Map 8-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
 
         // Depending on the register, we either get the lowest or second lowest byte
         let is_high = HIGHER_BYTE_REGISTERS.contains(&reg);
-        let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
+        let reg_value = *self.state.registers.get(qword_register).unwrap();
 
         let result_value: u8 = if is_high {
             ((reg_value & 0xFF00) >> 8) as u8
@@ -498,64 +514,69 @@ impl Axecutor {
 
         debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
 
-        return result_value as u64;
+        Ok(result_value as u64)
     }
 
-    pub fn reg_read_16(&self, reg: SupportedRegister) -> u64 {
+    /// Reads a 16-bit value from a 16-bit wide register. Invalid registers lead to exceptions.
+    pub fn reg_read_16(&self, reg: SupportedRegister) -> Result<u64, AxError> {
         let r: Register = reg.into();
-        assert!(r.is_gpr16(), "{:?} is not a valid 16-bit register", r);
+        assert_fatal!(r.is_gpr16(), "{:?} is not a valid 16-bit register", r);
 
         // Map 16-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
 
-        let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
+        let reg_value = *self.state.registers.get(qword_register).unwrap();
 
         let result_value = reg_value & 0xFFFF;
 
         debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
 
-        return result_value;
+        Ok(result_value)
     }
 
-    pub fn reg_read_32(&self, reg: SupportedRegister) -> u64 {
+    /// Reads a 32-bit value from a 32-bit wide register. Invalid registers lead to exceptions.
+    pub fn reg_read_32(&self, reg: SupportedRegister) -> Result<u64, AxError> {
         let r: Register = reg.into();
-        assert!(r.is_gpr32(), "{:?} is not a valid 32-bit register", r);
+        assert_fatal!(r.is_gpr32(), "{:?} is not a valid 32-bit register", r);
 
         // Map 32-bit register to 64-bit register that it is part of
         let qword_register = REGISTER_TO_QWORD.get(&reg).unwrap();
 
-        let reg_value = self.state.registers.get(&qword_register).unwrap().clone();
+        let reg_value = *self.state.registers.get(qword_register).unwrap();
 
         let result_value = reg_value & 0xFFFF_FFFF;
 
         debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
 
-        return result_value;
+        Ok(result_value)
     }
 
-    pub fn reg_read_64(&self, reg: SupportedRegister) -> u64 {
+    /// Reads a 64-bit value from a 64-bit wide register. Invalid registers lead to exceptions.
+    pub fn reg_read_64(&self, reg: SupportedRegister) -> Result<u64, AxError> {
         let r: Register = reg.into();
-        assert!(
+        assert_fatal!(
             r.is_gpr64() || r.is_ip(),
             "{:?} is not a valid 64-bit register",
             r
         );
 
-        let reg_value = self.state.registers.get(&reg).unwrap().clone();
+        let reg_value = *self.state.registers.get(&reg).unwrap();
 
         debug_log!("Read value 0x{:x} from {:?}", reg_value, reg);
 
-        return reg_value;
+        Ok(reg_value)
     }
 
+    /// Reads the value of the FS segment register.
     pub fn read_fs(&self) -> u64 {
         let value = self.state.fs;
 
         debug_log!("Read FS value 0x{:x}", value);
 
-        return value;
+        value
     }
 
+    /// Writes a value to the FS segment register.
     pub fn write_fs(&mut self, value: u64) {
         self.state.fs = value;
 

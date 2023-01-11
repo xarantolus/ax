@@ -58,7 +58,7 @@ impl Axecutor {
         match i.op0_kind() {
             OpKind::NearBranch64 => {
                 let offset = i.near_branch64() as i64 as u64;
-                self.reg_write_64(RIP.into(), offset);
+                self.reg_write_64(RIP.into(), offset)?;
                 Ok(())
             }
             _ => fatal_error!("Invalid op0_kind for JMP rel32: {:?}", i.op0_kind()),
@@ -91,8 +91,8 @@ impl Axecutor {
 
         // imm8 sign-extended
         let offset = i.immediate8() as i8 as u64;
-        let rip = self.reg_read_64(RIP.into()) as i64 as u64;
-        self.reg_write_64(RIP.into(), rip + offset);
+        let rip = self.reg_read_64(RIP.into())? as i64 as u64;
+        self.reg_write_64(RIP.into(), rip + offset)?;
         Ok(())
     }
 
@@ -114,7 +114,7 @@ impl Axecutor {
         match i.op0_kind() {
             OpKind::NearBranch64 => {
                 let offset = i.near_branch64() as i64 as u64;
-                self.reg_write_64(RIP.into(), offset);
+                self.reg_write_64(RIP.into(), offset)?;
                 Ok(())
             }
             _ => fatal_error!("Invalid op0_kind {:?} for JMP rel8", i.op0_kind()),

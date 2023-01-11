@@ -23,14 +23,14 @@ impl Axecutor {
     fn instr_cqo(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Cqo);
 
-        let rax = self.reg_read_64(RAX);
+        let rax = self.reg_read_64(RAX)?;
         let rdx = if rax & 0x8000_0000_0000_0000 == 0 {
             0
         } else {
             0xFFFF_FFFF_FFFF_FFFF
         };
 
-        self.reg_write_64(RDX, rdx);
+        self.reg_write_64(RDX, rdx)?;
 
         Ok(())
     }

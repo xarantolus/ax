@@ -40,12 +40,12 @@ impl Axecutor {
         let (dest, src) = self.instruction_operands_2(i)?;
 
         let src_val = match src {
-            Operand::Register(r) => self.reg_read_8(r),
+            Operand::Register(r) => self.reg_read_8(r)?,
             _ => fatal_error!("Invalid source operand {:?} for TEST r/m8, r8", src),
         } as u8;
 
         let dest_val = match dest {
-            Operand::Register(r) => self.reg_read_8(r),
+            Operand::Register(r) => self.reg_read_8(r)?,
             Operand::Memory(m) => self.mem_read_8(self.mem_addr(m))?,
             _ => fatal_error!("Invalid destination operand {:?} for TEST r/m8, r8", dest),
         } as u8;
@@ -66,12 +66,12 @@ impl Axecutor {
         let (dest, src) = self.instruction_operands_2(i)?;
 
         let src_val = match src {
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             _ => fatal_error!("Invalid source operand {:?} for TEST r/m16, r16", src),
         } as u16;
 
         let dest_val = match dest {
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
             _ => fatal_error!("Invalid destination operand {:?} for TEST r/m16, r16", dest),
         } as u16;
@@ -92,12 +92,12 @@ impl Axecutor {
         let (dest, src) = self.instruction_operands_2(i)?;
 
         let src_val = match src {
-            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Register(r) => self.reg_read_32(r)?,
             _ => fatal_error!("Invalid source operand {:?} for TEST r/m32, r32", src),
         } as u32;
 
         let dest_val = match dest {
-            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Register(r) => self.reg_read_32(r)?,
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
             _ => fatal_error!("Invalid destination operand {:?} for TEST r/m32, r32", dest),
         } as u32;
@@ -118,12 +118,12 @@ impl Axecutor {
         let (dest, src) = self.instruction_operands_2(i)?;
 
         let src_val = match src {
-            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Register(r) => self.reg_read_64(r)?,
             _ => fatal_error!("Invalid source operand {:?} for TEST r/m64, r64", src),
         };
 
         let dest_val = match dest {
-            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Register(r) => self.reg_read_64(r)?,
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
             _ => fatal_error!("Invalid destination operand {:?} for TEST r/m64, r64", dest),
         };
@@ -187,7 +187,7 @@ impl Axecutor {
         };
 
         let dest_val = match dest {
-            Operand::Register(r) => self.reg_read_8(r),
+            Operand::Register(r) => self.reg_read_8(r)?,
             Operand::Memory(m) => self.mem_read_8(self.mem_addr(m))?,
             _ => fatal_error!("Invalid destination operand {:?} for TEST r/m8, imm8", dest),
         } as u8;
@@ -225,7 +225,7 @@ impl Axecutor {
         };
 
         let dest_val = match dest {
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
             _ => fatal_error!(
                 "Invalid destination operand {:?} for TEST r/m16, imm16",
@@ -256,7 +256,7 @@ impl Axecutor {
         };
 
         let dest_val = match dest {
-            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Register(r) => self.reg_read_32(r)?,
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
             _ => fatal_error!(
                 "Invalid destination operand {:?} for TEST r/m32, imm32",
@@ -287,7 +287,7 @@ impl Axecutor {
         };
 
         let dest_val = match dest {
-            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Register(r) => self.reg_read_64(r)?,
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
             _ => fatal_error!(
                 "Invalid destination operand {:?} for TEST r/m64, imm32",

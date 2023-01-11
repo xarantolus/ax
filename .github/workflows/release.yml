@@ -43,7 +43,7 @@ jobs:
 
     # Only release if the tests pass
     - name: Run tests
-      run: make test
+      run: make precommit
       if: env.TAG
 
     - name: Build

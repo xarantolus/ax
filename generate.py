@@ -280,6 +280,7 @@ impl Axecutor {{
     code += """
 #[wasm_bindgen(js_name = Mnemonic)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+/// All mnemonics supported by the emulator
 pub enum SupportedMnemonic {
 """
     for (mnemonic, num) in mnems:

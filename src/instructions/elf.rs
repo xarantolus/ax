@@ -55,12 +55,13 @@ impl Axecutor {
                         axecutor.mem_init_zero(header.vaddr(), header.memsz())?;
 
                         if header.content().len() > header.memsz() as usize {
-                            return Err(AxError::from(format!(
+                            return Err(AxError::from(
                                 "ELF: content of program header is longer than headers' memsz"
-                            )));
+                                    .to_string(),
+                            ));
                         }
 
-                        axecutor.mem_write_bytes(header.vaddr(), &header.content())?;
+                        axecutor.mem_write_bytes(header.vaddr(), header.content())?;
                     } else {
                         axecutor.mem_init_area(header.vaddr(), header.content().to_vec())?;
                     }

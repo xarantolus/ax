@@ -31,13 +31,13 @@ jobs:
           toolchain: stable
           override: true
       - name: Install wasm-pack
-        run:  curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh 
+        run:  curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - name: Check out repository
         uses: actions/checkout@v3
 
       # Only release if the tests pass
       - name: Run tests
-        run: make test
+        run: make precommit
 
       - name: Build web
         run: make build-web

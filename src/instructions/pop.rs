@@ -32,12 +32,12 @@ impl Axecutor {
         debug_assert_eq!(i.code(), Pop_r16);
 
         let reg: SupportedRegister = i.op0_register().into();
-        let rsp = self.reg_read_64(Register::RSP.into()) + 2;
+        let rsp = self.reg_read_64(Register::RSP.into())? + 2;
 
         let value = self.mem_read_16(rsp)?;
-        self.reg_write_16(reg, value as u64);
+        self.reg_write_16(reg, value as u64)?;
 
-        self.reg_write_64(Register::RSP.into(), rsp);
+        self.reg_write_64(Register::RSP.into(), rsp)?;
 
         Ok(())
     }
@@ -58,12 +58,12 @@ impl Axecutor {
         debug_assert_eq!(i.code(), Pop_r64);
 
         let reg: SupportedRegister = i.op0_register().into();
-        let rsp = self.reg_read_64(Register::RSP.into()) + 8;
+        let rsp = self.reg_read_64(Register::RSP.into())? + 8;
 
         let value = self.mem_read_64(rsp)?;
-        self.reg_write_64(reg, value);
+        self.reg_write_64(reg, value)?;
 
-        self.reg_write_64(Register::RSP.into(), rsp);
+        self.reg_write_64(Register::RSP.into(), rsp)?;
 
         Ok(())
     }

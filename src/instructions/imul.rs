@@ -41,21 +41,20 @@ impl Axecutor {
         let imm_op = self.instruction_operand(i, 2)?;
 
         let src_value = match src_op {
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand for IMUL r16, r/m16, imm16"),
         } as i16;
 
-        let imm_value = match imm_op {
-            Operand::Immediate { data, size: _ } => data as i16,
-            _ => {
-                fatal_error!("Invalid operand for IMUL r16, r/m16, imm16; expected immediate value")
-            }
+        let imm_value = if let Operand::Immediate { data, size: _ } = imm_op {
+            data as i16
+        } else {
+            fatal_error!("Invalid operand for IMUL r16, r/m16, imm16; expected immediate value")
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_16(dest_op.into(), result as u16 as u64);
+        self.reg_write_16(dest_op.into(), result as u16 as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -76,21 +75,20 @@ impl Axecutor {
         let imm_op = self.instruction_operand(i, 2)?;
 
         let src_value = match src_op {
-            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Register(r) => self.reg_read_32(r)?,
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand for IMUL r32, r/m32, imm32"),
         } as i32;
 
-        let imm_value = match imm_op {
-            Operand::Immediate { data, size: _ } => data as i32,
-            _ => {
-                fatal_error!("Invalid operand for IMUL r32, r/m32, imm32; expected immediate value")
-            }
+        let imm_value = if let Operand::Immediate { data, size: _ } = imm_op {
+            data as i32
+        } else {
+            fatal_error!("Invalid operand for IMUL r32, r/m32, imm32; expected immediate value")
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_32(dest_op.into(), result as u32 as u64);
+        self.reg_write_32(dest_op.into(), result as u32 as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -111,21 +109,20 @@ impl Axecutor {
         let imm_op = self.instruction_operand(i, 2)?;
 
         let src_value = match src_op {
-            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Register(r) => self.reg_read_64(r)?,
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand for IMUL r64, r/m64, imm32"),
         } as i64;
 
-        let imm_value = match imm_op {
-            Operand::Immediate { data, size: _ } => data as i64,
-            _ => {
-                fatal_error!("Invalid operand for IMUL r64, r/m64, imm32; expected immediate value")
-            }
+        let imm_value = if let Operand::Immediate { data, size: _ } = imm_op {
+            data as i64
+        } else {
+            fatal_error!("Invalid operand for IMUL r64, r/m64, imm32; expected immediate value")
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_64(dest_op.into(), result as u64);
+        self.reg_write_64(dest_op.into(), result as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -146,21 +143,20 @@ impl Axecutor {
         let imm_op = self.instruction_operand(i, 2)?;
 
         let src_value = match src_op {
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand for IMUL r16, r/m16, imm8"),
         } as i16;
 
-        let imm_value = match imm_op {
-            Operand::Immediate { data, size: _ } => data as i16,
-            _ => {
-                fatal_error!("Invalid operand for IMUL r16, r/m16, imm8; expected immediate value")
-            }
+        let imm_value = if let Operand::Immediate { data, size: _ } = imm_op {
+            data as i16
+        } else {
+            fatal_error!("Invalid operand for IMUL r16, r/m16, imm8; expected immediate value")
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_16(dest_op.into(), result as u16 as u64);
+        self.reg_write_16(dest_op.into(), result as u16 as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -181,21 +177,20 @@ impl Axecutor {
         let imm_op = self.instruction_operand(i, 2)?;
 
         let src_value = match src_op {
-            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Register(r) => self.reg_read_32(r)?,
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand for IMUL r32, r/m32, imm8"),
         } as i32;
 
-        let imm_value = match imm_op {
-            Operand::Immediate { data, size: _ } => data as i32,
-            _ => {
-                fatal_error!("Invalid operand for IMUL r32, r/m32, imm8; expected immediate value")
-            }
+        let imm_value = if let Operand::Immediate { data, size: _ } = imm_op {
+            data as i32
+        } else {
+            fatal_error!("Invalid operand for IMUL r32, r/m32, imm8; expected immediate value")
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_32(dest_op.into(), result as u32 as u64);
+        self.reg_write_32(dest_op.into(), result as u32 as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -216,21 +211,20 @@ impl Axecutor {
         let imm_op = self.instruction_operand(i, 2)?;
 
         let src_value = match src_op {
-            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Register(r) => self.reg_read_64(r)?,
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand for IMUL r64, r/m64, imm8"),
         } as i64;
 
-        let imm_value = match imm_op {
-            Operand::Immediate { data, size: _ } => data as i64,
-            _ => {
-                fatal_error!("Invalid operand for IMUL r64, r/m64, imm8; expected immediate value")
-            }
+        let imm_value = if let Operand::Immediate { data, size: _ } = imm_op {
+            data as i64
+        } else {
+            fatal_error!("Invalid operand for IMUL r64, r/m64, imm8; expected immediate value")
         };
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_64(dest_op.into(), result as u64);
+        self.reg_write_64(dest_op.into(), result as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -250,16 +244,16 @@ impl Axecutor {
         let op = self.instruction_operand(i, 0)?;
 
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_8(r),
+            Operand::Register(r) => self.reg_read_8(r)?,
             Operand::Memory(m) => self.mem_read_8(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Imul_rm8", op),
         } as i8;
 
-        let dst_val = self.reg_read_8(AL) as i8;
+        let dst_val = self.reg_read_8(AL)? as i8;
 
         let result = (dst_val as i16).wrapping_mul(src_val as i16);
 
-        self.reg_write_16(AX, result as u16 as u64);
+        self.reg_write_16(AX, result as u16 as u64)?;
 
         self.set_flags_u8(
             if result >> 7 != 0 && result >> 7 != -1 {
@@ -287,17 +281,17 @@ impl Axecutor {
         let op = self.instruction_operand(i, 0)?;
 
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Imul_rm16", op),
         } as i16;
 
-        let dst_val = self.reg_read_16(AX) as i16;
+        let dst_val = self.reg_read_16(AX)? as i16;
 
         let result = (dst_val as i32).wrapping_mul(src_val as i32);
 
-        self.reg_write_16(AX, result as u16 as u64);
-        self.reg_write_16(DX, (result >> 16) as u16 as u64);
+        self.reg_write_16(AX, result as u16 as u64)?;
+        self.reg_write_16(DX, (result >> 16) as u16 as u64)?;
 
         self.set_flags_u16(
             if result >> 15 != 0 && result >> 15 != -1 {
@@ -325,17 +319,17 @@ impl Axecutor {
         let op = self.instruction_operand(i, 0)?;
 
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Register(r) => self.reg_read_32(r)?,
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Imul_rm32", op),
         } as i32;
 
-        let dst_val = self.reg_read_32(EAX) as i32;
+        let dst_val = self.reg_read_32(EAX)? as i32;
 
         let result = (dst_val as i64).wrapping_mul(src_val as i64);
 
-        self.reg_write_32(EAX, result as u32 as u64);
-        self.reg_write_32(EDX, (result >> 32) as u32 as u64);
+        self.reg_write_32(EAX, result as u32 as u64)?;
+        self.reg_write_32(EDX, (result >> 32) as u32 as u64)?;
 
         self.set_flags_u32(
             if result >> 31 != 0 && result >> 31 != -1 {
@@ -363,17 +357,17 @@ impl Axecutor {
         let op = self.instruction_operand(i, 0)?;
 
         let src_val = match op {
-            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Register(r) => self.reg_read_64(r)?,
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Imul_rm64", op),
         } as i64;
 
-        let dst_val = self.reg_read_64(RAX) as i64;
+        let dst_val = self.reg_read_64(RAX)? as i64;
 
         let result = (dst_val as i128).wrapping_mul(src_val as i128);
 
-        self.reg_write_64(RAX, result as u64);
-        self.reg_write_64(RDX, (result >> 64) as u64);
+        self.reg_write_64(RAX, result as u64)?;
+        self.reg_write_64(RDX, (result >> 64) as u64)?;
 
         self.set_flags_u64(
             if result >> 63 != 0 && result >> 63 != -1 {
@@ -401,19 +395,19 @@ impl Axecutor {
         let (dest_op, src_op) = self.instruction_operands_2(i)?;
 
         let src_val = match src_op {
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Imul_r16_rm16", src_op),
         } as i16;
 
         let dst_val = match dest_op {
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             _ => fatal_error!("Invalid operand {:?} for Imul_r16_rm16", dest_op),
         } as i16;
 
         let result = (dst_val as i32).wrapping_mul(src_val as i32);
 
-        self.reg_write_16(dest_op.into(), result as u16 as u64);
+        self.reg_write_16(dest_op.into(), result as u16 as u64)?;
 
         self.set_flags_u16(
             if result >> 15 != 0 && result >> 15 != -1 {
@@ -441,19 +435,20 @@ impl Axecutor {
         let (dest_op, src_op) = self.instruction_operands_2(i)?;
 
         let src_val = match src_op {
-            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Register(r) => self.reg_read_32(r)?,
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Imul_r32_rm32", src_op),
         } as i32;
 
-        let dst_val = match dest_op {
-            Operand::Register(r) => self.reg_read_32(r),
-            _ => fatal_error!("Invalid operand {:?} for Imul_r32_rm32", dest_op),
+        let dst_val = if let Operand::Register(r) = dest_op {
+            self.reg_read_32(r)?
+        } else {
+            fatal_error!("Invalid operand {:?} for Imul_r32_rm32", dest_op)
         } as i32;
 
         let result = (dst_val as i64).wrapping_mul(src_val as i64);
 
-        self.reg_write_32(dest_op.into(), result as u32 as u64);
+        self.reg_write_32(dest_op.into(), result as u32 as u64)?;
 
         self.set_flags_u32(
             if result >> 31 != 0 && result >> 31 != -1 {
@@ -481,19 +476,20 @@ impl Axecutor {
         let (dest_op, src_op) = self.instruction_operands_2(i)?;
 
         let src_val = match src_op {
-            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Register(r) => self.reg_read_64(r)?,
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Imul_r64_rm64", src_op),
         } as i64;
 
-        let dst_val = match dest_op {
-            Operand::Register(r) => self.reg_read_64(r),
-            _ => fatal_error!("Invalid operand {:?} for Imul_r64_rm64", dest_op),
+        let dst_val = if let Operand::Register(r) = dest_op {
+            self.reg_read_64(r)?
+        } else {
+            fatal_error!("Invalid operand {:?} for Imul_r64_rm64", dest_op)
         } as i64;
 
         let result = (dst_val as i128).wrapping_mul(src_val as i128);
 
-        self.reg_write_64(dest_op.into(), result as u64);
+        self.reg_write_64(dest_op.into(), result as u64)?;
 
         self.set_flags_u64(
             if result >> 63 != 0 && result >> 63 != -1 {
@@ -518,6 +514,60 @@ mod tests {
     use super::super::axecutor::Axecutor;
     use crate::{assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
+
+    // imul ax, bx, 0x5
+    ax_test![imul_ax_bx_0x5; 0x66, 0x6b, 0xc3, 0x5; |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0x0);
+            write_reg_value!(w; a; BX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 0x0);
+            assert_reg_value!(w; a; BX; 0x0);
+        };
+        (0; FLAG_CF | FLAG_OF)
+    ];
+
+    // imul ax, bx, 0x5
+    ax_test![imul_ax_bx_0x5_cf_of; 0x66, 0x6b, 0xc3, 0x5; |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0x0);
+            write_reg_value!(w; a; BX; 0x7fff);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 0x7ffb);
+            assert_reg_value!(w; a; BX; 0x7fff);
+        };
+        (FLAG_CF | FLAG_OF; 0)
+    ];
+
+    // imul ax, word ptr [rbx], 0x5
+    ax_test![imul_ax_word_ptr_rbx_0x5; 0x66, 0x6b, 0x3, 0x5;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0x0);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 0x0);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+        };
+        (0; FLAG_CF | FLAG_OF)
+    ];
+
+    // imul ax, word ptr [rbx], 0x5
+    ax_test![imul_ax_word_ptr_rbx_0x5_cf_of; 0x66, 0x6b, 0x3, 0x5;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; AX; 0x0);
+            write_reg_value!(q; a; RBX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x7fff).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; AX; 0x7ffb);
+            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x7fff);
+        };
+        (FLAG_CF | FLAG_OF; 0)
+    ];
 
     // imul bl
     ax_test![imul_bl_ax_0; 0xf6, 0xeb; |a: &mut Axecutor| {

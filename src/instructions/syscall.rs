@@ -26,7 +26,7 @@ impl Axecutor {
     fn instr_syscall(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Syscall);
 
-        if let Some(_) = self.mnemonic_hooks(SupportedMnemonic::Syscall) {
+        if self.mnemonic_hooks(SupportedMnemonic::Syscall).is_some() {
             return Ok(());
         }
 

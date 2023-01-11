@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import Initial from './components/Initial.vue'
+import Demo from './components/Demo.vue'
 </script>
 
 <template>
   <Suspense>
     <main>
-      <Initial />
+      <Demo />
     </main>
   </Suspense>
 </template>

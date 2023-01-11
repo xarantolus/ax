@@ -16,7 +16,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_8(src.into());
+        let src_val = self.reg_read_8(src.into())?;
 
         match dest {
             Operand::Memory(m) => {
@@ -30,12 +30,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_8(r);
+                let dest_val = self.reg_read_8(r)?;
                 let (result, flags) = op(dest_val as u8, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(r, result as u64);
+                    self.reg_write_8(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -57,7 +57,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_16(src.into());
+        let src_val = self.reg_read_16(src.into())?;
 
         match dest {
             Operand::Memory(m) => {
@@ -71,12 +71,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_16(r);
+                let dest_val = self.reg_read_16(r)?;
                 let (result, flags) = op(dest_val as u16, src_val as u16);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result as u64);
+                    self.reg_write_16(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -98,7 +98,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_32(src.into());
+        let src_val = self.reg_read_32(src.into())?;
 
         match dest {
             Operand::Memory(m) => {
@@ -112,12 +112,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_32(r);
+                let dest_val = self.reg_read_32(r)?;
                 let (result, flags) = op(dest_val as u32, src_val as u32);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result as u64);
+                    self.reg_write_32(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -139,7 +139,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_64(src.into());
+        let src_val = self.reg_read_64(src.into())?;
 
         match dest {
             Operand::Memory(m) => {
@@ -153,12 +153,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_64(r);
+                let dest_val = self.reg_read_64(r)?;
                 let (result, flags) = op(dest_val, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_64(r, result);
+                    self.reg_write_64(r, result)?;
                 }
                 Ok(())
             }
@@ -180,7 +180,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_8(src.into());
+        let src_val = self.reg_read_8(src.into())?;
 
         match dest {
             Operand::Memory(m) => {
@@ -194,12 +194,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_16(r);
+                let dest_val = self.reg_read_16(r)?;
                 let (result, flags) = op(dest_val as u16, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result as u64);
+                    self.reg_write_16(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -221,7 +221,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_8(src.into());
+        let src_val = self.reg_read_8(src.into())?;
 
         match dest {
             Operand::Memory(m) => {
@@ -235,12 +235,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_32(r);
+                let dest_val = self.reg_read_32(r)?;
                 let (result, flags) = op(dest_val as u32, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result as u64);
+                    self.reg_write_32(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -262,7 +262,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_8(src.into());
+        let src_val = self.reg_read_8(src.into())?;
 
         match dest {
             Operand::Memory(m) => {
@@ -276,12 +276,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_64(r);
+                let dest_val = self.reg_read_64(r)?;
                 let (result, flags) = op(dest_val, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_64(r, result);
+                    self.reg_write_64(r, result)?;
                 }
                 Ok(())
             }
@@ -303,7 +303,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_8(src.into());
+        let src_val = self.reg_read_8(src.into())?;
 
         match dest {
             Operand::Memory(m) => {
@@ -316,11 +316,11 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_8(r);
+                let dest_val = self.reg_read_8(r)?;
                 let result = op(dest_val as u8, src_val as u8);
                 self.set_flags_u8(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(r, result as u64);
+                    self.reg_write_8(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -342,7 +342,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_16(src.into());
+        let src_val = self.reg_read_16(src.into())?;
 
         match dest {
             Operand::Memory(m) => {
@@ -355,11 +355,11 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_16(r);
+                let dest_val = self.reg_read_16(r)?;
                 let result = op(dest_val as u16, src_val as u16);
                 self.set_flags_u16(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result as u64);
+                    self.reg_write_16(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -381,7 +381,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_32(src.into());
+        let src_val = self.reg_read_32(src.into())?;
 
         match dest {
             Operand::Memory(m) => {
@@ -394,11 +394,11 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_32(r);
+                let dest_val = self.reg_read_32(r)?;
                 let result = op(dest_val as u32, src_val as u32);
                 self.set_flags_u32(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result as u64);
+                    self.reg_write_32(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -420,7 +420,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_64(src.into());
+        let src_val = self.reg_read_64(src.into())?;
 
         match dest {
             Operand::Memory(m) => {
@@ -433,11 +433,11 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_64(r);
+                let dest_val = self.reg_read_64(r)?;
                 let result = op(dest_val, src_val);
                 self.set_flags_u64(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_64(r, result);
+                    self.reg_write_64(r, result)?;
                 }
                 Ok(())
             }
@@ -512,7 +512,7 @@ impl Axecutor {
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
         let dest_reg: SupportedRegister = dest.into();
-        let dest_val = self.reg_read_8(dest_reg);
+        let dest_val = self.reg_read_8(dest_reg)?;
 
         match src {
             Operand::Memory(m) => {
@@ -521,17 +521,17 @@ impl Axecutor {
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(dest_reg, result as u64);
+                    self.reg_write_8(dest_reg, result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
-                let src_val = self.reg_read_8(r);
+                let src_val = self.reg_read_8(r)?;
                 let (result, flags) = op(dest_val as u8, src_val as u8);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(dest_reg, result as u64);
+                    self.reg_write_8(dest_reg, result as u64)?;
                 }
                 Ok(())
             }
@@ -552,7 +552,7 @@ impl Axecutor {
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
         let dest_reg: SupportedRegister = dest.into();
-        let dest_val = self.reg_read_16(dest_reg);
+        let dest_val = self.reg_read_16(dest_reg)?;
 
         match src {
             Operand::Memory(m) => {
@@ -561,17 +561,17 @@ impl Axecutor {
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(dest_reg, result as u64);
+                    self.reg_write_16(dest_reg, result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
-                let src_val = self.reg_read_16(r);
+                let src_val = self.reg_read_16(r)?;
                 let (result, flags) = op(dest_val as u16, src_val as u16);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(dest_reg, result as u64);
+                    self.reg_write_16(dest_reg, result as u64)?;
                 }
                 Ok(())
             }
@@ -592,7 +592,7 @@ impl Axecutor {
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
         let dest_reg: SupportedRegister = dest.into();
-        let dest_val = self.reg_read_32(dest_reg);
+        let dest_val = self.reg_read_32(dest_reg)?;
 
         match src {
             Operand::Memory(m) => {
@@ -601,17 +601,17 @@ impl Axecutor {
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(dest_reg, result as u64);
+                    self.reg_write_32(dest_reg, result as u64)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
-                let src_val = self.reg_read_32(r);
+                let src_val = self.reg_read_32(r)?;
                 let (result, flags) = op(dest_val as u32, src_val as u32);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(dest_reg, result as u64);
+                    self.reg_write_32(dest_reg, result as u64)?;
                 }
                 Ok(())
             }
@@ -632,7 +632,7 @@ impl Axecutor {
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
         let dest_reg: SupportedRegister = dest.into();
-        let dest_val = self.reg_read_64(dest_reg);
+        let dest_val = self.reg_read_64(dest_reg)?;
 
         match src {
             Operand::Memory(m) => {
@@ -641,17 +641,17 @@ impl Axecutor {
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_64(dest_reg, result);
+                    self.reg_write_64(dest_reg, result)?;
                 }
                 Ok(())
             }
             Operand::Register(r) => {
-                let src_val = self.reg_read_64(r);
+                let src_val = self.reg_read_64(r)?;
                 let (result, flags) = op(dest_val, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_64(dest_reg, result);
+                    self.reg_write_64(dest_reg, result)?;
                 }
                 Ok(())
             }
@@ -673,7 +673,7 @@ impl Axecutor {
         let (dest, src) = self.instruction_operands_2(i)?;
         let src_val = match src {
             Operand::Memory(m) => self.mem_read_8(self.mem_addr(m))?,
-            Operand::Register(r) => self.reg_read_8(r),
+            Operand::Register(r) => self.reg_read_8(r)?,
             _ => fatal_error!(
                 "Invalid source operand {:?} for {:?} instruction",
                 dest,
@@ -682,11 +682,11 @@ impl Axecutor {
         };
 
         let dest = dest.into();
-        let dest_val = self.reg_read_8(dest);
+        let dest_val = self.reg_read_8(dest)?;
         let result = op(dest_val as u8, src_val as u8);
         self.set_flags_u8(flags_to_set, flags_to_clear, result);
         if (flags_to_set & NO_WRITEBACK) == 0 {
-            self.reg_write_8(dest, result as u64);
+            self.reg_write_8(dest, result as u64)?;
         }
         Ok(())
     }
@@ -701,7 +701,7 @@ impl Axecutor {
         let (dest, src) = self.instruction_operands_2(i)?;
         let src_val = match src {
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             _ => fatal_error!(
                 "Invalid source operand {:?} for {:?} instruction",
                 dest,
@@ -710,11 +710,11 @@ impl Axecutor {
         };
 
         let dest = dest.into();
-        let dest_val = self.reg_read_16(dest);
+        let dest_val = self.reg_read_16(dest)?;
         let result = op(dest_val as u16, src_val as u16);
         self.set_flags_u16(flags_to_set, flags_to_clear, result);
         if (flags_to_set & NO_WRITEBACK) == 0 {
-            self.reg_write_16(dest, result as u64);
+            self.reg_write_16(dest, result as u64)?;
         }
         Ok(())
     }
@@ -729,7 +729,7 @@ impl Axecutor {
         let (dest, src) = self.instruction_operands_2(i)?;
         let src_val = match src {
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
-            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Register(r) => self.reg_read_32(r)?,
             _ => fatal_error!(
                 "Invalid source operand {:?} for {:?} instruction",
                 dest,
@@ -738,11 +738,11 @@ impl Axecutor {
         };
 
         let dest = dest.into();
-        let dest_val = self.reg_read_32(dest);
+        let dest_val = self.reg_read_32(dest)?;
         let result = op(dest_val as u32, src_val as u32);
         self.set_flags_u32(flags_to_set, flags_to_clear, result);
         if (flags_to_set & NO_WRITEBACK) == 0 {
-            self.reg_write_32(dest, result as u64);
+            self.reg_write_32(dest, result as u64)?;
         }
         Ok(())
     }
@@ -757,7 +757,7 @@ impl Axecutor {
         let (dest, src) = self.instruction_operands_2(i)?;
         let src_val = match src {
             Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
-            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Register(r) => self.reg_read_64(r)?,
             _ => fatal_error!(
                 "Invalid source operand {:?} for {:?} instruction",
                 dest,
@@ -766,11 +766,11 @@ impl Axecutor {
         };
 
         let dest = dest.into();
-        let dest_val = self.reg_read_64(dest);
+        let dest_val = self.reg_read_64(dest)?;
         let result = op(dest_val, src_val);
         self.set_flags_u64(flags_to_set, flags_to_clear, result);
         if (flags_to_set & NO_WRITEBACK) == 0 {
-            self.reg_write_64(dest, result);
+            self.reg_write_64(dest, result)?;
         }
         Ok(())
     }
@@ -785,7 +785,7 @@ impl Axecutor {
         let (dest, src) = self.instruction_operands_2(i)?;
         let src_val = match src {
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
-            Operand::Register(r) => self.reg_read_32(r),
+            Operand::Register(r) => self.reg_read_32(r)?,
             _ => fatal_error!(
                 "Invalid source operand {:?} for {:?} instruction",
                 dest,
@@ -794,11 +794,11 @@ impl Axecutor {
         };
 
         let dest = dest.into();
-        let dest_val = self.reg_read_64(dest);
+        let dest_val = self.reg_read_64(dest)?;
         let result = op(dest_val, src_val as u32);
         self.set_flags_u64(flags_to_set, flags_to_clear, result);
         if (flags_to_set & NO_WRITEBACK) == 0 {
-            self.reg_write_64(dest, result);
+            self.reg_write_64(dest, result)?;
         }
         Ok(())
     }
@@ -813,7 +813,7 @@ impl Axecutor {
         let (dest, src) = self.instruction_operands_2(i)?;
         let src_val = match src {
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             _ => fatal_error!(
                 "Invalid source operand {:?} for {:?} instruction",
                 dest,
@@ -822,11 +822,11 @@ impl Axecutor {
         };
 
         let dest = dest.into();
-        let dest_val = self.reg_read_32(dest);
+        let dest_val = self.reg_read_32(dest)?;
         let result = op(dest_val as u32, src_val as u16);
         self.set_flags_u32(flags_to_set, flags_to_clear, result);
         if (flags_to_set & NO_WRITEBACK) == 0 {
-            self.reg_write_32(dest, result as u64);
+            self.reg_write_32(dest, result as u64)?;
         }
         Ok(())
     }
@@ -841,7 +841,7 @@ impl Axecutor {
         let (dest, src) = self.instruction_operands_2(i)?;
         let src_val = match src {
             Operand::Memory(m) => self.mem_read_16(self.mem_addr(m))?,
-            Operand::Register(r) => self.reg_read_16(r),
+            Operand::Register(r) => self.reg_read_16(r)?,
             _ => fatal_error!(
                 "Invalid source operand {:?} for {:?} instruction",
                 dest,
@@ -850,11 +850,11 @@ impl Axecutor {
         };
 
         let dest = dest.into();
-        let dest_val = self.reg_read_64(dest);
+        let dest_val = self.reg_read_64(dest)?;
         let result = op(dest_val, src_val as u16);
         self.set_flags_u64(flags_to_set, flags_to_clear, result);
         if (flags_to_set & NO_WRITEBACK) == 0 {
-            self.reg_write_64(dest, result);
+            self.reg_write_64(dest, result)?;
         }
         Ok(())
     }
@@ -948,12 +948,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_8(r);
+                let dest_val = self.reg_read_8(r)?;
                 let (result, flags) = op(dest_val as u8, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(r, result as u64);
+                    self.reg_write_8(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -1002,12 +1002,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_16(r);
+                let dest_val = self.reg_read_16(r)?;
                 let (result, flags) = op(dest_val as u16, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result as u64);
+                    self.reg_write_16(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -1056,12 +1056,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_32(r);
+                let dest_val = self.reg_read_32(r)?;
                 let (result, flags) = op(dest_val as u32, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result as u64);
+                    self.reg_write_32(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -1110,12 +1110,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_64(r);
+                let dest_val = self.reg_read_64(r)?;
                 let (result, flags) = op(dest_val, src_val);
                 debug_assert!(flags & NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_64(r, result);
+                    self.reg_write_64(r, result)?;
                 }
                 Ok(())
             }
@@ -1163,11 +1163,11 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_8(r);
+                let dest_val = self.reg_read_8(r)?;
                 let result = op(dest_val as u8, src_val);
                 self.set_flags_u8(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_8(r, result as u64);
+                    self.reg_write_8(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -1215,11 +1215,11 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_16(r);
+                let dest_val = self.reg_read_16(r)?;
                 let result = op(dest_val as u16, src_val);
                 self.set_flags_u16(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result as u64);
+                    self.reg_write_16(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -1267,11 +1267,11 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_32(r);
+                let dest_val = self.reg_read_32(r)?;
                 let result = op(dest_val as u32, src_val);
                 self.set_flags_u32(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result as u64);
+                    self.reg_write_32(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -1319,11 +1319,11 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_64(r);
+                let dest_val = self.reg_read_64(r)?;
                 let result = op(dest_val, src_val);
                 self.set_flags_u64(flags_to_set, flags_to_clear, result);
                 if (flags_to_set & NO_WRITEBACK) == 0 {
-                    self.reg_write_64(r, result);
+                    self.reg_write_64(r, result)?;
                 }
                 Ok(())
             }
@@ -1372,12 +1372,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_16(r);
+                let dest_val = self.reg_read_16(r)?;
                 let (result, flags) = op(dest_val as u16, src_val);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result as u64);
+                    self.reg_write_16(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -1426,12 +1426,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_32(r);
+                let dest_val = self.reg_read_32(r)?;
                 let (result, flags) = op(dest_val as u32, src_val);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result as u64);
+                    self.reg_write_32(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -1480,12 +1480,12 @@ impl Axecutor {
                 Ok(())
             }
             Operand::Register(r) => {
-                let dest_val = self.reg_read_64(r);
+                let dest_val = self.reg_read_64(r)?;
                 let (result, flags) = op(dest_val, src_val);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_64(r, result);
+                    self.reg_write_64(r, result)?;
                 }
                 Ok(())
             }
@@ -1571,12 +1571,12 @@ impl Axecutor {
         let dest = self.instruction_operand(i, 0)?;
         match dest {
             Operand::Register(r) => {
-                let src_val = self.reg_read_8(r);
+                let src_val = self.reg_read_8(r)?;
                 let (result, flags) = op(src_val as u8);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_8(r, result as u64);
+                    self.reg_write_8(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -1610,12 +1610,12 @@ impl Axecutor {
         let dest = self.instruction_operand(i, 0)?;
         match dest {
             Operand::Register(r) => {
-                let src_val = self.reg_read_16(r);
+                let src_val = self.reg_read_16(r)?;
                 let (result, flags) = op(src_val as u16);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_16(r, result as u64);
+                    self.reg_write_16(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -1649,12 +1649,12 @@ impl Axecutor {
         let dest = self.instruction_operand(i, 0)?;
         match dest {
             Operand::Register(r) => {
-                let src_val = self.reg_read_32(r);
+                let src_val = self.reg_read_32(r)?;
                 let (result, flags) = op(src_val as u32);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_32(r, result as u64);
+                    self.reg_write_32(r, result as u64)?;
                 }
                 Ok(())
             }
@@ -1688,12 +1688,12 @@ impl Axecutor {
         let dest = self.instruction_operand(i, 0)?;
         match dest {
             Operand::Register(r) => {
-                let src_val = self.reg_read_64(r);
+                let src_val = self.reg_read_64(r)?;
                 let (result, flags) = op(src_val);
                 debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
                 if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
-                    self.reg_write_64(r, result);
+                    self.reg_write_64(r, result)?;
                 }
                 Ok(())
             }
@@ -1766,12 +1766,12 @@ macro_rules! fatal_error {
 macro_rules! assert_fatal {
     ($cond:expr, $message:expr, $($arg:tt)*) => {{
         if !($cond) {
-            crate::fatal_error!($message, $($arg)*);
+            $crate::fatal_error!($message, $($arg)*);
         }
     }};
     ($cond:expr, $message:expr) => {{
         if !($cond) {
-            crate::fatal_error!($message);
+            $crate::fatal_error!($message);
         }
     }};
 }

@@ -8,7 +8,11 @@ Additionally, this repository contains scripts that should be interesting for an
 ## Try it out!
 You can try out the emulator right now by visiting [the website](https://ax.010.one), selecting a suitable ELF binary and clicking "Run". The emulator will then execute the binary and show the output. Note that currently support for ELF binaries is limited/buggy (there are some problems getting libc to work), you can however use binaries from the [`examples/programs`](examples/programs) directory. The source code for this site is in the [`examples/web`](examples/web) directory.
 
-Other than that, you can also find it in use on the [MemeAssembly Playground](https://memeasm.010.one). MemeAssembly is a meme programming language that compiles to x86-64 instructions, which are executed by this emulator. The site also emulates some syscalls like `read`, `write` and `exit` to make the programs work.
+
+### Usage on the web
+* The [demo site](https://ax.010.one) uses `ax` to run ELF binaries in the browser
+* [MemeAssembly](https://kammt.github.io/MemeAssembly/) is a meme programming language that compiles to x86-64 instructions. My [MemeAssembly Playground](https://memeasm.010.one) uses `ax` to run this language right in the browser, emulating some syscalls like `read`, `write` and `exit` to make the programs work.
+* Maybe you? If you use `ax` in a project, please let me know and I'll add it here! :)
 
 ## How to use
 The emulator is compiled to WebAssembly and can be used as a JavaScript Module. This works in modern browsers.
@@ -31,11 +35,11 @@ console.log("ax version:", version());
 
 Two warnings/pitfalls when using this emulator:
 * Make sure that all numbers are passed as `bigint`, which can be done using an `n` suffix. `0x1000n` is a `bigint` literal (which is what we want), `0x1000` is a `number` (which will *not* work)
-* When using frontend frameworks, it is recommended to await the `init` function before your components are mounted, e.g. in a `setup` function. This will make sure the WASM binary is downloaded before the component is rendered. You can look at the [this Vue component](examples/web/src/components/Initial.vue) for an example.
+* When using frontend frameworks, it is recommended to await the `init` function before your components are mounted, e.g. in a `setup` function. This will make sure the WASM binary is downloaded before the component is rendered. You can look at the [this Vue component](examples/web/src/components/Demo.vue) for an example.
 
 
-### Simple emulation of instruction
-The following is a simple example that executes a few instructions and prints the calculated result.
+### Simple emulation of instructions
+The following is a simple example that executes a few instructions and logs the calculated result.
 
 <details>
 <summary>Open for more info on the example</summary>
@@ -92,7 +96,7 @@ await ax.execute();
 // Log the final state of the emulator
 console.log("Final state:", ax.toString());
 
-// Prints "15"
+// Outputs "15"
 console.log("RAX:", ax.reg_read_64(Register.RAX));
 ```
 
@@ -116,8 +120,8 @@ let ax = Axecutor.from_binary(/* elf file content as Uint8Array */);
 // and writes the stack pointer to RSP
 ax.init_stack_program_start(
   8n * 1024n, // Stack size
-  ["/bin/my_binary", "arg1", "arg2"],
-  [ /* environment variables */ ]
+  ["/bin/my_binary", "arg1", "arg2"], // argv
+  ["COLORTERM=truecolor", "TERM=xterm-256color" ] // environment variables
 );
 
 
@@ -136,10 +140,10 @@ let syscallHandler = async function (ax: Axecutor) {
         throw new Error(`WRITE syscall: cannot write non-std{out,err} (!= 1,2) fds, but tried ${rdi}`);
       }
 
-      // Read whatever was
+      // Read data we should write from memory
       let result_buf = ax.mem_read_bytes(rsi, rdx);
 
-      // Convert to string
+      // Decode to string
       let result_str = new TextDecoder().decode(result_buf);
 
       // Do something with the string
@@ -168,7 +172,7 @@ ax.hook_before_mnemonic(Mnemonic.Syscall, syscallHandler);
 await ax.execute();
 ```
 
-If your binaries need more syscalls, you can look at the [example site implementation](examples/web/src/components/Initial.vue) or get more details [here](https://syscalls.w3challs.com/?arch=x86_64).
+If your binaries need more syscalls, you can look at the [example site implementation](examples/web/src/components/Demo.vue) or get more details [here](https://syscalls.w3challs.com/?arch=x86_64).
 
 </details>
 
@@ -241,8 +245,11 @@ Another script for testing jumps ([`j.py`](j.py)) is also available, but it's no
 If you want to adjust `t.py` for testing your own emulator, you should adjust the `__str__` method of the `TestCase` class to generate different syntax with the same information.
 
 ### Links
+Here are some useful links for more information about x86-64/AMD64 and the System V ABI:
+
 * [Intel x64 Manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
 * [AMD64 Developer Guides](https://developer.amd.com/resources/developer-guides-manuals/)
+* [System V ABI](https://www.uclibc.org/docs/psABI-x86_64.pdf)
 
 ### Limitations
 Here are some limitations that could be inspiration for future features:
@@ -268,4 +275,4 @@ See [issue 1](https://github.com/xarantolus/ax/issues/1) for some ideas for futu
 
 
 ## [License](LICENSE)
-GPL-3.0
+AGPL v3

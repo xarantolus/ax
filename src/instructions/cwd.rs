@@ -23,14 +23,14 @@ impl Axecutor {
     fn instr_cwd(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Cwd);
 
-        let ax_value = self.reg_read_16(AX);
+        let ax_value = self.reg_read_16(AX)?;
         let dx_value = if ax_value & 0x8000 == 0x8000 {
             0xFFFF
         } else {
             0x0000
         };
 
-        self.reg_write_16(DX, dx_value);
+        self.reg_write_16(DX, dx_value)?;
 
         Ok(())
     }

@@ -23,14 +23,14 @@ impl Axecutor {
     fn instr_cdq(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Cdq);
 
-        let eax = self.reg_read_32(EAX);
+        let eax = self.reg_read_32(EAX)?;
         let edx = if eax & 0x8000_0000 == 0 {
             0
         } else {
             0xFFFF_FFFF
         };
 
-        self.reg_write_32(EDX, edx);
+        self.reg_write_32(EDX, edx)?;
 
         Ok(())
     }

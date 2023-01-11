@@ -12,10 +12,10 @@ use crate::{fatal_error, opcode_unimplemented};
 
 macro_rules! push_rip {
     ($self:ident) => {{
-        let rip = $self.reg_read_64(RIP);
-        let rsp = $self.reg_read_64(RSP);
+        let rip = $self.reg_read_64(RIP)?;
+        let rsp = $self.reg_read_64(RSP)?;
         $self.mem_write_64(rsp, rip)?;
-        $self.reg_write_64(RSP, rsp - 8);
+        $self.reg_write_64(RSP, rsp - 8)?;
     }};
 }
 
@@ -85,13 +85,13 @@ impl Axecutor {
             OpKind::NearBranch64 => {
                 // push_rip!(self);
 
-                let rip = self.reg_read_64(RIP);
-                let rsp = self.reg_read_64(RSP);
+                let rip = self.reg_read_64(RIP)?;
+                let rsp = self.reg_read_64(RSP)?;
                 self.mem_write_64(rsp, rip)?;
-                self.reg_write_64(RSP, rsp - 8);
+                self.reg_write_64(RSP, rsp - 8)?;
 
                 let offset = i.near_branch64() as i64 as u64;
-                self.reg_write_64(RIP.into(), offset);
+                self.reg_write_64(RIP, offset)?;
                 Ok(())
             }
             _ => fatal_error!("Invalid op0_kind for CALL rel32: {:?}", i.op0_kind()),
@@ -127,12 +127,12 @@ impl Axecutor {
                 let addr = self.mem_addr(m);
                 self.mem_read_64(addr)?
             }
-            Operand::Register(r) => self.reg_read_64(r),
+            Operand::Register(r) => self.reg_read_64(r)?,
             _ => fatal_error!("Invalid operand for CALL r/m64: {:?}", i.op0_kind()),
         };
 
         push_rip!(self);
-        self.reg_write_64(RIP.into(), target);
+        self.reg_write_64(RIP, target)?;
 
         Ok(())
     }
@@ -169,7 +169,7 @@ impl Axecutor {
 mod tests {
     use crate::{
         assert_reg_value,
-        instructions::{axecutor::Axecutor, errors::AxError, flags::*},
+        instructions::{axecutor::Axecutor, flags::*},
         jmp_test, test_async,
     };
     use iced_x86::Register::*;
@@ -188,14 +188,13 @@ mod tests {
         let mut ax = Axecutor::new(code, rip, rip).expect("Failed to create axecutor");
 
         // Setup stack
-        ax.reg_write_64(RSP.into(), 0x1000 - 8);
+        ax.reg_write_64(RSP.into(), 0x1000 - 8).expect("Failed to write to register");
         ax.mem_init_zero(0x1000 - 8, 8)
             .expect("Failed to init memory");
 
-        match ax.execute().await {
-            Err(e) => crate::fatal_error!("Failed to execute: {:?}", AxError::from(e)),
-            _ => {}
-        };
+        if let Err(e) = ax.execute().await {
+            crate::fatal_error!("Failed to execute: {:?}", e);
+        }
 
         assert!(
             ax.state.rflags & (FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF) == 0,
@@ -217,7 +216,7 @@ mod tests {
         50000; // 50000 bytes of 0x90 (nop) as padding
         0x48, 0xc7, 0xc0, 0x32, 0x0, 0x0, 0x0, 0xe8, 0x9c, 0x3c, 0xff, 0xff, 0x90; // Lcall: mov rax, 50; call func; nop
         |a: &mut Axecutor| {
-            a.reg_write_64(RSP.into(), 0x8000);
+            a.reg_write_64(RSP.into(), 0x8000).unwrap();
             a.mem_init_zero(0x8000, 8).expect("Failed to init memory");
         };
         |a: Axecutor| {
@@ -232,7 +231,7 @@ mod tests {
         50; // 50 bytes of 0x90 (nop) as padding
         0x48, 0x8d, 0x5, 0xbf, 0xff, 0xff, 0xff, 0xff, 0xd0, 0x90; // Lcall: lea rax, [rip+func]; call rax; nop
         |a: &mut Axecutor| {
-            a.reg_write_64(RSP.into(), 0x8000);
+            a.reg_write_64(RSP.into(), 0x8000).unwrap();
             a.mem_init_zero(0x8000, 8).expect("Failed to init memory");
         };
         |a: Axecutor| {

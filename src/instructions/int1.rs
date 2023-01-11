@@ -23,7 +23,7 @@ impl Axecutor {
     fn instr_int1(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), iced_x86::Code::Int1);
 
-        if let Some(_) = self.mnemonic_hooks(SupportedMnemonic::Int1) {
+        if self.mnemonic_hooks(SupportedMnemonic::Int1).is_some() {
             return Ok(());
         }
 

@@ -12,14 +12,14 @@ mod test {
             write_reg_value!(q; a; RBX; 0x031591385913u64);
 
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000);
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0);
             assert_reg_value!(q; a; RBX; 0x1234567890ABCDEFu64);
 
-            let rsp = a.reg_read_64(RSP.into());
+            let rsp = a.reg_read_64(RSP.into()).unwrap();
             assert_eq!(rsp, 0x1000);
 
             assert_eq!(a.mem_read_64(rsp).unwrap(), 0x1234567890ABCDEFu64);
@@ -127,7 +127,7 @@ mod test {
             write_reg_value!(q; a; RAX; 0x50f01be8d7485109u64);
 
             // Setup stack for address
-            a.reg_write_64(RSP.into(), 0x1000);
+            a.reg_write_64(RSP.into(), 0x1000).unwrap();
             a.mem_init_zero(0x1000, 8).expect("Failed to initialize memory");
         };
         |a: Axecutor| {
@@ -151,7 +151,7 @@ mod test {
     0x02, 0x88, 0x03, 0x49, 0xff, 0xc7, 0x5b, 0x58, 0xc3, 0x53, 0x49, 0x8d, 0x1b, 0x4c, 0x01, 0xe3, 0x8a, 0x1b, 0x41, 0x88, 0x1a, 0x49, 0xff, 0xc4, 0x5b, 0xc3;
     |a: &mut Axecutor| {
             assert!(STRING_REVERSE_INPUT.ends_with(b"\n"));
-            assert!(STRING_REVERSE_INPUT.len() > 0);
+            assert!(!STRING_REVERSE_INPUT.is_empty());
 
             // Set up input data
             a.mem_init_area(STRING_REVERSE_INPUT_START_ADDR, Vec::from(STRING_REVERSE_INPUT)).expect("Failed to initialize input area memory");

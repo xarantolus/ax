@@ -1,4 +1,4 @@
-.PHONY: build debug watch test test-local test-node clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt
+.PHONY: build debug watch test test-local test-node test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -23,7 +23,10 @@ debug:
 	$(MOLD) wasm-pack build --target web --debug
 
 # fmt will fail if switch or stats are not up to date
-precommit: switch stats fmt test build build-web
+precommit: build-web switch stats fmt test test-scripts build
+
+test-scripts:
+	$(PY) t.py --test
 
 stats:
 	@$(PY) stats.py
@@ -51,9 +54,9 @@ copy-programs: example-programs
 	cp -r $(shell find examples/programs -name "*.bin") examples/web/public/programs
 
 fmt:
-	$(MOLD) cargo fix --allow-staged && \
-	$(MOLD) cargo fix --allow-staged --tests && \
-	$(MOLD) cargo fmt
+	$(MOLD) cargo fix --allow-staged --all --all-features && \
+	$(MOLD) cargo fmt --all && \
+	$(MOLD) cargo clippy --all-targets --all-features --fix --allow-staged
 
 coverage:
 	$(MOLD) cargo tarpaulin --out Lcov --skip-clean
@@ -78,6 +81,7 @@ dependencies:
 	$(PY) -m pip install pyperclip tqdm
 
 clean:
-	rm -rf pkg target examples/web/node_modules examples/web/dist
+	rm -rf pkg target examples/web/node_modules examples/web/dist .vite
 	cd examples/programs && make clean
+	rm -f lcov.info
 
