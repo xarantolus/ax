@@ -1,4 +1,4 @@
-.PHONY: build debug watch test test-local test-node clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt
+.PHONY: build debug watch test test-local test-node test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -23,7 +23,10 @@ debug:
 	$(MOLD) wasm-pack build --target web --debug
 
 # fmt will fail if switch or stats are not up to date
-precommit: build-web switch stats fmt test build
+precommit: build-web switch stats fmt test test-scripts build
+
+test-scripts:
+	$(PY) t.py --test
 
 stats:
 	@$(PY) stats.py

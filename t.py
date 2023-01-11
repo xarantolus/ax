@@ -23,6 +23,7 @@ byte_registers = ["al", "ah", "bl", "bh", "cl", "ch", "dl", "dh", "sil", "dil",
 
 registers = (byte_registers + word_registers +
              dword_registers + qword_registers)
+# Sorting makes sure we find e.g. "rax" first instead of "ax"
 registers.sort(key=len, reverse=True)
 
 FLAG_CF: int = 0x0001
@@ -299,7 +300,7 @@ class Instruction:
         mnemonic = parts[0].lower()
 
         if len(parts) == 1:
-            return Instruction(mnemonic, [])
+            return Instruction(mnemonic, [], None)
 
         # now split at the comma, but ignore commas in brackets
         operands = []
