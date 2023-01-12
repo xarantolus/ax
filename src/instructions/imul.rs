@@ -512,7 +512,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, ax_test, write_reg_value};
+    use crate::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
 
     // imul ax, bx, 0x5
@@ -549,7 +549,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x0);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+            assert_mem_value!(w; a; 0x1000; 0x0);
         };
         (0; FLAG_CF | FLAG_OF)
     ];
@@ -564,7 +564,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x7ffb);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x7fff);
+            assert_mem_value!(w; a; 0x1000; 0x7fff);
         };
         (FLAG_CF | FLAG_OF; 0)
     ];

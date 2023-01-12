@@ -899,7 +899,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     }};
     |a: Axecutor| {{
         assert_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});
-        assert_eq!(a.mem_read_{dynamic_operands[0].size() * 8}({hex(mem_start + dynamic_operands[0].offset)}).unwrap(), {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
+        assert_mem_value!({dynamic_operands[0].size_letter()}; a; {hex(mem_start + dynamic_operands[0].offset)}; {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
     }};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
@@ -932,7 +932,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     }};
     |a: Axecutor| {{
         assert_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
-        assert_eq!(a.mem_read_{dynamic_operands[1].size() * 8}({hex(mem_start + dynamic_operands[1].offset)}).unwrap(), {ImmediateOperand(self.expected_values[1]).hexify(dynamic_operands[1])});
+        assert_mem_value!({dynamic_operands[1].size_letter()}; a; {hex(mem_start + dynamic_operands[1].offset)}; {ImmediateOperand(self.expected_values[1]).hexify(dynamic_operands[1])});
     }};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
@@ -949,7 +949,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     }};
     |a: Axecutor| {{
         assert_reg_value!({dynamic_operands[1].size_letter()}; a; {dynamic_operands[1].name.upper()}; {ImmediateOperand(self.expected_values[1]).hexify(dynamic_operands[1])});
-        assert_eq!(a.mem_read_{dynamic_operands[0].size() * 8}({hex(mem_start + dynamic_operands[0].offset)}).unwrap(), {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
+        assert_mem_value!({dynamic_operands[0].size_letter()}; a; {hex(mem_start + dynamic_operands[0].offset)}; {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
     }};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""

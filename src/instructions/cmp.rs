@@ -335,7 +335,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, ax_test, write_reg_value};
+    use crate::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
     // cmp byte ptr [rax], bl
     ax_test![cmp_byte_ptr_rax_bl; 0x38, 0x18;
@@ -347,7 +347,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
+            assert_mem_value!(b; a; 0x1000; 0x1);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -362,7 +362,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x8);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x10);
+            assert_mem_value!(b; a; 0x1000; 0x10);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -377,7 +377,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x90);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -392,7 +392,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0xff);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -407,7 +407,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0xa0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -422,7 +422,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x82);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -437,7 +437,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x10);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -452,7 +452,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x1);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -467,7 +467,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x80);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
+            assert_mem_value!(b; a; 0x1000; 0x1);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
@@ -482,7 +482,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x82);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x10);
+            assert_mem_value!(b; a; 0x1000; 0x10);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
@@ -497,7 +497,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x20);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -512,7 +512,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x8);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -527,7 +527,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x80);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
@@ -542,7 +542,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x81);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x10);
+            assert_mem_value!(b; a; 0x1000; 0x10);
         };
         (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
@@ -557,7 +557,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x10);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
+            assert_mem_value!(b; a; 0x1000; 0x80);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -572,7 +572,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x1);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
+            assert_mem_value!(b; a; 0x1000; 0x80);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -587,7 +587,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x1);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x7);
+            assert_mem_value!(b; a; 0x1000; 0x7);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -602,7 +602,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x1);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x10);
+            assert_mem_value!(b; a; 0x1000; 0x10);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -617,7 +617,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x20);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
+            assert_mem_value!(b; a; 0x1000; 0x80);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -632,7 +632,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x8);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
+            assert_mem_value!(b; a; 0x1000; 0x80);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -647,7 +647,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xff);
+            assert_mem_value!(b; a; 0x1000; 0xff);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
@@ -662,7 +662,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x8);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x90);
+            assert_mem_value!(b; a; 0x1000; 0x90);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
@@ -677,7 +677,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
@@ -692,7 +692,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
+            assert_mem_value!(b; a; 0x1000; 0x80);
         };
         (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -707,7 +707,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x1);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x90);
+            assert_mem_value!(b; a; 0x1000; 0x90);
         };
         (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -722,7 +722,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x0);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
+            assert_mem_value!(w; a; 0x1000; 0x1);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -737,7 +737,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x8);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x10);
+            assert_mem_value!(w; a; 0x1000; 0x10);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -752,7 +752,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x10);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+            assert_mem_value!(w; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -767,7 +767,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x1);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+            assert_mem_value!(w; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -782,7 +782,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x8000);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+            assert_mem_value!(w; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
@@ -797,7 +797,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x20);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+            assert_mem_value!(w; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -812,7 +812,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x8);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+            assert_mem_value!(w; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -827,7 +827,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x8000);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
+            assert_mem_value!(w; a; 0x1000; 0x1);
         };
         (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
@@ -842,7 +842,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x20);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8000);
+            assert_mem_value!(w; a; 0x1000; 0x8000);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -857,7 +857,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x8);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8000);
+            assert_mem_value!(w; a; 0x1000; 0x8000);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -872,7 +872,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x1);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x7);
+            assert_mem_value!(w; a; 0x1000; 0x7);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -887,7 +887,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x1);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x10);
+            assert_mem_value!(w; a; 0x1000; 0x10);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -902,7 +902,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x10);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8000);
+            assert_mem_value!(w; a; 0x1000; 0x8000);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -917,7 +917,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x1);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8000);
+            assert_mem_value!(w; a; 0x1000; 0x8000);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -932,7 +932,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x0);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8000);
+            assert_mem_value!(w; a; 0x1000; 0x8000);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
@@ -947,7 +947,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x0);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+            assert_mem_value!(w; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
@@ -962,7 +962,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x0);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x1);
+            assert_mem_value!(d; a; 0x1000; 0x1);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -977,7 +977,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x8);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x10);
+            assert_mem_value!(d; a; 0x1000; 0x10);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -992,7 +992,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x10);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
+            assert_mem_value!(d; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -1007,7 +1007,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x1);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
+            assert_mem_value!(d; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -1022,7 +1022,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x80000000u32);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
+            assert_mem_value!(d; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
@@ -1037,7 +1037,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x20);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
+            assert_mem_value!(d; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -1052,7 +1052,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x8);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
+            assert_mem_value!(d; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -1067,7 +1067,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x80000000u32);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x1);
+            assert_mem_value!(d; a; 0x1000; 0x1);
         };
         (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
@@ -1082,7 +1082,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x20);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u64);
+            assert_mem_value!(d; a; 0x1000; 0x80000000u32);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -1097,7 +1097,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x8);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u64);
+            assert_mem_value!(d; a; 0x1000; 0x80000000u32);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -1112,7 +1112,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x1);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7);
+            assert_mem_value!(d; a; 0x1000; 0x7);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1127,7 +1127,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x1);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x10);
+            assert_mem_value!(d; a; 0x1000; 0x10);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1142,7 +1142,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x10);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u64);
+            assert_mem_value!(d; a; 0x1000; 0x80000000u32);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -1157,7 +1157,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x1);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u64);
+            assert_mem_value!(d; a; 0x1000; 0x80000000u32);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -1172,7 +1172,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x0);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u64);
+            assert_mem_value!(d; a; 0x1000; 0x80000000u32);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
@@ -1187,7 +1187,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x0);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
+            assert_mem_value!(d; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
@@ -1202,7 +1202,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x0);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
+            assert_mem_value!(q; a; 0x1000; 0x1);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1217,7 +1217,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x8);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x10);
+            assert_mem_value!(q; a; 0x1000; 0x10);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1232,7 +1232,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x98c214c8bfa47469u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1f);
+            assert_mem_value!(q; a; 0x1000; 0x1f);
         };
         (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1247,7 +1247,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0xffea810badfedcb2u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x10);
+            assert_mem_value!(q; a; 0x1000; 0x10);
         };
         (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1262,7 +1262,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0xaa65f07cc317b275u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x7f);
+            assert_mem_value!(q; a; 0x1000; 0x7f);
         };
         (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1277,7 +1277,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0xcc13f17ac7eed496u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x11);
+            assert_mem_value!(q; a; 0x1000; 0x11);
         };
         (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1292,7 +1292,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x10);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
+            assert_mem_value!(q; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -1307,7 +1307,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x1);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
+            assert_mem_value!(q; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -1322,7 +1322,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x8000000000000000u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
+            assert_mem_value!(q; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
@@ -1337,7 +1337,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x20);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
+            assert_mem_value!(q; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -1352,7 +1352,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x8);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
+            assert_mem_value!(q; a; 0x1000; 0x0);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -1367,7 +1367,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x8000000000000000u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
+            assert_mem_value!(q; a; 0x1000; 0x1);
         };
         (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
@@ -1382,7 +1382,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x1);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x7);
+            assert_mem_value!(q; a; 0x1000; 0x7);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1397,7 +1397,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x1);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x10);
+            assert_mem_value!(q; a; 0x1000; 0x10);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1412,7 +1412,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x0);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
+            assert_mem_value!(q; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
@@ -1427,7 +1427,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x1);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+            assert_mem_value!(w; a; 0x1000; 0x0);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1442,7 +1442,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x10);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8);
+            assert_mem_value!(w; a; 0x1000; 0x8);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1457,7 +1457,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x0);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x10);
+            assert_mem_value!(w; a; 0x1000; 0x10);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -1472,7 +1472,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x0);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
+            assert_mem_value!(w; a; 0x1000; 0x1);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -1487,7 +1487,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x0);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8000);
+            assert_mem_value!(w; a; 0x1000; 0x8000);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
@@ -1502,7 +1502,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x0);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x20);
+            assert_mem_value!(w; a; 0x1000; 0x20);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -1517,7 +1517,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x0);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8);
+            assert_mem_value!(w; a; 0x1000; 0x8);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -1532,7 +1532,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x1);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8000);
+            assert_mem_value!(w; a; 0x1000; 0x8000);
         };
         (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
@@ -1547,7 +1547,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x8000);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x20);
+            assert_mem_value!(w; a; 0x1000; 0x20);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -1562,7 +1562,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x8000);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x8);
+            assert_mem_value!(w; a; 0x1000; 0x8);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -1577,7 +1577,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x7);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
+            assert_mem_value!(w; a; 0x1000; 0x1);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1592,7 +1592,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x10);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
+            assert_mem_value!(w; a; 0x1000; 0x1);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1607,7 +1607,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x8000);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x10);
+            assert_mem_value!(w; a; 0x1000; 0x10);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -1622,7 +1622,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x8000);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1);
+            assert_mem_value!(w; a; 0x1000; 0x1);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -1637,7 +1637,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x8000);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+            assert_mem_value!(w; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
@@ -1652,7 +1652,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x0);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+            assert_mem_value!(w; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
@@ -1668,7 +1668,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x1);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
+            assert_mem_value!(d; a; 0x1000; 0x0);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1684,7 +1684,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x10);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x8);
+            assert_mem_value!(d; a; 0x1000; 0x8);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1700,7 +1700,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x0);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x10);
+            assert_mem_value!(d; a; 0x1000; 0x10);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -1716,7 +1716,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x0);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x1);
+            assert_mem_value!(d; a; 0x1000; 0x1);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -1732,7 +1732,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x0);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u64);
+            assert_mem_value!(d; a; 0x1000; 0x80000000u32);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
@@ -1748,7 +1748,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x0);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x20);
+            assert_mem_value!(d; a; 0x1000; 0x20);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -1764,7 +1764,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x0);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x8);
+            assert_mem_value!(d; a; 0x1000; 0x8);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -1780,7 +1780,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x1);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x80000000u64);
+            assert_mem_value!(d; a; 0x1000; 0x80000000u32);
         };
         (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
@@ -1796,7 +1796,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x80000000u32);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x20);
+            assert_mem_value!(d; a; 0x1000; 0x20);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -1812,7 +1812,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x80000000u32);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x8);
+            assert_mem_value!(d; a; 0x1000; 0x8);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -1828,7 +1828,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x7);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x1);
+            assert_mem_value!(d; a; 0x1000; 0x1);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1844,7 +1844,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x10);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x1);
+            assert_mem_value!(d; a; 0x1000; 0x1);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1860,7 +1860,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x80000000u32);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x10);
+            assert_mem_value!(d; a; 0x1000; 0x10);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -1876,7 +1876,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x80000000u32);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x1);
+            assert_mem_value!(d; a; 0x1000; 0x1);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -1892,7 +1892,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x80000000u32);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
+            assert_mem_value!(d; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
@@ -1908,7 +1908,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x0);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
+            assert_mem_value!(d; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
@@ -1924,7 +1924,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
+            assert_mem_value!(q; a; 0x1000; 0x0);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1940,7 +1940,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x10);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x8);
+            assert_mem_value!(q; a; 0x1000; 0x8);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -1956,7 +1956,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x0);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x10);
+            assert_mem_value!(q; a; 0x1000; 0x10);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -1972,7 +1972,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x0);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
+            assert_mem_value!(q; a; 0x1000; 0x1);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -1988,7 +1988,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x0);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x20);
+            assert_mem_value!(q; a; 0x1000; 0x20);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -2004,7 +2004,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x0);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x8);
+            assert_mem_value!(q; a; 0x1000; 0x8);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -2020,7 +2020,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x8000000000000000u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x20);
+            assert_mem_value!(q; a; 0x1000; 0x20);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -2036,7 +2036,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x8000000000000000u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x8);
+            assert_mem_value!(q; a; 0x1000; 0x8);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -2052,7 +2052,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x7);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
+            assert_mem_value!(q; a; 0x1000; 0x1);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -2068,7 +2068,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x10);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
+            assert_mem_value!(q; a; 0x1000; 0x1);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -2084,7 +2084,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x8000000000000000u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x10);
+            assert_mem_value!(q; a; 0x1000; 0x10);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -2100,7 +2100,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x8000000000000000u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
+            assert_mem_value!(q; a; 0x1000; 0x1);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -2116,7 +2116,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x8000000000000000u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
+            assert_mem_value!(q; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
@@ -2132,7 +2132,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x93be148ab21d1e26u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x8);
+            assert_mem_value!(q; a; 0x1000; 0x8);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
@@ -2148,7 +2148,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x0);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
+            assert_mem_value!(q; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
@@ -2164,7 +2164,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xf3432afa4adf67b4u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1);
+            assert_mem_value!(q; a; 0x1000; 0x1);
         };
         (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -2180,7 +2180,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xdbe407232cb35629u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xf);
+            assert_mem_value!(q; a; 0x1000; 0xf);
         };
         (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -2195,7 +2195,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x1);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -2210,7 +2210,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x10);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x8);
+            assert_mem_value!(b; a; 0x1000; 0x8);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -2225,7 +2225,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x90);
+            assert_mem_value!(b; a; 0x1000; 0x90);
         };
         (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -2240,7 +2240,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xff);
+            assert_mem_value!(b; a; 0x1000; 0xff);
         };
         (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -2255,7 +2255,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xa0);
+            assert_mem_value!(b; a; 0x1000; 0xa0);
         };
         (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -2270,7 +2270,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x82);
+            assert_mem_value!(b; a; 0x1000; 0x82);
         };
         (FLAG_CF | FLAG_PF; FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -2285,7 +2285,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x10);
+            assert_mem_value!(b; a; 0x1000; 0x10);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -2300,7 +2300,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
+            assert_mem_value!(b; a; 0x1000; 0x1);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF; FLAG_ZF | FLAG_OF)
     ];
@@ -2315,7 +2315,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x1);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
+            assert_mem_value!(b; a; 0x1000; 0x80);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
@@ -2330,7 +2330,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x10);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x82);
+            assert_mem_value!(b; a; 0x1000; 0x82);
         };
         (FLAG_CF | FLAG_PF | FLAG_SF | FLAG_OF; FLAG_ZF)
     ];
@@ -2345,7 +2345,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x20);
+            assert_mem_value!(b; a; 0x1000; 0x20);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -2360,7 +2360,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x8);
+            assert_mem_value!(b; a; 0x1000; 0x8);
         };
         (FLAG_CF | FLAG_SF; FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -2375,7 +2375,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
+            assert_mem_value!(b; a; 0x1000; 0x80);
         };
         (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
@@ -2390,7 +2390,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x10);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x81);
+            assert_mem_value!(b; a; 0x1000; 0x81);
         };
         (FLAG_CF | FLAG_SF | FLAG_OF; FLAG_PF | FLAG_ZF)
     ];
@@ -2405,7 +2405,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x80);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x10);
+            assert_mem_value!(b; a; 0x1000; 0x10);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -2420,7 +2420,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x80);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
+            assert_mem_value!(b; a; 0x1000; 0x1);
         };
         (FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF)
     ];
@@ -2435,7 +2435,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x7);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
+            assert_mem_value!(b; a; 0x1000; 0x1);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -2450,7 +2450,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x10);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
+            assert_mem_value!(b; a; 0x1000; 0x1);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -2465,7 +2465,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x80);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x20);
+            assert_mem_value!(b; a; 0x1000; 0x20);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -2480,7 +2480,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x80);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x8);
+            assert_mem_value!(b; a; 0x1000; 0x8);
         };
         (FLAG_PF | FLAG_OF; FLAG_CF | FLAG_ZF | FLAG_SF)
     ];
@@ -2495,7 +2495,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xff);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
@@ -2510,7 +2510,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x90);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x8);
+            assert_mem_value!(b; a; 0x1000; 0x8);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];
@@ -2525,7 +2525,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
@@ -2540,7 +2540,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x80);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -2555,7 +2555,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x90);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
+            assert_mem_value!(b; a; 0x1000; 0x1);
         };
         (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];

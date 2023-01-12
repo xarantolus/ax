@@ -187,7 +187,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, ax_test, write_reg_value};
+    use crate::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
 
     // push ax
@@ -203,7 +203,7 @@ mod tests {
             assert_reg_value!(w; a; AX; 0x1234);
 
             assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-2);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x1234);
+            assert_mem_value!(w; a; 0x1000; 0x1234);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -221,7 +221,7 @@ mod tests {
             assert_reg_value!(q; a; RBX; 0x1234567890ABCDEFu64);
 
             assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1234567890ABCDEF);
+            assert_mem_value!(q; a; 0x1000; 0x1234567890ABCDEFu64);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -235,7 +235,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x1234);
+            assert_mem_value!(q; a; 0x1000; 0x1234);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -249,7 +249,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xffffffffffffffff);
+            assert_mem_value!(q; a; 0x1000; 0xffffffffffffffffu64);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -263,7 +263,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x7f);
+            assert_mem_value!(q; a; 0x1000; 0x7f);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -277,7 +277,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0xffffff);
+            assert_mem_value!(q; a; 0x1000; 0xffffff);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -291,7 +291,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x7fffffff);
+            assert_mem_value!(q; a; 0x1000; 0x7fffffff);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];

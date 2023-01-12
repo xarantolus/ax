@@ -164,6 +164,58 @@ macro_rules! assert_reg_value {
 
 #[macro_export]
 #[cfg(test)]
+macro_rules! assert_mem_value {
+    [b; $axecutor:expr; $addr:expr; $value:expr] => {
+        let val = $axecutor.mem_read_8($addr).expect("could not read 8-bit memory") as u8;
+        assert_eq!(
+            &val, &$value,
+            "expected memory at {:#x} to have value {:#x}, but got {:#x}",
+            $addr, $value, &val
+        );
+    };
+    [w; $axecutor:expr; $addr:expr; $value:expr] => {
+        let val = $axecutor.mem_read_16($addr).expect("could not read 16-bit memory") as u16;
+        assert_eq!(
+            &val, &$value,
+            "expected memory at {:#x} to have value {:#x}, but got {:#x}",
+            $addr, $value, &val
+        );
+    };
+    [d; $axecutor:expr; $addr:expr; $value:expr] => {
+        let val = $axecutor.mem_read_32($addr).expect("could not read 32-bit memory") as u32;
+        assert_eq!(
+            &val, &$value,
+            "expected memory at {:#x} to have value {:#x}, but got {:#x}",
+            $addr, $value, &val
+        );
+    };
+    [q; $axecutor:expr; $addr:expr; $value:expr] => {
+        let val = $axecutor.mem_read_64($addr).expect("could not read 64-bit memory");
+        assert_eq!(
+            &val, &$value,
+            "expected memory at {:#x} to have value {:#x}, but got {:#x}",
+            $addr, $value, &val
+        );
+    };
+}
+
+#[macro_export]
+#[cfg(test)]
+macro_rules! assert_flags {
+    ($axecutor:expr; $($flag:expr),*) => {
+        $(
+            assert_eq!(
+                $axecutor.get_flag($flag),
+                true,
+                "expected flag {:?} to be set",
+                $flag
+            );
+        )*
+    };
+}
+
+#[macro_export]
+#[cfg(test)]
 macro_rules! write_reg_value {
     (b; $axecutor:expr; $reg:expr; $value:expr) => {
         let wrap = $crate::instructions::registers::SupportedRegister::from($reg);

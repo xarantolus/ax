@@ -2,7 +2,7 @@
 mod test {
     // You can add more tests here using the a.py script, e.g. run `python3 a.py "mov rax, 0x1234567890abcdef; xor eax, eax"` (select "ts" for setup) to generate a test case
     use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, ax_test, debug_log, write_reg_value};
+    use crate::{assert_mem_value, assert_reg_value, ax_test, debug_log, write_reg_value};
     use iced_x86::Register::*;
 
     // push rax; xor rax, rax; pop rbx
@@ -22,7 +22,7 @@ mod test {
             let rsp = a.reg_read_64(RSP.into()).unwrap();
             assert_eq!(rsp, 0x1000);
 
-            assert_eq!(a.mem_read_64(rsp).unwrap(), 0x1234567890ABCDEFu64);
+            assert_mem_value!(q; a; rsp; 0x1234567890ABCDEFu64);
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];

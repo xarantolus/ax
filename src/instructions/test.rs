@@ -333,7 +333,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, ax_test, write_reg_value};
+    use crate::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
 
     // test al, 0x7f
@@ -423,7 +423,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; R11L; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
     ];
@@ -438,7 +438,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; R11L; 0x1);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x1);
+            assert_mem_value!(b; a; 0x1000; 0x1);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -453,7 +453,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; R11L; 0xf);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xf);
+            assert_mem_value!(b; a; 0x1000; 0xf);
         };
         (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
@@ -468,7 +468,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; R11L; 0x80);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x80);
+            assert_mem_value!(b; a; 0x1000; 0x80);
         };
         (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
@@ -483,7 +483,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; R11L; 0xff);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xff);
+            assert_mem_value!(b; a; 0x1000; 0xff);
         };
         (FLAG_PF | FLAG_SF; FLAG_CF | FLAG_ZF | FLAG_OF)
     ];

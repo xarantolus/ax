@@ -153,7 +153,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, ax_test, write_reg_value};
+    use crate::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
 
     // mul bl
@@ -190,7 +190,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x0);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x0);
+            assert_mem_value!(b; a; 0x1000; 0x0);
         };
         (0; FLAG_CF | FLAG_OF)
     ];
@@ -205,7 +205,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x1b9);
-            assert_eq!(a.mem_read_8(0x1000).unwrap(), 0x7);
+            assert_mem_value!(b; a; 0x1000; 0x7);
         };
         (FLAG_CF | FLAG_OF; 0)
     ];
@@ -247,7 +247,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x0);
             assert_reg_value!(w; a; DX; 0x0);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x0);
+            assert_mem_value!(w; a; 0x1000; 0x0);
         };
         (0; FLAG_CF | FLAG_OF)
     ];
@@ -263,7 +263,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x7ff9);
             assert_reg_value!(w; a; DX; 0x3);
-            assert_eq!(a.mem_read_16(0x1000).unwrap(), 0x7);
+            assert_mem_value!(w; a; 0x1000; 0x7);
         };
         (FLAG_CF | FLAG_OF; 0)
     ];
@@ -304,7 +304,7 @@ mod tests {
             // 0x37ffffff9
             assert_reg_value!(d; a; EAX; 0x7ffffff9);
             assert_reg_value!(d; a; EDX; 0x3);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x7);
+            assert_mem_value!(d; a; 0x1000; 0x7);
         };
         (FLAG_CF | FLAG_OF; 0)
     ];
@@ -320,7 +320,7 @@ mod tests {
         |a: Axecutor| {
             assert_reg_value!(d; a; EAX; 0x0);
             assert_reg_value!(d; a; EDX; 0x0);
-            assert_eq!(a.mem_read_32(0x1000).unwrap(), 0x0);
+            assert_mem_value!(d; a; 0x1000; 0x0);
         };
         (0; FLAG_CF | FLAG_OF)
     ];
@@ -359,7 +359,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x7ffffffffffffff9u64);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x7);
+            assert_mem_value!(q; a; 0x1000; 0x7);
         };
         (FLAG_CF | FLAG_OF; 0)
     ];
@@ -374,7 +374,7 @@ mod tests {
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x0);
-            assert_eq!(a.mem_read_64(0x1000).unwrap(), 0x0);
+            assert_mem_value!(q; a; 0x1000; 0x0);
         };
         (0; FLAG_CF | FLAG_OF)
     ];

@@ -168,7 +168,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use crate::{
-        assert_reg_value,
+        assert_mem_value, assert_reg_value,
         instructions::{axecutor::Axecutor, flags::*},
         jmp_test, test_async,
     };
@@ -207,7 +207,7 @@ mod tests {
         // Did we reach the end?
         assert_reg_value!(q; ax; RIP; rip + code.len() as u64);
         // 19 is offset of mov rax, 42, the instruction after call
-        assert_eq!(ax.mem_read_64(0x1000 - 8).expect("mem read"), rip + 19);
+        assert_mem_value!(q; ax; 0x1000 - 8; rip + 19);
     }];
 
     jmp_test![jmp_lcall_func_mov_rax_42_ret_lcall_mov_rax_50_call_func_nop;

@@ -232,7 +232,7 @@ ax_test![add_al_byte_ptr_rbx_cf;
     |a: Axecutor| {
         assert_reg_value!(b; a; AL; 0x1f);
         // Also make sure the source operand is unchanged
-        assert_eq!(a.mem_read_8(0x1000).unwrap(), 0xff);
+        assert_mem_value!(b; a; 0x1000; 0xff);
     };
     // On the left side of `;` are the flags that must be set after the instruction ran,
     // on the right are flags that must not be set
