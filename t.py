@@ -868,93 +868,65 @@ class TestCase:
     def __str__(self):
         dynamic_operands = self.dynamic_operands(self.instruction)
 
+        mem_start = 0x1000
+
+        # generate syntax for writing the given value to the operand (register or memory)
+        def operand_write(operand, value):
+            if isinstance(operand, RegisterOperand):
+                return f"write_reg_value!({operand.size_letter()}; a; {operand.name.upper()}; {ImmediateOperand(value).hexify(operand)});"
+            elif isinstance(operand, MemoryOperand):
+                # Set up base and index registers, as well as memory
+                return f"""write_reg_value!({operand.base_register.size_letter()}; a; {operand.base_register.name.upper()}; {hex(mem_start + operand.offset)});{
+f'{TestCase.NEWLINE}        write_reg_value!({operand.index_register.size_letter()}; a; {operand.index_register.name.upper()}; 0);' if operand.index_register is not None else ''}
+        a.mem_init_zero({hex(mem_start + operand.offset)}, {operand.size()}).unwrap();
+        a.mem_write_{operand.size() * 8}({hex(mem_start + operand.offset)}, {ImmediateOperand(value).hexify(operand)}).unwrap();"""
+            else:
+                raise ValueError("invalid operand type")
+
+        # generate syntax for asserting the given register/memory value
+        def assert_operand(operand, value):
+            if isinstance(operand, RegisterOperand):
+                return f"assert_reg_value!({operand.size_letter()}; a; {operand.name.upper()}; {ImmediateOperand(value).hexify(operand)});"
+            elif isinstance(operand, MemoryOperand):
+                # assert registers unchanged and memory changed
+                return f"""assert_reg_value!({operand.base_register.size_letter()}; a; {operand.base_register.name.upper()}; {hex(mem_start + operand.offset)});
+        assert_mem_value!({operand.size_letter()}; a; {hex(mem_start + operand.offset)}; {ImmediateOperand(value).hexify(operand)});"""
+            else:
+                raise ValueError("invalid operand type")
+
+        # Now just generate cases depending on the number of dynamic operands
         if len(dynamic_operands) == 0:
             return f"""// {self.instruction}
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: Axecutor| {{
-        todo!("Asset state of registers");
+        todo!("Asset state of registers and/or memory");
     }};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
         elif len(dynamic_operands) == 1:
-            if isinstance(dynamic_operands[0], RegisterOperand):
-                return f"""// {self.instruction}
+            return f"""// {self.instruction}
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
-        write_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])});
+        {operand_write(dynamic_operands[0], self.operand_values[0])}
     }};
     |a: Axecutor| {{
-        assert_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
+        {assert_operand(dynamic_operands[0], self.expected_values[0])}
     }};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
-            elif isinstance(dynamic_operands[0], MemoryOperand):
-                mem_start = 0x1000
-                return f"""// {self.instruction}
-ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
-    |a: &mut Axecutor| {{
-        write_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});{
-        f'{TestCase.NEWLINE}        write_reg_value!({dynamic_operands[0].index_register.size_letter()}; a; {dynamic_operands[0].index_register.name.upper()}; 0);' if dynamic_operands[0].index_register is not None else ''}
-        a.mem_init_zero({hex(mem_start +  + dynamic_operands[0].offset)}, {dynamic_operands[0].size()}).unwrap();
-        a.mem_write_{dynamic_operands[0].size() * 8}({hex(mem_start + dynamic_operands[0].offset)}, {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])}).unwrap();
-    }};
-    |a: Axecutor| {{
-        assert_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});
-        assert_mem_value!({dynamic_operands[0].size_letter()}; a; {hex(mem_start + dynamic_operands[0].offset)}; {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
-    }};
-    ({flags_to_str(self.flags_set, self.flags_not_set)})
-];"""
-            else:
-                raise ValueError("invalid dynamic operand")
-
         elif len(dynamic_operands) == 2:
-            if isinstance(dynamic_operands[0], RegisterOperand) and isinstance(dynamic_operands[1], RegisterOperand):
-                return f"""// {self.instruction}
-ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: &mut Axecutor| {{
-        write_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])});
-        write_reg_value!({dynamic_operands[1].size_letter()}; a; {dynamic_operands[1].name.upper()}; {ImmediateOperand(self.operand_values[1]).hexify(dynamic_operands[1])});
-    }};
-    |a: Axecutor| {{
-        assert_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
-        assert_reg_value!({dynamic_operands[1].size_letter()}; a; {dynamic_operands[1].name.upper()}; {ImmediateOperand(self.expected_values[1]).hexify(dynamic_operands[1])});
-    }};
-    ({flags_to_str(self.flags_set, self.flags_not_set)})
-];"""
-            elif isinstance(dynamic_operands[0], RegisterOperand) and isinstance(dynamic_operands[1], MemoryOperand):
-                mem_start = 0x1000
-                return f"""// {self.instruction}
+            return f"""// {self.instruction}
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
-        write_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])});
-        write_reg_value!({dynamic_operands[1].base_register.size_letter()}; a; {dynamic_operands[1].base_register.name.upper()}; {hex(mem_start)});{
-        f'{TestCase.NEWLINE}        write_reg_value!({dynamic_operands[1].index_register.size_letter()}; a; {dynamic_operands[1].index_register.name.upper()}; 0);' if dynamic_operands[1].index_register is not None else ''}
-        a.mem_init_zero({hex(mem_start + dynamic_operands[1].offset)}, {dynamic_operands[1].size()}).unwrap();
-        a.mem_write_{dynamic_operands[1].size() * 8}({hex(mem_start + dynamic_operands[1].offset)}, {ImmediateOperand(self.operand_values[1]).hexify(dynamic_operands[1])}).unwrap();
+        {operand_write(dynamic_operands[0], self.operand_values[0])}
+        {operand_write(dynamic_operands[1], self.operand_values[1])}
     }};
     |a: Axecutor| {{
-        assert_reg_value!({dynamic_operands[0].size_letter()}; a; {dynamic_operands[0].name.upper()}; {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
-        assert_mem_value!({dynamic_operands[1].size_letter()}; a; {hex(mem_start + dynamic_operands[1].offset)}; {ImmediateOperand(self.expected_values[1]).hexify(dynamic_operands[1])});
+        {assert_operand(dynamic_operands[0], self.expected_values[0])}
+        {assert_operand(dynamic_operands[1], self.expected_values[1])}
     }};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
-            elif isinstance(dynamic_operands[0], MemoryOperand) and isinstance(dynamic_operands[1], RegisterOperand):
-                mem_start = 0x1000
-                return f"""// {self.instruction}
-ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
-    |a: &mut Axecutor| {{
-        write_reg_value!({dynamic_operands[1].size_letter()}; a; {dynamic_operands[1].name.upper()}; {ImmediateOperand(self.operand_values[1]).hexify(dynamic_operands[1])});
-        write_reg_value!({dynamic_operands[0].base_register.size_letter()}; a; {dynamic_operands[0].base_register.name.upper()}; {hex(mem_start)});{
-        f'{TestCase.NEWLINE}        write_reg_value!({dynamic_operands[0].index_register.size_letter()}; a; {dynamic_operands[0].index_register.name.upper()}; 0);' if dynamic_operands[0].index_register is not None else ''}
-        a.mem_init_zero({hex(mem_start +  + dynamic_operands[0].offset)}, {dynamic_operands[0].size()}).unwrap();
-        a.mem_write_{dynamic_operands[0].size() * 8}({hex(mem_start + dynamic_operands[0].offset)}, {ImmediateOperand(self.operand_values[0]).hexify(dynamic_operands[0])}).unwrap();
-    }};
-    |a: Axecutor| {{
-        assert_reg_value!({dynamic_operands[1].size_letter()}; a; {dynamic_operands[1].name.upper()}; {ImmediateOperand(self.expected_values[1]).hexify(dynamic_operands[1])});
-        assert_mem_value!({dynamic_operands[0].size_letter()}; a; {hex(mem_start + dynamic_operands[0].offset)}; {ImmediateOperand(self.expected_values[0]).hexify(dynamic_operands[0])});
-    }};
-    ({flags_to_str(self.flags_set, self.flags_not_set)})
-];"""
-        else:
-            raise ValueError("invalid number of dynamic operands")
+        raise ValueError("invalid number of dynamic operands")
 
 
 def main():
