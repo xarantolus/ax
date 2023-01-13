@@ -26,6 +26,9 @@ pub const FLAG_ID: u64 = 0x200000; // ID Flag
 
 pub const FLAGS_UNAFFECTED: u64 = 0x7fffffffffffffff;
 
+// Flags that are supported for all instructions
+pub const SUPPORTED_FLAGS: u64 = FLAG_SF | FLAG_CF | FLAG_OF | FLAG_ZF | FLAG_PF;
+
 #[cfg(test)]
 pub(crate) const FLAG_LIST: [u64; 17] = [
     FLAG_CF, FLAG_PF, FLAG_AF, FLAG_ZF, FLAG_SF, FLAG_TF, FLAG_IF, FLAG_DF, FLAG_OF, FLAG_IOPL,
@@ -103,66 +106,68 @@ macro_rules! set_flags {
 
 
 				// Fail if any other flags should be set
-				assert_eq!(
-					flags_to_set & FLAG_TF,
-					0,
-					"flags: set_flags: FLAG_TF not implemented"
-				);
-				assert_eq!(
-					flags_to_set & FLAG_AF,
-					0,
-					"flags: set_flags: FLAG_AF not implemented"
-				);
-				assert_eq!(
-					flags_to_set & FLAG_IF,
-					0,
-					"flags: set_flags: FLAG_IF not implemented"
-				);
-				assert_eq!(
-					flags_to_set & FLAG_DF,
-					0,
-					"flags: set_flags: FLAG_DF not implemented"
-				);
-				assert_eq!(
-					flags_to_set & FLAG_IOPL,
-					0,
-					"flags: set_flags: FLAG_IOPL not implemented"
-				);
-				assert_eq!(
-					flags_to_set & FLAG_NT,
-					0,
-					"flags: set_flags: FLAG_NT not implemented"
-				);
-				assert_eq!(
-					flags_to_set & FLAG_RF,
-					0,
-					"flags: set_flags: FLAG_RF not implemented"
-				);
-				assert_eq!(
-					flags_to_set & FLAG_VM,
-					0,
-					"flags: set_flags: FLAG_VM not implemented"
-				);
-				assert_eq!(
-					flags_to_set & FLAG_AC,
-					0,
-					"flags: set_flags: FLAG_AC not implemented"
-				);
-				assert_eq!(
-					flags_to_set & FLAG_VIF,
-					0,
-					"flags: set_flags: FLAG_VIF not implemented"
-				);
-				assert_eq!(
-					flags_to_set & FLAG_VIP,
-					0,
-					"flags: set_flags: FLAG_VIP not implemented"
-				);
-				assert_eq!(
-					flags_to_set & FLAG_ID,
-					0,
-					"flags: set_flags: FLAG_ID not implemented"
-				);
+				if flags_to_set & !SUPPORTED_FLAGS != 0 {
+					assert_eq!(
+						flags_to_set & FLAG_TF,
+						0,
+						"flags: set_flags: FLAG_TF not implemented"
+					);
+					assert_eq!(
+						flags_to_set & FLAG_AF,
+						0,
+						"flags: set_flags: FLAG_AF not implemented"
+					);
+					assert_eq!(
+						flags_to_set & FLAG_IF,
+						0,
+						"flags: set_flags: FLAG_IF not implemented"
+					);
+					assert_eq!(
+						flags_to_set & FLAG_DF,
+						0,
+						"flags: set_flags: FLAG_DF not implemented"
+					);
+					assert_eq!(
+						flags_to_set & FLAG_IOPL,
+						0,
+						"flags: set_flags: FLAG_IOPL not implemented"
+					);
+					assert_eq!(
+						flags_to_set & FLAG_NT,
+						0,
+						"flags: set_flags: FLAG_NT not implemented"
+					);
+					assert_eq!(
+						flags_to_set & FLAG_RF,
+						0,
+						"flags: set_flags: FLAG_RF not implemented"
+					);
+					assert_eq!(
+						flags_to_set & FLAG_VM,
+						0,
+						"flags: set_flags: FLAG_VM not implemented"
+					);
+					assert_eq!(
+						flags_to_set & FLAG_AC,
+						0,
+						"flags: set_flags: FLAG_AC not implemented"
+					);
+					assert_eq!(
+						flags_to_set & FLAG_VIF,
+						0,
+						"flags: set_flags: FLAG_VIF not implemented"
+					);
+					assert_eq!(
+						flags_to_set & FLAG_VIP,
+						0,
+						"flags: set_flags: FLAG_VIP not implemented"
+					);
+					assert_eq!(
+						flags_to_set & FLAG_ID,
+						0,
+						"flags: set_flags: FLAG_ID not implemented"
+					);
+				}
 
 				a.state.rflags = new_flags;
 		}
