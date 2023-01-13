@@ -32,13 +32,13 @@ stats:
 	@$(PY) stats.py
 
 example-programs:
-	cd examples/programs && make build
+	cd examples/programs && $(MAKE) build
 
 watch:
-	make -j2 watch-debug web
+	$(MAKE) -j2 watch-debug web
 
 watch-debug:
-	$(MOLD) cargo watch -s "make debug"
+	$(MOLD) cargo watch -s "$(MAKE) debug"
 
 watch-tests:
 	$(MOLD) cargo watch --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
@@ -84,6 +84,6 @@ python-dependencies:
 
 clean:
 	rm -rf pkg target examples/web/node_modules examples/web/dist .vite
-	cd examples/programs && make clean
+	cd examples/programs && $(MAKE) clean
 	rm -f lcov.info
 
