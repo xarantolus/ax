@@ -251,7 +251,7 @@ Here are some useful links for more information about x86-64/AMD64 and the Syste
 
 * [Intel x64 Manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
 * [AMD64 Developer Guides](https://developer.amd.com/resources/developer-guides-manuals/)
-* [System V ABI](https://www.uclibc.org/docs/psABI-x86_64.pdf)
+* [System V ABI](https://gitlab.com/x86-psABIs/x86-64-ABI) ([direct link](https://gitlab.com/x86-psABIs/x86-64-ABI/-/jobs/artifacts/master/raw/x86-64-ABI/abi.pdf?job=build))
 
 ### Limitations
 Here are some limitations that could be inspiration for future features:
