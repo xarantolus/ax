@@ -224,6 +224,7 @@ impl Axecutor {
             self.state.finished,
             self.hooks.running
         );
+        // TODO: make it callable outside of hook, maybe return NULL then
         if !self.hooks.running {
             return Err(AxError::from("Cannot call stop() outside of a hook"));
         }

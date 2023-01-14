@@ -1,6 +1,7 @@
 use core::panic;
 use std::fmt::{self};
 
+use js_sys::Reflect;
 use wasm_bindgen::{JsError, JsValue};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -84,9 +85,15 @@ impl From<JsValue> for AxError {
 fn stringify_js_value(js: JsValue) -> String {
     match js.as_string() {
         Some(s) => s,
-        None => match js.js_typeof().as_string() {
-            Some(s) => format!("JsValue of type {}", s),
-            None => "stringify_js_value: value not a string and cannot apply typeof".to_string(),
+        None => match Reflect::get(&js, &JsValue::from("toString")) {
+            Ok(f) => js_sys::Function::from(f)
+                .call0(&js)
+                .unwrap_or_else(|_| JsValue::from("Error stringifying error object: Could not call toString() on JsValue"))
+                .as_string()
+                .unwrap_or_else(|| {
+                    "Error stringifying error object: Could not convert JsValue returnd from toString() to string".to_string()
+                }),
+            Err(_) => "".to_string(),
         },
     }
 }
