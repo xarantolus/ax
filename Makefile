@@ -34,7 +34,7 @@ ax:
 	$(MOLD) cargo build --release && cp target/release/ax$(EXE_SUFFIX) .
 
 # fmt will fail if switch or stats are not up to date
-precommit: build-web switch stats fmt test test-scripts build
+precommit: build-web switch stats fmt test test-scripts ax build
 
 test-scripts: python-dependencies
 	$(PY) t.py --test

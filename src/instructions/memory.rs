@@ -26,7 +26,10 @@ impl MemoryArea {
         s.push_str(&format!(
             "{}    name: {:?},\n",
             " ".repeat(i * 4),
-            self.name
+            match self.name {
+                Some(ref s) => s,
+                None => "<unnamed>",
+            }
         ));
         s.push_str(&format!(
             "{}    start: {:#x},\n",
@@ -40,9 +43,9 @@ impl MemoryArea {
         ));
         s.push_str(&format!("{}    data: [", " ".repeat(i * 4)));
 
-        if self.data.len() > 255 {
-            s.push_str("<too long to display>");
-        } else {
+        const MAX_LEN: usize = 255;
+
+        if self.data.len() < MAX_LEN {
             for (i, byte) in self.data.iter().enumerate() {
                 s.push_str(&format!("0x{:02x}", byte));
 
@@ -50,9 +53,25 @@ impl MemoryArea {
                     s.push_str(", ");
                 }
             }
+        } else {
+            s.push_str("<too long to display>");
         }
 
         s.push_str("],\n");
+
+        // Add a string-representation if all bytes are ascii bytes and the last byte is zero
+        if !self.data.is_empty()
+            && self.data.len() < MAX_LEN
+            && self.data[self.data.len() - 1] == 0
+            && self.data.iter().all(|b| b.is_ascii())
+        {
+            s.push_str(&format!(
+                "{}    string: {:?},\n",
+                " ".repeat(i * 4),
+                String::from_utf8_lossy(&self.data)
+            ));
+        }
+
         s.push_str(&format!("{}}}", " ".repeat(i * 4)));
 
         s
@@ -124,20 +143,60 @@ impl Axecutor {
             }
         }
 
-        // Check if address is within code area
+        // We are out of range -- try to collect the best possible error hints for the user
+        Err(self.collect_mem_error_hints(address, length, "Read".to_string()))
+    }
+
+    fn collect_mem_error_hints(&self, address: u64, length: u64, operation: String) -> AxError {
+        // Check if address is within the code area
         if address >= self.code_start_address
             && address < self.code_start_address + self.code_length
         {
-            return Err(AxError::from(format!(
-                "Could not read memory of length {} from code area at address {:#x}",
-                length, address
-            )));
+            return AxError::from(format!(
+                "Could not {} memory of length {} from code area at address {:#x}",
+                operation.to_lowercase(),
+                length,
+                address
+            ));
         }
 
-        Err(AxError::from(format!(
-            "Could not read memory of length {} at address {:#x}",
-            length, address
-        )))
+        // Otherwise, check if start or end address is within any of the memory areas
+        for area in &self.state.memory {
+            if address >= area.start && address < area.start + area.length {
+                return AxError::from(format!(
+                    "{} at address {:#x} of length {} over end of memory area {} (start {:#x}, length {})",
+                    operation,
+                    address,
+                    length,
+                    match &area.name {
+                        Some(name) => name,
+                        None => "<unnamed>",
+                    },
+                    area.start,
+                    area.length,
+                ));
+            }
+            if address + length > area.start && address + length <= area.start + area.length {
+                return AxError::from(format!(
+                    "{} at address {:#x} of length {} before start of memory area {} (start {:#x}, length {})",
+                                        operation,
+                    address,
+                    length,
+                    match &area.name {
+                        Some(name) => name,
+                        None => "<unnamed>",
+                    },
+                    area.start,
+                    area.length,
+                ));
+            }
+        }
+
+        // Otherwise, we are completely out of range
+        AxError::from(format!(
+            "Error during {} of length {} at address {:#x}: this address is not contained in any memory or code area",
+            operation.to_lowercase(), length, address
+        ))
     }
 
     /// Reads a 64-bit value from memory at `address`
@@ -222,10 +281,7 @@ impl Axecutor {
             }
         }
 
-        Err(AxError::from(format!(
-            "Could not write memory at address {:#x}",
-            address
-        )))
+        Err(self.collect_mem_error_hints(address, data.len() as u64, "Write".to_string()))
     }
 
     /// Writes a 64-bit value to memory at `address`
@@ -414,7 +470,7 @@ impl Axecutor {
 
     /// Initialize a memory area with the given data at a random address.
     /// The start address is returned.
-    pub fn init_anywhere(&mut self, data: Vec<u8>) -> Result<u64, AxError> {
+    pub fn init_anywhere(&mut self, data: Vec<u8>, name: Option<String>) -> Result<u64, AxError> {
         let mut start: u64 = 0x1000;
 
         loop {
@@ -424,7 +480,11 @@ impl Axecutor {
                 ));
             }
 
-            if self.mem_init_area(start, data.clone()).is_ok() {
+            let res = match &name {
+                Some(n) => self.mem_init_area_named(start, data.clone(), Some(n.clone())),
+                None => self.mem_init_area(start, data.clone()),
+            };
+            if res.is_ok() {
                 break;
             }
             start += data.len() as u64;
@@ -539,24 +599,24 @@ impl Axecutor {
         stack_layout.push(argv.len() as u64);
 
         // argv
-        for arg in argv {
+        for (i, arg) in argv.iter().enumerate() {
             let mut arg_bytes = Vec::from(arg.as_bytes());
             arg_bytes.push(0);
 
             // Allocate space for the string
-            let str_addr = self.init_anywhere(arg_bytes)?;
+            let str_addr = self.init_anywhere(arg_bytes, Some(format!("arg{}", i)))?;
             stack_layout.push(str_addr);
         }
         // argv[argc] = NULL
         stack_layout.push(0);
 
         // envp
-        for env in envp {
+        for (i, env) in envp.iter().enumerate() {
             let mut env_bytes = Vec::from(env.as_bytes());
             env_bytes.push(0);
 
             // Allocate space for the string
-            let str_addr = self.init_anywhere(env_bytes)?;
+            let str_addr = self.init_anywhere(env_bytes, Some(format!("env{}", i)))?;
             stack_layout.push(str_addr);
         }
 

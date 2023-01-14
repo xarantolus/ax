@@ -33,7 +33,7 @@ async fn main_impl() -> Result<i32, AxError> {
 
     let mut ax = Axecutor::from_binary(binary.as_slice())?;
 
-    ax.init_stack_program_start(0x2000, Vec::from(argv), envp)?;
+    ax.init_stack_program_start(0x4000, Vec::from(argv), envp)?;
 
     ax.hook_before_mnemonic(Syscall, |ax, _| {
         let syscall_num = ax.reg_read_64(SupportedRegister::RAX)?;
@@ -57,6 +57,9 @@ async fn main_impl() -> Result<i32, AxError> {
                 } else {
                     print!("{}", output_text);
                 }
+
+                // Return number of bytes written
+                ax.reg_write_64(SupportedRegister::RAX, rdx)?;
             }
             // Exit
             60 => {
@@ -70,7 +73,10 @@ async fn main_impl() -> Result<i32, AxError> {
         Ok(())
     })?;
 
-    ax.execute().await?;
+    // add axecutor string to error message
+    ax.execute()
+        .await
+        .map_err(|e| AxError::from(format!("{}\nAxecutor state:\n{}", e, ax.to_string())))?;
 
     let exit_code = ax.reg_read_64(SupportedRegister::RAX)?;
 

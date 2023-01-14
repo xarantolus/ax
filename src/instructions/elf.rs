@@ -37,20 +37,23 @@ impl Axecutor {
         let mut axecutor = Axecutor::new(
             text_section.content(),
             text_section.addr(),
-            if obj_file.entry_point() == 0 {
-                text_section.addr()
-            } else {
-                obj_file.entry_point()
+            match obj_file.entry_point() {
+                0 => text_section.addr(),
+                n => n,
             },
         )?;
 
         // See https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
-        for header in obj_file.program_header_iter() {
+        for (i, header) in obj_file.program_header_iter().enumerate() {
             match header.ph_type() {
                 ProgramType::LOAD => {
                     if header.memsz() > header.filesz() {
                         // Make sure we create the memory at full size and then write the first bytes, rest should be zeroed
-                        axecutor.mem_init_zero(header.vaddr(), header.memsz())?;
+                        axecutor.mem_init_zero_named(
+                            header.vaddr(),
+                            header.memsz(),
+                            format!("elf_zeroed_header{}", i),
+                        )?;
 
                         if header.content().len() > header.memsz() as usize {
                             return Err(AxError::from(
@@ -61,7 +64,11 @@ impl Axecutor {
 
                         axecutor.mem_write_bytes(header.vaddr(), header.content())?;
                     } else {
-                        axecutor.mem_init_area(header.vaddr(), header.content().to_vec())?;
+                        axecutor.mem_init_area_named(
+                            header.vaddr(),
+                            header.content().to_vec(),
+                            Some(format!("elf_header{}", i)),
+                        )?;
                     }
                 }
                 ProgramType::DYNAMIC => {
