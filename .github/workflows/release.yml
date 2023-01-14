@@ -16,19 +16,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Pull latest tags
-        run: git fetch --prune --unshallow --tags
-
-      - name: Check if tag to be created does not yet exist
-        run: |
-          TAG=v$(awk '$1 == "version" {print $3}' Cargo.toml  | head  | tr -d "\"" | head -n1)
-          if git rev-parse $TAG >/dev/null 2>&1; then
-            echo "Tag $TAG already exists"
-            exit 1
-          fi
-          echo "TAG=$TAG" >> $GITHUB_ENV
-        continue-on-error: true
-
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -41,12 +28,6 @@ jobs:
 
       - name: Run tests
         run: make precommit
-
-      - name: Set tag name
-        id: tag
-        run: |
-          echo "tag=${{ env.TAG }}" >> $GITHUB_ENV
-        if: env.TAG
 
   build-windows:
     name: "Build for Windows"
@@ -127,32 +108,51 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     needs: [test, build-windows, build-linux, build-wasm]
-    if: needs.test.outputs.tag
     steps:
-    # Download previously built artifacts
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Pull latest tags
+      run: git fetch --prune --unshallow --tags
+
+    - name: Check if tag to be created does not yet exist
+      run: |
+        TAG=v$(awk '$1 == "version" {print $3}' Cargo.toml  | head  | tr -d "\"" | head -n1)
+        if git rev-parse $TAG >/dev/null 2>&1; then
+          echo "Tag $TAG already exists"
+          exit 1
+        fi
+        echo "TAG=$TAG" >> $GITHUB_ENV
+      continue-on-error: true
+
     - name: Download Windows executable
       uses: actions/download-artifact@v2
       with:
         name: ax.exe
+      if: env.TAG
 
     - name: Download Linux executable
       uses: actions/download-artifact@v2
       with:
         name: ax
+      if: env.TAG
 
     - name: Download WebAssembly module
       uses: actions/download-artifact@v2
       with:
         name: pkg
+      if: env.TAG
 
     - name: Log in to NPM
       run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
       env:
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      if: env.TAG
 
     - name: Publish to NPM
       working-directory: pkg
       run: npm publish
+      if: env.TAG
 
     - name: GitHub Release
       uses: softprops/action-gh-release@v1
@@ -165,3 +165,4 @@ jobs:
         draft: true
         fail_on_unmatched_files: true
         generate_release_notes: true
+      if: env.TAG
