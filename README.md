@@ -105,7 +105,7 @@ The emulator will just stop when reaching the end of the code.
 </details>
 
 ### Emulate ELF binaries
-The emulator also has some convenience functions for handling Linux/ELF binaries. The [test site](https://ax.010.one) uses these convenience functions to emulate programs.
+The emulator also has some convenience functions for handling Linux/ELF binaries. The [demo site](https://ax.010.one) uses these convenience functions to emulate programs.
 
 <details>
 <summary>Open for more info on how to emulate ELF files</summary>

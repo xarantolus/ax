@@ -51,7 +51,7 @@ export default defineComponent({
 
     onMounted(async () => {
       termReset();
-      terminalRef.value?.term.writeln('Welcome to the AX test site! When you run a binary, the output will be shown here.');
+      terminalRef.value?.term.writeln('Welcome to the AX demo site! When you run a binary, the output will be shown here.');
     });
 
     const termWrite = (data: string | Uint8Array) => {

@@ -84,20 +84,17 @@ _start:
 	mov [0], rax
 
 newline:
-	# push all syscall clobber registers
 	push rax
 	push rdi
 	push rsi
 	push rdx
 
-	# write newline
 	mov rax, 1 # write system call
 	mov rdi, 1 # Stdout
 	lea rsi, [rip+.Lnewline] # pointer to newline
 	mov rdx, 1
 	syscall
 
-	# restore all syscall clobber registers
 	pop rdx
 	pop rsi
 	pop rdi
