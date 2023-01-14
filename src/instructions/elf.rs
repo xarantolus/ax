@@ -87,3 +87,67 @@ impl Axecutor {
         Ok(axecutor)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::instructions::tests::test_async;
+
+    // This macro is very limited as it only allows checking the first write call and exit code
+    macro_rules! test_binary {
+        [$name:ident; $binary_path:expr; $expected_output:expr; $expected_exit_code:expr] => {
+            test_async![$name; async {
+                use crate::instructions::generated::SupportedMnemonic;
+                use crate::instructions::registers::SupportedRegister;
+
+                let binary = include_bytes!($binary_path);
+
+                let mut ax = Axecutor::from_binary(binary).expect("Failed to parse binary");
+
+                ax.hook_before_mnemonic(SupportedMnemonic::Syscall, move |ax, _| {
+                    let syscall_num = ax.reg_read_64(SupportedRegister::RAX)?;
+                    let rdi = ax.reg_read_64(SupportedRegister::RDI)?;
+                    let rsi = ax.reg_read_64(SupportedRegister::RSI)?;
+                    let rdx = ax.reg_read_64(SupportedRegister::RDX)?;
+
+                    match syscall_num {
+                        // Write
+                        1 => {
+                            // rdi must be 0-2 (stdin, stdout, stderr) -- yes, we allow writing to stdin
+                            if rdi > 2 {
+                                return Err(AxError::from("write: invalid file descriptor").into());
+                            }
+
+                            let result_buf = ax.mem_read_bytes(rsi, rdx)?;
+                            let output_text = String::from_utf8(result_buf)?;
+
+                            assert_eq!(output_text, $expected_output, "Output of first write call does not match");
+
+                            // Return number of bytes written
+                            ax.reg_write_64(SupportedRegister::RAX, rdx)?;
+                        }
+                        // Exit
+                        60 => {
+                            ax.stop();
+                        }
+                        _ => {
+                            return Err(AxError::from(format!("Unsupported syscall: {}", syscall_num)).into());
+                        }
+                    }
+
+                    Ok(())
+                }).expect("Failed add hook before Syscall");
+
+                ax.execute().await.expect("Failed to execute");
+
+
+                let exit_code = ax.reg_read_64(SupportedRegister::RDI).expect("Failed to read exit code from RDI");
+                assert_eq!(exit_code, $expected_exit_code, "Exit code does not match");
+            }];
+        };
+    }
+
+    use super::*;
+
+    test_binary![test_hello_world; "../../testdata/hello_world.bin"; "Hello, World!\n"; 0];
+    test_binary![test_alphabet; "../../testdata/alphabet.bin"; "abcdefghijklmnopqrstuvwxyz\n"; 0];
+}
