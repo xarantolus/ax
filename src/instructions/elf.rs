@@ -45,6 +45,12 @@ impl Axecutor {
 
         // See https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
         for (i, header) in obj_file.program_header_iter().enumerate() {
+            if header.vaddr() == text_section.addr() {
+                // skip .text section -- we already loaded it
+                // Aspirationally this should go away once the memory implementation also holds the code
+                continue;
+            }
+
             match header.ph_type() {
                 ProgramType::LOAD => {
                     if header.memsz() > header.filesz() {

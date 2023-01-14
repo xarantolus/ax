@@ -141,7 +141,7 @@ impl Display for HookProcessor {
         for (mnem, hook) in self.mnemonic_hooks.iter() {
             writeln!(
                 f,
-                "    {:?}: {{ before: {}, after: {} }}",
+                "\n    {:?}: {{ before: {}, after: {} }}",
                 mnem,
                 hook.before.len(),
                 hook.after.len()

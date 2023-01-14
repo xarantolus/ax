@@ -1,5 +1,7 @@
 #![cfg(not(any(test, target_arch = "wasm32")))]
 
+use std::println;
+
 use ax_x86::instructions::{
     axecutor::Axecutor, errors::AxError, generated::SupportedMnemonic::Syscall,
     registers::SupportedRegister,
@@ -31,9 +33,16 @@ async fn main_impl() -> Result<i32, AxError> {
     let binary = std::fs::read(elf_path)
         .map_err(|e| AxError::from(format!("Failed to read file {}: {}", elf_path, e)))?;
 
+    println!(
+        "Emulating {} with ax v{}, {}",
+        elf_path,
+        ax_x86::version_info::version(),
+        ax_x86::version_info::commit()
+    );
+
     let mut ax = Axecutor::from_binary(binary.as_slice())?;
 
-    ax.init_stack_program_start(0x4000, Vec::from(argv), envp)?;
+    ax.init_stack_program_start(0x2000, Vec::from(argv), envp)?;
 
     ax.hook_before_mnemonic(Syscall, |ax, _| {
         let syscall_num = ax.reg_read_64(SupportedRegister::RAX)?;

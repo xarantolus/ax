@@ -176,6 +176,9 @@ impl Axecutor {
                     area.length,
                 ));
             }
+        }
+
+        for area in &self.state.memory {
             if address + length > area.start && address + length <= area.start + area.length {
                 return AxError::from(format!(
                     "{} at address {:#x} of length {} before start of memory area {} (start {:#x}, length {})",
@@ -383,12 +386,12 @@ impl Axecutor {
         name: Option<String>,
     ) -> Result<(), AxError> {
         // Make sure there's no overlapping area already defined, including code region
-        // if start >= self.code_start_address && start < self.code_start_address + self.code_length {
-        //     return Err(AxError::from(format!(
-        //         "Cannot initialize memory area {} at {:#x} (len={}), as it overlaps with the code section starting at {:#x} (len={})",
-        //         name.unwrap_or("<unnamed>".to_string()), start, data.len(), self.code_start_address, self.code_length
-        //     )));
-        // }
+        if start >= self.code_start_address && start < self.code_start_address + self.code_length {
+            return Err(AxError::from(format!(
+                "Cannot initialize memory area {} at {:#x} (len={}), as it overlaps with the code section starting at {:#x} (len={})",
+                name.unwrap_or_else(|| "<unnamed>".to_string()), start, data.len(), self.code_start_address, self.code_length
+            )));
+        }
 
         for area in &self.state.memory {
             if start >= area.start && start < area.start + area.length {
@@ -572,26 +575,6 @@ impl Axecutor {
             envp
         );
 
-        let mut stack_start: u64 = 0x1000;
-
-        loop {
-            if stack_start >= 0x7fff_ffff_ffff_ffff {
-                return Err(AxError::from(
-                    "Could not find a suitable stack start address",
-                ));
-            }
-
-            if self
-                .mem_init_zero_named(stack_start, length, "Stack".to_string())
-                .is_ok()
-            {
-                break;
-            }
-            stack_start <<= 1;
-        }
-
-        let mut stack_top = stack_start + length - 16;
-
         let stack_layout = &mut Vec::new();
 
         // First comes argc -- if the first instruction of the program is
@@ -622,6 +605,29 @@ impl Axecutor {
 
         // envp[0] = NULL
         stack_layout.push(0);
+
+        let mut stack_start: u64 = 0x1000;
+        loop {
+            if stack_start >= 0x7fff_ffff_ffff_ffff {
+                return Err(AxError::from(
+                    "Could not find a suitable stack start address",
+                ));
+            }
+
+            if self
+                .mem_init_zero_named(
+                    stack_start,
+                    length + (stack_layout.len() as u64) * 8,
+                    "Stack".to_string(),
+                )
+                .is_ok()
+            {
+                break;
+            }
+            stack_start <<= 1;
+        }
+
+        let mut stack_top = stack_start + length - 16;
 
         for val in stack_layout.iter().rev() {
             self.mem_write_64(stack_top, *val)?;
