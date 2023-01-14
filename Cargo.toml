@@ -1,6 +1,6 @@
 [package]
 name = "ax-x86"
-version = "0.3.2"
+version = "0.4.0"
 authors = ["xarantolus <xarantolus@protonmail.com>"]
 edition = "2018"
 license = "AGPL-3.0"
