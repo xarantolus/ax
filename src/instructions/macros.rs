@@ -1,4 +1,3 @@
-use crate::fatal_error;
 use crate::instructions::operand::Operand;
 use iced_x86::Instruction;
 
@@ -452,7 +451,6 @@ impl Axecutor {
     }
 }
 
-#[macro_export]
 macro_rules! calculate_rm_r {
     [u8f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         $self.calculate_rm_r_8f($i, $op, $flags_to_set, $flags_to_clear)
@@ -500,6 +498,8 @@ macro_rules! calculate_rm_r {
         calculate_rm_r![u64; $self; $i; $op; (set: 0; clear: 0)]
     };
 }
+
+pub(crate) use calculate_rm_r;
 
 // Functions used by the calculate_r_rm macro
 impl Axecutor {
@@ -860,7 +860,6 @@ impl Axecutor {
     }
 }
 
-#[macro_export]
 macro_rules! calculate_r_rm {
     [u8f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         $self.calculate_r_rm_8f($i, $op, $flags_to_set, $flags_to_clear)
@@ -908,6 +907,8 @@ macro_rules! calculate_r_rm {
         $self.calculate_r_rm_64_16($i, $op, $flags_to_set, $flags_to_clear)
     };
 }
+
+pub(crate) use calculate_r_rm;
 
 // Functions used by the calculate_rm_imm macro
 impl Axecutor {
@@ -1498,7 +1499,6 @@ impl Axecutor {
     }
 }
 
-#[macro_export]
 macro_rules! calculate_rm_imm {
     [u8f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         $self.calculate_rm_imm_8f($i, $op, $flags_to_set, $flags_to_clear)
@@ -1558,6 +1558,8 @@ macro_rules! calculate_rm_imm {
         $self.calculate_rm_imm_64f_8($i, $op, $flags_to_set, $flags_to_clear)
     };
 }
+
+pub(crate) use calculate_rm_imm;
 
 // Functions used by the calculate_rm macro
 impl Axecutor {
@@ -1718,7 +1720,6 @@ impl Axecutor {
     }
 }
 
-#[macro_export]
 macro_rules! calculate_rm {
     [u8f; $self:expr; $i:expr; $op:expr; (set: $flags_to_set:expr; clear: $flags_to_clear:expr)] => {
         $self.calculate_rm_8f($i, $op, $flags_to_set, $flags_to_clear)
@@ -1734,7 +1735,8 @@ macro_rules! calculate_rm {
     };
 }
 
-#[macro_export]
+pub(crate) use calculate_rm;
+
 macro_rules! fatal_error {
     ($message:expr, $($arg:tt)*) => {{
         #[cfg(all(target_arch = "wasm32", not(test)))]
@@ -1761,22 +1763,22 @@ macro_rules! fatal_error {
         }
     }};
 }
+pub(crate) use fatal_error;
 
-#[macro_export]
 macro_rules! assert_fatal {
     ($cond:expr, $message:expr, $($arg:tt)*) => {{
         if !($cond) {
-            $crate::fatal_error!($message, $($arg)*);
+            $crate::instructions::macros::fatal_error!($message, $($arg)*);
         }
     }};
     ($cond:expr, $message:expr) => {{
         if !($cond) {
-            $crate::fatal_error!($message);
+            $crate::instructions::macros::fatal_error!($message);
         }
     }};
 }
+pub(crate) use assert_fatal;
 
-#[macro_export]
 macro_rules! opcode_unimplemented {
     ($message:expr) => {{
         #[cfg(target_arch = "wasm32")]
@@ -1794,3 +1796,5 @@ macro_rules! opcode_unimplemented {
         }
     }};
 }
+
+pub(crate) use opcode_unimplemented;

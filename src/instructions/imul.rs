@@ -4,8 +4,8 @@ use iced_x86::Mnemonic::Imul;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
-use crate::fatal_error;
 use crate::instructions::flags::*;
+use crate::instructions::macros::fatal_error;
 use crate::instructions::operand::Operand;
 use crate::instructions::registers::SupportedRegister::*;
 
@@ -511,8 +511,10 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
+    use crate::instructions::axecutor::Axecutor;
+    use crate::instructions::tests::{
+        assert_mem_value, assert_reg_value, ax_test, write_reg_value,
+    };
     use iced_x86::Register::*;
 
     // imul ax, bx, 0x5

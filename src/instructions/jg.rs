@@ -5,9 +5,12 @@ use iced_x86::OpKind;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+
 use crate::instructions::flags::*;
+
+use crate::instructions::macros::fatal_error;
+use crate::instructions::macros::opcode_unimplemented;
 use crate::instructions::registers::SupportedRegister::*;
-use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_jg(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -105,8 +108,7 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-
-    use crate::jmp_test;
+    use crate::instructions::tests::{assert_reg_value, jmp_test};
 
     jmp_test![mov_rcx_6_cmp_rcx_5_jg_end_mov_rcx_42_end_nop;
         start: 0x401010; end: 0x401026;

@@ -5,9 +5,9 @@ use iced_x86::Mnemonic::Inc;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
-
-use crate::calculate_rm;
-use crate::{fatal_error, opcode_unimplemented};
+use crate::instructions::macros::calculate_rm;
+use crate::instructions::macros::fatal_error;
+use crate::instructions::macros::opcode_unimplemented;
 
 impl Axecutor {
     pub fn mnemonic_inc(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -105,8 +105,10 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
+    use crate::instructions::axecutor::Axecutor;
+    use crate::instructions::tests::{
+        assert_mem_value, assert_reg_value, ax_test, write_reg_value,
+    };
     use iced_x86::Register::*;
 
     // inc al

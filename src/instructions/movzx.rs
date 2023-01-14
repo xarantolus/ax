@@ -4,9 +4,11 @@ use iced_x86::Mnemonic::Movzx;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
-use crate::instructions::flags::*;
 
-use crate::{calculate_r_rm, calculate_rm_r, fatal_error};
+use crate::instructions::flags::*;
+use crate::instructions::macros::calculate_r_rm;
+use crate::instructions::macros::calculate_rm_r;
+use crate::instructions::macros::fatal_error;
 
 impl Axecutor {
     pub fn mnemonic_movzx(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -80,8 +82,8 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, ax_test, write_reg_value};
+    use crate::instructions::axecutor::Axecutor;
+    use crate::instructions::tests::{assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
 
     // movzx ax, bl

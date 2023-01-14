@@ -7,8 +7,9 @@ use iced_x86::Register;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
+use crate::instructions::macros::fatal_error;
+use crate::instructions::macros::opcode_unimplemented;
 use crate::instructions::registers::SupportedRegister;
-use crate::{fatal_error, opcode_unimplemented};
 
 impl Axecutor {
     pub fn mnemonic_pop(&mut self, i: Instruction) -> Result<(), AxError> {

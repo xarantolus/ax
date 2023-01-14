@@ -3,10 +3,8 @@ use elf_rs::*;
 use std::string::FromUtf8Error;
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::{
-    debug_log,
-    instructions::{axecutor::Axecutor, errors::AxError},
-};
+use crate::instructions::debug::debug_log;
+use crate::instructions::{axecutor::Axecutor, errors::AxError};
 
 impl From<Error> for AxError {
     fn from(err: Error) -> Self {

@@ -57,7 +57,6 @@ pub(crate) fn ax_test_runner<S, A>(
     });
 }
 
-#[macro_export]
 #[cfg(test)]
 macro_rules! ax_test {
     [$test_name:ident; $($bytes:expr),*; $asserts:expr; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
@@ -93,7 +92,9 @@ macro_rules! ax_test {
     };
 }
 
-#[macro_export]
+#[cfg(test)]
+pub(crate) use ax_test;
+
 #[cfg(test)]
 macro_rules! test_async {
     ($test_name:ident; $test:expr) => {
@@ -117,7 +118,9 @@ macro_rules! test_async {
     };
 }
 
-#[macro_export]
+#[cfg(test)]
+pub(crate) use test_async;
+
 #[cfg(test)]
 macro_rules! assert_reg_value {
     [b; $axecutor:expr; $reg:expr; $value:expr] => {
@@ -162,7 +165,9 @@ macro_rules! assert_reg_value {
     };
 }
 
-#[macro_export]
+#[cfg(test)]
+pub(crate) use assert_reg_value;
+
 #[cfg(test)]
 macro_rules! assert_mem_value {
     [b; $axecutor:expr; $addr:expr; $value:expr] => {
@@ -199,22 +204,9 @@ macro_rules! assert_mem_value {
     };
 }
 
-#[macro_export]
 #[cfg(test)]
-macro_rules! assert_flags {
-    ($axecutor:expr; $($flag:expr),*) => {
-        $(
-            assert_eq!(
-                $axecutor.get_flag($flag),
-                true,
-                "expected flag {:?} to be set",
-                $flag
-            );
-        )*
-    };
-}
+pub(crate) use assert_mem_value;
 
-#[macro_export]
 #[cfg(test)]
 macro_rules! write_reg_value {
     (b; $axecutor:expr; $reg:expr; $value:expr) => {
@@ -259,7 +251,9 @@ macro_rules! write_reg_value {
     };
 }
 
-#[macro_export]
+#[cfg(test)]
+pub(crate) use write_reg_value;
+
 #[cfg(test)]
 macro_rules! code_with_nops {
     ($($bytes:expr),*; $count:expr; $($bytes2:expr),*) => {
@@ -275,7 +269,9 @@ macro_rules! code_with_nops {
     };
 }
 
-#[macro_export]
+#[cfg(test)]
+pub(crate) use code_with_nops;
+
 #[cfg(test)]
 macro_rules! jmp_test {
     [$name:ident; start: $initial_rip:expr; end: $final_rip:expr; $($bytes_start:expr),*; $count:expr; $($bytes_end:expr),*; ($flags_to_set:expr; $flags_not_to_set:expr)] => {
@@ -297,10 +293,10 @@ macro_rules! jmp_test {
         fn $name() {
             async_std::task::block_on(async {
                 use $crate::instructions::errors::AxError;
-                use $crate::code_with_nops;
-                use $crate::fatal_error;
+                use $crate::instructions::tests::code_with_nops;
+                use $crate::instructions::macros::fatal_error;
                 use $crate::instructions::axecutor::Axecutor;
-                use $crate::assert_reg_value;
+                use $crate::instructions::tests::assert_reg_value;
                 use iced_x86::Register::*;
 
                 let bytes = code_with_nops!($($bytes_start),*; $count; $($bytes_end),*);
@@ -342,3 +338,6 @@ macro_rules! jmp_test {
         }
     };
 }
+
+#[cfg(test)]
+pub(crate) use jmp_test;

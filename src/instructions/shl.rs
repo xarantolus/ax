@@ -6,11 +6,11 @@ use iced_x86::Mnemonic::Shl;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
-use crate::calculate_rm_r;
-use crate::fatal_error;
+use super::macros::calculate_rm_imm;
 use crate::instructions::flags::*;
 
-use crate::calculate_rm_imm;
+use crate::instructions::macros::calculate_rm_r;
+use crate::instructions::macros::fatal_error;
 
 impl Axecutor {
     pub fn mnemonic_shl(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -302,8 +302,10 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
+    use crate::instructions::axecutor::Axecutor;
+    use crate::instructions::tests::{
+        assert_mem_value, assert_reg_value, ax_test, write_reg_value,
+    };
     use iced_x86::Register::*;
 
     // shl bl, 0x0

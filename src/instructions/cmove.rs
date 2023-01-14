@@ -4,9 +4,12 @@ use iced_x86::Mnemonic::Cmove;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;
+
 use crate::instructions::flags::*;
 
-use crate::{calculate_r_rm, fatal_error};
+use crate::instructions::macros::calculate_r_rm;
+
+use crate::instructions::macros::fatal_error;
 
 impl Axecutor {
     pub fn mnemonic_cmove(&mut self, i: Instruction) -> Result<(), AxError> {

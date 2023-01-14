@@ -6,7 +6,9 @@ use super::axecutor::Axecutor;
 use super::errors::AxError;
 use crate::instructions::flags::*;
 
-use crate::{calculate_rm, fatal_error};
+use crate::instructions::macros::fatal_error;
+
+use crate::instructions::macros::calculate_rm;
 
 impl Axecutor {
     pub fn mnemonic_setb(&mut self, i: Instruction) -> Result<(), AxError> {

@@ -4,7 +4,8 @@ use iced_x86::Mnemonic::Syscall;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
-use crate::fatal_error;
+use crate::instructions::macros::fatal_error;
+
 use crate::instructions::generated::SupportedMnemonic;
 
 impl Axecutor {

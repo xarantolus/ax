@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
-use crate::{debug_log, instructions::registers::SupportedRegister};
+use crate::instructions::{debug::debug_log, macros::assert_fatal, registers::SupportedRegister};
 
 use super::{axecutor::Axecutor, errors::AxError};
 
@@ -232,7 +232,7 @@ impl Axecutor {
 
     /// Writes a 32-bit value to memory at `address`
     pub fn mem_write_32(&mut self, address: u64, data: u64) -> Result<(), AxError> {
-        crate::assert_fatal!(
+        assert_fatal!(
             data <= u32::MAX as u64,
             "Could not write {:x} to 4 bytes of memory, value is too large",
             data
@@ -243,7 +243,7 @@ impl Axecutor {
 
     /// Writes a 16-bit value to memory at `address`
     pub fn mem_write_16(&mut self, address: u64, data: u64) -> Result<(), AxError> {
-        crate::assert_fatal!(
+        assert_fatal!(
             data <= u16::MAX as u64,
             "Could not write {:x} to 2 bytes of memory, value is too large",
             data
@@ -253,7 +253,7 @@ impl Axecutor {
 
     /// Writes an 8-bit value to memory at `address`
     pub fn mem_write_8(&mut self, address: u64, data: u64) -> Result<(), AxError> {
-        crate::assert_fatal!(
+        assert_fatal!(
             data <= u8::MAX as u64,
             "Could not write {:x} to 1 byte of memory, value is too large",
             data

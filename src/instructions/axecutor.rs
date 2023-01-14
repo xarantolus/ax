@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
-use crate::debug_log;
+use crate::instructions::debug::debug_log;
 use crate::instructions::flags::FLAG_TO_NAMES;
 
 use super::errors::AxError;
@@ -291,7 +291,8 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_async;
+    use crate::instructions::tests::test_async;
+
     use iced_x86::Register;
 
     #[test]
@@ -310,7 +311,7 @@ mod tests {
         let mut ax = Axecutor::new(&code, 0x1000, 0x1000).unwrap();
         ax.init_stack(0).expect("Failed to init stack");
         if let Err(e) = ax.execute().await {
-            crate::fatal_error!("Failed to execute: {:?}", e);
+            crate::instructions::macros::fatal_error!("Failed to execute: {:?}", e);
         }
         assert!(ax.state.finished);
     }];

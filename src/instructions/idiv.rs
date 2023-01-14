@@ -5,7 +5,8 @@ use iced_x86::Mnemonic::Idiv;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
-use crate::fatal_error;
+use crate::instructions::macros::fatal_error;
+
 use crate::instructions::operand::Operand;
 use crate::instructions::registers::SupportedRegister::*;
 
@@ -152,9 +153,9 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::super::axecutor::Axecutor;
-    use crate::{
-        assert_reg_value, ax_test, instructions::registers::SupportedRegister, write_reg_value,
-    };
+
+    use crate::instructions::registers::SupportedRegister;
+    use crate::instructions::tests::{assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
 
     async fn assert_divide_by_zero_error(code: &[u8]) {

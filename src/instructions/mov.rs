@@ -5,9 +5,13 @@ use iced_x86::Mnemonic::Mov;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
+use super::macros::calculate_rm_imm;
 use crate::instructions::flags::FLAGS_UNAFFECTED;
-use crate::{calculate_r_rm, calculate_rm_imm, calculate_rm_r};
-use crate::{fatal_error, opcode_unimplemented};
+
+use crate::instructions::macros::calculate_r_rm;
+use crate::instructions::macros::calculate_rm_r;
+use crate::instructions::macros::fatal_error;
+use crate::instructions::macros::opcode_unimplemented;
 
 impl Axecutor {
     pub fn mnemonic_mov(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -454,8 +458,10 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
+    use crate::instructions::axecutor::Axecutor;
+    use crate::instructions::tests::{
+        assert_mem_value, assert_reg_value, ax_test, write_reg_value,
+    };
     use iced_x86::Register::*;
 
     // mov byte ptr [rsp+8], bl

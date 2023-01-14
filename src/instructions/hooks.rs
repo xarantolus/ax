@@ -23,7 +23,7 @@ use crate::instructions::generated::SupportedMnemonic;
 
 use super::{axecutor::Axecutor, errors::AxError};
 
-use crate::debug_log;
+use crate::instructions::debug::debug_log;
 
 #[cfg(all(target_arch = "wasm32", not(test)))]
 type Function = js_sys::Function;
@@ -401,13 +401,9 @@ async fn run_function(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        assert_reg_value,
-        instructions::{
-            axecutor::Axecutor, generated::SupportedMnemonic, registers::SupportedRegister::*,
-        },
-        test_async, write_reg_value,
-    };
+    use crate::instructions::axecutor::Axecutor;
+    use crate::instructions::tests::{assert_reg_value, test_async, write_reg_value};
+    use iced_x86::Register::*;
 
     test_async![hook_before_mnemonic; async {
         let mut ax = Axecutor::new(

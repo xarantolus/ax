@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 
 use iced_x86::Instruction;
 
-use crate::debug_log;
+use crate::instructions::debug::debug_log;
 
 use super::{axecutor::Axecutor, errors::AxError, registers::SupportedRegister};
 

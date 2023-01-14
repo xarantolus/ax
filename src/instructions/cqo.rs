@@ -4,7 +4,8 @@ use iced_x86::Mnemonic::Cqo;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
-use crate::fatal_error;
+use crate::instructions::macros::fatal_error;
+
 use crate::instructions::registers::SupportedRegister::*;
 
 impl Axecutor {
@@ -38,8 +39,8 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::{assert_reg_value, ax_test, write_reg_value};
+    use crate::instructions::axecutor::Axecutor;
+    use crate::instructions::tests::{assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
 
     // cqo

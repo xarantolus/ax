@@ -1,7 +1,7 @@
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Endbr64;
 
-use crate::fatal_error;
+use crate::instructions::macros::fatal_error;
 
 use super::axecutor::Axecutor;
 use super::errors::AxError;

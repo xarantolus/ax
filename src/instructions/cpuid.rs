@@ -6,9 +6,9 @@ use iced_x86::Mnemonic::Cpuid;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
-use crate::instructions::registers::SupportedRegister;
+use crate::instructions::macros::fatal_error;
 
-use crate::fatal_error;
+use crate::instructions::registers::SupportedRegister;
 
 impl Axecutor {
     pub fn mnemonic_cpuid(&mut self, i: Instruction) -> Result<(), AxError> {

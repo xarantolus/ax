@@ -6,7 +6,6 @@ extern "C" {
     pub(crate) fn js_debug_log(a: &str);
 }
 
-#[macro_export]
 macro_rules! debug_log {
     ($str:expr) => {
         #[cfg(all(target_arch = "wasm32", debug_assertions, not(test)))]
@@ -33,3 +32,5 @@ macro_rules! debug_log {
         }
     };
 }
+
+pub(crate) use debug_log;

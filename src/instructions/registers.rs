@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::{assert_fatal, debug_log, instructions::errors::AxError};
+use crate::instructions::{debug::debug_log, errors::AxError, macros::assert_fatal};
 
 use super::axecutor::Axecutor;
 

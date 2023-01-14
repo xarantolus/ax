@@ -6,9 +6,10 @@ use iced_x86::OpKind;
 use super::axecutor::Axecutor;
 use super::errors::AxError;
 
+use crate::instructions::macros::fatal_error;
+use crate::instructions::macros::opcode_unimplemented;
 use crate::instructions::operand::Operand;
 use crate::instructions::registers::SupportedRegister::*;
-use crate::{fatal_error, opcode_unimplemented};
 
 macro_rules! push_rip {
     ($self:ident) => {{
@@ -167,11 +168,8 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        assert_mem_value, assert_reg_value,
-        instructions::{axecutor::Axecutor, flags::*},
-        jmp_test, test_async,
-    };
+    use crate::instructions::tests::{assert_mem_value, assert_reg_value, jmp_test, test_async};
+    use crate::instructions::{axecutor::Axecutor, flags::*};
     use iced_x86::Register::*;
 
     test_async![test_call_rel32_64; async {
@@ -193,7 +191,7 @@ mod tests {
             .expect("Failed to init memory");
 
         if let Err(e) = ax.execute().await {
-            crate::fatal_error!("Failed to execute: {:?}", e);
+            crate::instructions::macros::fatal_error!("Failed to execute: {:?}", e);
         }
 
         assert!(
