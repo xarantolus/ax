@@ -1,8 +1,13 @@
-.PHONY: build debug watch test test-local test-node test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies
+.PHONY: build debug watch test test-local test-node test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
   MOLD := mold -run
+endif
+
+EXE_SUFFIX:=
+ifeq ($(OS),Windows_NT)
+  EXE_SUFFIX:=.exe
 endif
 
 PY_INSTALLED := $(shell which py 2> /dev/null)
@@ -21,6 +26,10 @@ build:
 
 debug:
 	$(MOLD) wasm-pack build --target web --debug
+
+bin: ax
+ax:
+	$(MOLD) cargo build --release && cp target/release/ax$(EXE_SUFFIX) .
 
 # fmt will fail if switch or stats are not up to date
 precommit: build-web switch stats fmt test test-scripts build

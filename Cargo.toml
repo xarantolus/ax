@@ -15,6 +15,10 @@ build = "src/build.rs"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[[bin]]
+name = "ax"
+path = "src/bin.rs"
+
 [features]
 default = ["console_error_panic_hook"]
 
