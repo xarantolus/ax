@@ -183,18 +183,18 @@ If you run into problems setting up the development tools or have any other ques
 
 The [`Makefile`](Makefile) has a lot of targets that can be useful for development. The `test` target runs tests both on your native machine and in WASM via NodeJS, making sure implemented instructions behave as expected in the target environment.
 
-Please format the code using `make fmt` before submitting a pull request. Also make sure that `make precommit` passes.
+For any changes you want to make, you can branch off from the `develop` branch. Please format the code using `make fmt` before submitting a pull request and make sure that `make precommit` passes.
 
 ### Development setup
 If you want to develop in a Docker container, there's a [Dev Container](https://containers.dev) configuration provided in the repository. I would however recommend setting up the development tools on your native machine:
 
 1. Make sure you have installed Rust/Cargo, [`wasm-pack`](https://rustwasm.github.io/wasm-pack/installer/), Node.js, NPM, Python, PIP, Make, GCC and the GNU Assembler
    - You can optionally install [mold](https://github.com/rui314/mold) to speed up link times (mostly for tests); the Makefile will automatically use it if it's installed
-2. You should now be able to build the WebAssembly module with `make`
+2. You should now be able to build the WebAssembly module with `make` (this will also build a native binary `ax`)
 3. You can run `make dependencies` to install `cargo-watch`, `cargo-tarpaulin` (for generating test coverage info files) and python script dependencies
-4. Try out running `cargo test` or `make watch-tests` to run tests
+4. Try out running `make test` or `make watch-tests` to run tests
 5. Run `make watch-debug` in one terminal to rebuild the WebAssembly module on changes, then run `make web` in another terminal to start the development server. You can also just run `make watch`, which runs both in the same terminal
-6. Open the local example site and make changes! (link should be in the `make web` output)
+6. Open the local example site and make changes! (link should be in the `make web`/`make watch` output)
 
 #### How to implement a new mnemonic
 The [`generate.py`](generate.py) script is used for generating instruction implementation stubs. You can e.g. run `python3 generate.py push` to generate a file for all instruction mnemonics that start with `push`; if you only want more exact matches use `push_` as argument. Note that you must have run a build for the WebAssembly package, as otherwise the script won't be able to find the files from the [`iced-x86` crate](https://crates.io/crates/iced-x86) that are used for generating the stubs.
@@ -269,7 +269,7 @@ Here are some limitations that could be inspiration for future features:
   * Memory for code currently is basically its own implementation instead of just being stored using the normal memory implementation
   * Segments, access restrictions, page management etc. is missing
 * ELF file parsing is currently really basic
-  * Binaries with libc don't work due to relocations etc. not being implemented
+  * Binaries with libc don't work due to segments etc. not being implemented
   * Basically only very basic binaries work
 
 ### Ideas

@@ -238,7 +238,7 @@ export default defineComponent({
             ax.write_fs(rsi);
 
             if (ax.read_fs() !== rsi) {
-              throw "arch_prctl: failed to set FS";
+              throw new Error("arch_prctl: failed to set FS");
             }
 
             console.log("Set FS to " + ax.read_fs().toString(16));
