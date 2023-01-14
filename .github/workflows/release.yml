@@ -127,7 +127,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     needs: [test, build-windows, build-linux, build-wasm]
-    if: ${{ needs.test.outputs.tag }}
+    if: needs.test.outputs.tag
     steps:
     # Download previously built artifacts
     - name: Download Windows executable
