@@ -1,4 +1,4 @@
-name: Release WebAssembly Module
+name: Release
 
 on:
   push:
