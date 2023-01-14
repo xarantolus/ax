@@ -9,64 +9,159 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  release:
-    name: Build release
+  test:
+    name: "Check & Test"
     runs-on: ubuntu-latest
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v3
+      - name: Check out repository
+        uses: actions/checkout@v3
 
-    - name: Pull latest tags
-      run: git fetch --prune --unshallow --tags
+      - name: Pull latest tags
+        run: git fetch --prune --unshallow --tags
 
-    - name: Check if tag to be created does not yet exist
-      run: |
-        TAG=v$(awk '$1 == "version" {print $3}' Cargo.toml  | head  | tr -d "\"" | head -n1)
-        if git rev-parse $TAG >/dev/null 2>&1; then
-          echo "Tag $TAG already exists"
-          exit 1
-        fi
-        echo "TAG=$TAG" >> $GITHUB_ENV
-      continue-on-error: true
+      - name: Check if tag to be created does not yet exist
+        run: |
+          TAG=v$(awk '$1 == "version" {print $3}' Cargo.toml  | head  | tr -d "\"" | head -n1)
+          if git rev-parse $TAG >/dev/null 2>&1; then
+            echo "Tag $TAG already exists"
+            exit 1
+          fi
+          echo "TAG=$TAG" >> $GITHUB_ENV
+        continue-on-error: true
 
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install wasm-pack
+        run:  curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Run tests
+        run: make precommit
+
+      - name: Set tag name
+        id: tag
+        run: |
+          echo ::set-output name=tag::${env.TAG}
+        if: env.TAG
+
+  build-windows:
+    name: "Build for Windows"
+    runs-on: windows-latest
+    needs: test
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Build executable
+        run: make bin
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v2
+        with:
+          name: ax.exe
+          path: target/release/ax.exe
+
+  build-linux:
+    name: "Build for Linux"
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Build executable
+        run: make bin
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v2
+        with:
+          name: ax
+          path: target/release/ax
+
+  build-wasm:
+    name: "Build for WebAssembly"
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install wasm-pack
+        run:  curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WebAssembly module
+        run: make build
+
+      - name: Upload WebAssembly module
+        uses: actions/upload-artifact@v2
+        with:
+          name: pkg
+          path: pkg/
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-linux, build-wasm]
+    if: jobs.test.outputs.tag
+    steps:
+    # Download previously built artifacts
+    - name: Download Windows executable
+      uses: actions/download-artifact@v2
       with:
-        profile: minimal
-        toolchain: stable
-        override: true
-      if: env.TAG
+        name: ax.exe
 
-    - name: Install wasm-pack
-      run:  curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-      if: env.TAG
+    - name: Download Linux executable
+      uses: actions/download-artifact@v2
+      with:
+        name: ax
 
-    # Only release if the tests pass
-    - name: Run tests
-      run: make precommit
-      if: env.TAG
-
-    - name: Build
-      run: make build
-      if: env.TAG
+    - name: Download WebAssembly module
+      uses: actions/download-artifact@v2
+      with:
+        name: pkg
 
     - name: Log in to NPM
       run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
       env:
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      if: env.TAG
 
     - name: Publish to NPM
       working-directory: pkg
       run: npm publish
-      if: env.TAG
 
     - name: GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        files: pkg/*
+        files: |
+          pkg/*
+          ax.exe
+          ax
+        tag_name: ${{ jobs.test.outputs.tag }}
         draft: true
         fail_on_unmatched_files: true
         generate_release_notes: true
-        tag_name: ${{ env.TAG }}
-      if: env.TAG
