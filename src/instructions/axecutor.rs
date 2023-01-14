@@ -198,6 +198,7 @@ impl Axecutor {
     }
 
     /// This function should be returned from a hook to indicate the state should be kept and execution should continue.
+    #[cfg(all(target_arch = "wasm32", not(test)))]
     pub fn commit(&self) -> Result<JsValue, AxError> {
         debug_log!(
             "Calling Axecutor::commit, finished: {}, hooks_running: {}",
@@ -218,6 +219,7 @@ impl Axecutor {
     }
 
     /// This function should be returned from a hook to indicate the state should be kept and execution should stop.
+    #[cfg(all(target_arch = "wasm32", not(test)))]
     pub fn stop(&mut self) -> Result<JsValue, AxError> {
         debug_log!(
             "Calling Axecutor::stop, finished: {}, hooks_running: {}",
@@ -234,7 +236,19 @@ impl Axecutor {
         self.commit()
     }
 
+    #[cfg(not(all(target_arch = "wasm32", not(test))))]
+    pub fn stop(&mut self) {
+        debug_log!(
+            "Calling Axecutor::stop, finished: {}, hooks_running: {}",
+            self.state.finished,
+            self.hooks.running
+        );
+
+        self.state.finished = true;
+    }
+
     /// This function should be returned from a hook to indicate the state should *not* be kept, but execution should continue.
+    #[cfg(all(target_arch = "wasm32", not(test)))]
     pub fn unchanged(&self) -> JsValue {
         debug_log!(
             "Calling Axecutor::unchanged, finished: {}, hooks_running: {}",
@@ -244,6 +258,7 @@ impl Axecutor {
         JsValue::NULL
     }
 
+    #[cfg(all(target_arch = "wasm32", not(test)))]
     pub(crate) fn state_from_committed(&mut self, value: JsValue) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::state_from_committed, finished: {}, hooks_running: {}",

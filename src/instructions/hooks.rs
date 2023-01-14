@@ -1,15 +1,23 @@
 extern crate lazy_static;
-use js_sys::{self, Array, Function};
+
+#[cfg(all(target_arch = "wasm32", not(test)))]
+use js_sys::Array;
+#[cfg(all(target_arch = "wasm32", not(test)))]
+use wasm_bindgen::prelude::*;
+#[cfg(all(target_arch = "wasm32", not(test)))]
+use wasm_bindgen::{JsCast, JsValue};
+#[cfg(all(target_arch = "wasm32", not(test)))]
+use wasm_bindgen_futures::JsFuture;
 
 use std::{
     collections::HashMap,
     fmt::{Display, Formatter},
 };
-use wasm_bindgen::JsCast;
-use wasm_bindgen_futures::JsFuture;
+
+#[cfg(not(all(target_arch = "wasm32", not(test))))]
+use std::error::Error;
 
 use std::fmt::Debug;
-use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
 use crate::instructions::generated::SupportedMnemonic;
 
@@ -17,10 +25,16 @@ use super::{axecutor::Axecutor, errors::AxError};
 
 use crate::debug_log;
 
+#[cfg(all(target_arch = "wasm32", not(test)))]
+type Function = js_sys::Function;
+
+#[cfg(not(all(target_arch = "wasm32", not(test))))]
+type Function = fn(&mut Axecutor, SupportedMnemonic) -> Result<(), Box<dyn Error>>;
+
 #[derive(Clone)]
 pub(crate) struct Hook {
-    before: Vec<js_sys::Function>,
-    after: Vec<js_sys::Function>,
+    before: Vec<Function>,
+    after: Vec<Function>,
 }
 
 impl Hook {
@@ -29,6 +43,38 @@ impl Hook {
             before: Vec::new(),
             after: Vec::new(),
         }
+    }
+
+    async fn run_functions(
+        &self,
+        before: bool,
+        ax: &mut Axecutor,
+        mnemonic: SupportedMnemonic,
+    ) -> Result<(), AxError> {
+        ax.hooks.running = true;
+        for fnt in if before { &self.before } else { &self.after } {
+            #[cfg(all(target_arch = "wasm32", not(test)))]
+            {
+                let res = run_function(ax, fnt.clone(), vec![JsValue::from(mnemonic as u32)]).await;
+                if let Err(e) = res {
+                    debug_log!("Error running hook: {:?}", e);
+                    ax.hooks.running = false;
+                    return Err(e.into());
+                }
+            }
+            #[cfg(not(all(target_arch = "wasm32", not(test))))]
+            {
+                let res = fnt(ax, mnemonic);
+                if let Err(e) = res {
+                    debug_log!("Error running hook: {:?}", e);
+                    ax.hooks.running = false;
+                    return Err(AxError::from(format!("Error running hook: {}", e)));
+                }
+            }
+        }
+        ax.hooks.running = false;
+
+        Ok(())
     }
 
     pub async fn run_before(
@@ -40,19 +86,10 @@ impl Hook {
             "Calling Hook::run_before with {} hook function(s)",
             self.before.len()
         );
-        ax.hooks.running = true;
 
-        for js_fn in &self.before {
-            let res = run_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
-            if let Err(e) = res {
-                debug_log!("Error running hook: {:?}", e);
-                ax.hooks.running = false;
-                return Err(e.into());
-            }
-        }
+        self.run_functions(true, ax, mnemonic).await?;
 
         debug_log!("Finished calling Hook::run_before");
-        ax.hooks.running = false;
         Ok(())
     }
 
@@ -65,18 +102,10 @@ impl Hook {
             "Calling Hook::run_after with {} hook function(s)",
             self.after.len()
         );
-        ax.hooks.running = true;
-        for js_fn in &self.after {
-            let res = run_function(ax, js_fn.clone(), vec![JsValue::from(mnemonic as u32)]).await;
-            if let Err(e) = res {
-                debug_log!("Error running hook: {:?}", e);
-                ax.hooks.running = false;
-                return Err(e.into());
-            }
-        }
+
+        self.run_functions(false, ax, mnemonic).await?;
 
         debug_log!("Finished calling Hook::run_after");
-        ax.hooks.running = false;
         Ok(())
     }
 }
@@ -108,7 +137,6 @@ impl HookProcessor {
 
 impl Display for HookProcessor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        // Same as code above
         write!(f, "{{")?;
         for (mnem, hook) in self.mnemonic_hooks.iter() {
             writeln!(
@@ -124,9 +152,18 @@ impl Display for HookProcessor {
     }
 }
 
+impl Axecutor {
+    pub(crate) fn mnemonic_hooks(&self, mnemonic: SupportedMnemonic) -> Option<Hook> {
+        self.hooks.mnemonic_hooks.get(&mnemonic).cloned()
+    }
+}
+
+// WASM implementation
+#[cfg(all(target_arch = "wasm32", not(test)))]
 #[wasm_bindgen]
 impl Axecutor {
-    /// Register a function to be called before a mnemonic is executed. The function will be called with the Axecutor object as first argument.
+    /// Register a function to be called before a mnemonic is executed.
+    /// The function will be called with the Axecutor object and mnemonic as arguments.
     /// The function may be sync or async and *MUST* return the result of one of the following functions:
     ///  - instance.commit(): Continue execution, keep data
     ///  - instance.stop(): Stop execution, keep data
@@ -135,7 +172,7 @@ impl Axecutor {
     pub fn hook_before_mnemonic(
         &mut self,
         mnemonic: SupportedMnemonic,
-        cb: JsValue,
+        cb: Function,
     ) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::hook_before_mnemonic, hooks_running={}",
@@ -180,7 +217,8 @@ impl Axecutor {
         }
     }
 
-    /// Register a function to be called after a mnemonic is executed. The function will be called with the Axecutor object as first argument.
+    /// Register a function to be called after a mnemonic is executed.
+    /// The function will be called with the Axecutor object and mnemonic as arguments.
     /// The function may be sync or async and *MUST* return the result of one of the following functions:
     ///  - instance.commit(): Continue execution, keep data
     ///  - instance.stop(): Stop execution, keep data
@@ -231,12 +269,88 @@ impl Axecutor {
     }
 }
 
+// Normal implementation
+#[cfg(not(all(target_arch = "wasm32", not(test))))]
 impl Axecutor {
-    pub(crate) fn mnemonic_hooks(&self, mnemonic: SupportedMnemonic) -> Option<Hook> {
-        self.hooks.mnemonic_hooks.get(&mnemonic).cloned()
+    /// Register a function to be called before a mnemonic is executed.
+    /// Unlike the JS API, you don't need to return any special values.
+    /// The function will be called with the Axecutor object and mnemonic as arguments.
+    /// You can register multiple functions for the same mnemonic, the order of execution is however not defined.
+    pub fn hook_before_mnemonic(
+        &mut self,
+        mnemonic: SupportedMnemonic,
+        cb: Function,
+    ) -> Result<(), AxError> {
+        debug_log!(
+            "Calling Axecutor::hook_before_mnemonic, hooks_running={}",
+            self.hooks.running
+        );
+
+        if self.hooks.running {
+            return Err(AxError::from(
+                "Cannot add hooks while another hook is running",
+            ));
+        }
+
+        debug_log!(
+            "Previous entry: {:?}",
+            self.hooks.mnemonic_hooks.entry(mnemonic)
+        );
+        self.hooks
+            .mnemonic_hooks
+            .entry(mnemonic)
+            .or_insert_with(Hook::new)
+            .before
+            .push(cb);
+
+        debug_log!(
+            "Updated entry: {:?}",
+            self.hooks.mnemonic_hooks.entry(mnemonic)
+        );
+        Ok(())
+    }
+
+    /// Register a function to be called after a mnemonic is executed.
+    /// Unlike the JS API, you don't need to return any special values.
+    /// The function will be called with the Axecutor object and mnemonic as arguments.
+    /// You can register multiple functions for the same mnemonic, the order of execution is however not defined.
+    pub fn hook_after_mnemonic(
+        &mut self,
+        mnemonic: SupportedMnemonic,
+        cb: Function,
+    ) -> Result<(), AxError> {
+        debug_log!(
+            "Calling Axecutor::hook_after_mnemonic, hooks_running={}",
+            self.hooks.running
+        );
+        if self.hooks.running {
+            return Err(AxError::from(
+                "Cannot add hooks while another hook is running",
+            ));
+        }
+
+        debug_log!(
+            "Previous entry: {:?}",
+            self.hooks.mnemonic_hooks.entry(mnemonic)
+        );
+        self.hooks
+            .mnemonic_hooks
+            .entry(mnemonic)
+            .or_insert_with(Hook::new)
+            .after
+            .push(cb);
+
+        debug_log!(
+            "Updated entry: {:?}",
+            self.hooks.mnemonic_hooks.entry(mnemonic)
+        );
+        Ok(())
     }
 }
 
+// Functions for actually running functions/promises in JS
+
+#[cfg(all(target_arch = "wasm32", not(test)))]
 async fn run_promise(promise_arg: JsValue) -> Result<JsValue, JsValue> {
     debug_log!("Calling run_promise");
     let promise = js_sys::Promise::from(promise_arg);
@@ -244,6 +358,7 @@ async fn run_promise(promise_arg: JsValue) -> Result<JsValue, JsValue> {
     future.await
 }
 
+#[cfg(all(target_arch = "wasm32", not(test)))]
 async fn run_function(
     ax: &mut Axecutor,
     function: js_sys::Function,
@@ -281,4 +396,99 @@ async fn run_function(
 
     debug_log!("Finished calling run_function");
     Ok(JsValue::UNDEFINED)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        assert_reg_value,
+        instructions::{
+            axecutor::Axecutor, generated::SupportedMnemonic, registers::SupportedRegister::*,
+        },
+        test_async, write_reg_value,
+    };
+
+    test_async![hook_before_mnemonic; async {
+        let mut ax = Axecutor::new(
+            &[
+                0x48, 0xc7, 0xc0, 0x5, 0, 0, 0, // mov rax, 5
+                0xf, 0x5, // syscall
+            ],
+            0x1000,
+            0x1000,
+        )
+        .expect("Failed to create axecutor");
+
+        let fnt: Function = |ax: &mut Axecutor, mnemonic: SupportedMnemonic| {
+            assert_eq!(mnemonic, SupportedMnemonic::Syscall, "Wrong mnemonic passed to hook handling Syscall");
+
+            assert_reg_value!(q; ax; RAX; 5);
+            write_reg_value!(q; ax; RAX; 10);
+
+            Ok(())
+        };
+
+        ax.hook_before_mnemonic(SupportedMnemonic::Syscall, fnt)
+            .expect("Failed to add hook");
+
+        ax.execute().await.expect("Failed to execute");
+
+        assert_reg_value!(q; ax; RAX; 10);
+    }];
+
+    test_async![hook_after_mnemonic; async {
+        let mut ax = Axecutor::new(
+            &[
+                0x48, 0xc7, 0xc0, 0x5, 0, 0, 0, // mov rax, 5
+                0xf, 0x5, // syscall
+            ],
+            0x1000,
+            0x1000,
+        )
+        .expect("Failed to create axecutor");
+
+        let fnt: Function = |ax: &mut Axecutor, mnemonic: SupportedMnemonic| {
+            assert_eq!(mnemonic, SupportedMnemonic::Syscall, "Wrong mnemonic passed to hook handling Syscall");
+
+            assert_reg_value!(q; ax; RAX; 5);
+            write_reg_value!(q; ax; RAX; 10);
+
+            Ok(())
+        };
+
+        ax.hook_after_mnemonic(SupportedMnemonic::Syscall, fnt)
+            .expect("Failed to add hook");
+
+        ax.execute().await.expect("Failed to execute");
+
+        assert_reg_value!(q; ax; RAX; 10);
+    }];
+
+    test_async![stop_hook; async {
+        let mut ax = Axecutor::new(
+            &[
+                0x48, 0xc7, 0xc0, 0x5, 0, 0, 0, // mov rax, 5
+                0xf, 0x5, // syscall
+            ],
+            0x1000,
+            0x1000,
+        ).expect("Failed to create axecutor");
+
+        ax.hook_after_mnemonic(SupportedMnemonic::Mov, |ax: &mut Axecutor, mnemonic: SupportedMnemonic| {
+            assert_eq!(mnemonic, SupportedMnemonic::Mov, "Wrong mnemonic passed to hook handling Mov");
+
+            ax.stop();
+
+            Ok(())
+        }).expect("Failed to add hook");
+
+        ax.hook_before_mnemonic(SupportedMnemonic::Syscall, |_: &mut Axecutor, _: SupportedMnemonic| {
+            unreachable!("Syscall hook should not be called as we stop before it");
+        }).expect("Failed to add hook");
+
+        ax.execute().await.expect("Failed to execute");
+
+        assert_reg_value!(q; ax; RAX; 5);
+    }];
 }
