@@ -37,6 +37,7 @@ pub struct Axecutor {
     pub(crate) stack_top: u64,
 
     // state holds the current state of the execution
+    // NOTE THAT ANY VALUE NOT STORED IN THE STATE WILL *NOT* BE KEPT BETWEEN HOOKS -- ANY STATE MUST LIVE IN THE STATE
     pub(crate) state: MachineState,
 
     #[serde(skip)]
@@ -219,6 +220,7 @@ impl Axecutor {
     }
 
     /// This function should be returned from a hook to indicate the state should be kept and execution should stop.
+    /// You can also call this function from ouside of a hook, it will however not stop any running hooks.
     #[cfg(all(target_arch = "wasm32", not(test)))]
     pub fn stop(&mut self) -> Result<JsValue, AxError> {
         debug_log!(
@@ -226,16 +228,16 @@ impl Axecutor {
             self.state.finished,
             self.hooks.running
         );
-        // TODO: make it callable outside of hook, maybe return NULL then
-        if !self.hooks.running {
-            return Err(AxError::from("Cannot call stop() outside of a hook"));
-        }
 
         self.state.finished = true;
-
-        self.commit()
+        if self.hooks.running {
+            self.commit()
+        } else {
+            Ok(JsValue::UNDEFINED)
+        }
     }
 
+    /// This function can be called from a hook to indicate the state should be kept and execution should stop.
     #[cfg(not(all(target_arch = "wasm32", not(test))))]
     pub fn stop(&mut self) {
         debug_log!(
