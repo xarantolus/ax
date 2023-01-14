@@ -65,10 +65,10 @@ def replace_in_readme(mnemonic_count, opcode_count):
 
 
 
-fmt = "{: <15} | {: <15} | {: <15} | {: <15} | {: <15} | {: <15}"
+fmt = "{: <15} | {: >9} | {: >11} | {: >13} | {: >13} | {: >10}"
 
 print(fmt.format("File", "Available", "Implemented", "Unimplemented", "% Implemented", "Test Cases"))
-print(fmt.format("-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15))
+print(fmt.format("-" * 15, "-" * 9, "-" * 11, "-" * 13, "-" * 13, "-" * 10))
 
 files = os.listdir("src/instructions")
 
@@ -98,7 +98,7 @@ for file in files:
         elif implemented > 0:
             total_partial += 1
 
-print(fmt.format("-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15, "-" * 15))
+print(fmt.format("-" * 15, "-" * 9, "-" * 11, "-" * 13, "-" * 13, "-" * 10))
 
 print(fmt.format("Total", total_opcodes, total_implemented, total_opcodes - total_implemented, "{:.2f}%".format(total_implemented / total_opcodes * 100), total_test_cases))
 
