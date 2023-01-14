@@ -21,6 +21,8 @@ else
   PY := py -3
 endif
 
+all: ax build
+
 build:
 	$(MOLD) wasm-pack build --target web --release
 

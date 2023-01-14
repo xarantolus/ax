@@ -1,9 +1,12 @@
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
+use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::instructions::{debug::debug_log, macros::assert_fatal, registers::SupportedRegister};
 
 use super::{axecutor::Axecutor, errors::AxError};
+
+#[cfg(all(target_arch = "wasm32", not(test)))]
+use wasm_bindgen::JsValue;
 
 use std::convert::TryInto;
 
@@ -77,7 +80,7 @@ impl Axecutor {
 
                 if result.len() <= 100 {
                     debug_log!(
-                        "Read from memory area{}, start={:#x}, length={}, read={:?}{}",
+                        "Read from memory area{}, start={:#x}, area_length={}, read={:?}{}",
                         match &area.name {
                             Some(name) => format!(" {}", name),
                             None => String::new(),
@@ -459,11 +462,48 @@ impl Axecutor {
 
     /// Initializes the stack with the given length, command-line arguments and environment variables according to the System V ABI.
     /// This is useful for emulating ELF binaries.
+    #[cfg(all(target_arch = "wasm32", not(test)))]
     pub fn init_stack_program_start(
         &mut self,
         length: u64,
         argv: Vec<JsValue>, // Vec<String>
         envp: Vec<JsValue>, // Vec<String>
+    ) -> Result<u64, AxError> {
+        self.init_stack_program_start_impl(length, from_js_vec(argv)?, from_js_vec(envp)?)
+    }
+}
+
+#[cfg(all(target_arch = "wasm32", not(test)))]
+fn from_js_vec(vec: Vec<JsValue>) -> Result<Vec<String>, AxError> {
+    let mut result = Vec::new();
+    for s in vec {
+        result.push(s.as_string().ok_or_else(|| {
+            AxError::from(
+                "Invalid argument in init_stack_program_start: argv contains non-string value",
+            )
+        })?);
+    }
+    Ok(result)
+}
+
+impl Axecutor {
+    /// Initializes the stack with the given length, command-line arguments and environment variables according to the System V ABI.
+    /// This is useful for emulating ELF binaries.
+    #[cfg(not(all(target_arch = "wasm32", not(test))))]
+    pub fn init_stack_program_start(
+        &mut self,
+        length: u64,
+        argv: Vec<String>,
+        envp: Vec<String>,
+    ) -> Result<u64, AxError> {
+        self.init_stack_program_start_impl(length, argv, envp)
+    }
+
+    fn init_stack_program_start_impl(
+        &mut self,
+        length: u64,
+        argv: Vec<String>, // Vec<String>
+        envp: Vec<String>, // Vec<String>
     ) -> Result<u64, AxError> {
         debug_log!(
             "Initializing stack with length {}, argv: {:?}, envp: {:?}",
@@ -500,11 +540,6 @@ impl Axecutor {
 
         // argv
         for arg in argv {
-            let arg = arg.as_string().ok_or_else(|| {
-                AxError::from(
-                    "Invalid argument in init_stack_program_start: argv contains non-string value",
-                )
-            })?;
             let mut arg_bytes = Vec::from(arg.as_bytes());
             arg_bytes.push(0);
 
@@ -517,11 +552,6 @@ impl Axecutor {
 
         // envp
         for env in envp {
-            let env = env.as_string().ok_or_else(|| {
-                AxError::from(
-                    "Invalid argument in init_stack_program_start: envp contains non-string value",
-                )
-            })?;
             let mut env_bytes = Vec::from(env.as_bytes());
             env_bytes.push(0);
 

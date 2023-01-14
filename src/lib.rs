@@ -1,2 +1,2 @@
-mod instructions;
-mod version_info;
+pub mod instructions;
+pub mod version_info;

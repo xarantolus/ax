@@ -1,5 +1,8 @@
 use core::panic;
-use std::fmt::{self};
+use std::{
+    error::Error,
+    fmt::{self},
+};
 
 use js_sys::Reflect;
 use wasm_bindgen::{JsError, JsValue};
@@ -12,6 +15,8 @@ pub struct AxError {
 
     pub(crate) signals_normal_finish: bool,
 }
+
+impl Error for AxError {}
 
 // Some convenience addons
 impl AxError {
@@ -77,6 +82,16 @@ impl From<JsValue> for AxError {
         }
     }
 }
+impl From<Box<dyn std::error::Error>> for AxError {
+    fn from(err: Box<dyn std::error::Error>) -> Self {
+        Self {
+            detail: None,
+            message: Some(err.to_string()),
+            js: None,
+            signals_normal_finish: false,
+        }
+    }
+}
 
 // ----------------------------------------------------------------
 // Convert AxErrors to various types
@@ -129,13 +144,6 @@ impl From<AxError> for JsValue {
     fn from(err: AxError) -> Self {
         let info = String::from(err);
         JsValue::from(info)
-    }
-}
-
-impl From<AxError> for JsError {
-    fn from(err: AxError) -> Self {
-        let info: String = String::from(err);
-        JsError::new(info.as_str())
     }
 }
 
