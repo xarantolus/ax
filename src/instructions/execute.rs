@@ -96,7 +96,7 @@ impl Axecutor {
                     e
                 );
                 let err_info = e.add_detail(format!(
-                    "executing instruction {} ({:?}, {}): ",
+                    "executing instruction {} ({:?}) after executing {} instructions: ",
                     instr,
                     instr.code(),
                     self.state.executed_instructions_count
