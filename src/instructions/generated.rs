@@ -14,6 +14,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 impl Axecutor {
     pub fn switch_instruction_mnemonic(&mut self, i: Instruction) -> Result<(), AxError> {
         match i.mnemonic() {
+            Adc => self.mnemonic_adc(i),
             Add => self.mnemonic_add(i),
             And => self.mnemonic_and(i),
             Call => self.mnemonic_call(i),
@@ -84,6 +85,7 @@ impl Axecutor {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 /// All mnemonics supported by the emulator
 pub enum SupportedMnemonic {
+    Adc = 5,
     Add = 7,
     And = 21,
     Call = 59,
@@ -155,6 +157,7 @@ impl TryFrom<Mnemonic> for SupportedMnemonic {
 
     fn try_from(mnemonic: Mnemonic) -> Result<Self, Self::Error> {
         Ok(match mnemonic {
+            Adc => SupportedMnemonic::Adc,
             Add => SupportedMnemonic::Add,
             And => SupportedMnemonic::And,
             Call => SupportedMnemonic::Call,

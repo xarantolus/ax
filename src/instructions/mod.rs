@@ -1,3 +1,4 @@
+pub mod adc;
 pub mod add;
 pub mod and;
 pub mod axecutor;

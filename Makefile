@@ -72,7 +72,7 @@ fmt:
 coverage:
 	$(MOLD) cargo tarpaulin --out Lcov --skip-clean
 
-test: test-node test-local
+test: test-local test-node
 
 test-local:
 	@echo "Running tests on processor..."
