@@ -93,7 +93,7 @@ class JumpTestCase:
 
             # find out which flags were set
             set_flags, flags_not_set = [], []
-            for flag, flag_name in FLAGS:
+            for flag, flag_name in OUTPUT_FLAGS_TO_ANALYZE:
                 if rflags & flag:
                     set_flags.append("FLAG_" + flag_name)
                 else:

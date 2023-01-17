@@ -1,6 +1,7 @@
 from multiprocessing.dummy import Pool
 import re
 import shutil
+import traceback
 import pyperclip
 import abc
 from curses.ascii import isspace
@@ -10,7 +11,7 @@ import subprocess
 from tqdm import tqdm
 import sys
 import tempfile
-from typing import List, Literal, Union
+from typing import Generator, List, Literal, Tuple, Union
 import unittest
 
 qword_registers = ["rip", "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp",
@@ -32,13 +33,14 @@ FLAG_PF: int = 0x0004
 FLAG_ZF: int = 0x0040
 FLAG_SF: int = 0x0080
 FLAG_OF: int = 0x0800
-FLAGS = [
+OUTPUT_FLAGS_TO_ANALYZE = [
     (FLAG_CF, "CF"),
     (FLAG_PF, "PF"),
     (FLAG_ZF, "ZF"),
     (FLAG_SF, "SF"),
     (FLAG_OF, "OF"),
 ]
+FLAGS = OUTPUT_FLAGS_TO_ANALYZE
 
 # test if /dev/shm is available by writing a file
 temp_dir_filesystem = "/dev/shm"
@@ -534,7 +536,6 @@ def test_id(instruction: Union[Instruction, str], flags_set, inputs=None):
         return [x[5:] for x in f]
 
     # generate name from instruction string and flags set, but replaces spaces and commas with _
-
     test_name = f"{instruction}_{'_'.join(map_flags(flags_set))}"
 
     if isinstance(instruction, Instruction) and len(instruction.implicit_arguments) > 0 and inputs is not None:
@@ -548,27 +549,45 @@ def test_id(instruction: Union[Instruction, str], flags_set, inputs=None):
 
     return test_name.strip("_").lower()
 
+def flag_to_literal(flag):
+    # if string return as is
+    if isinstance(flag, str):
+        return flag
+
+    lit = ""
+    for (v, k) in FLAGS:
+        if flag & v:
+            lit += ("" if lit == "" else " | ") + f"FLAG_{k}"
+
+    return lit
+
+def joinflags(flags, separator=" | "):
+    if isinstance(flags, int):
+        return flag_to_literal(flags).replace(" | ", separator)
+    return separator.join(list(map(flag_to_literal, flags))) if len(flags) > 0 else "0"
 
 def flags_to_str(set, notset):
-    def joinflags(flags):
-        return " | ".join(flags) if len(flags) > 0 else "0"
-
     return f"{joinflags(set)}; {joinflags(notset)}"
+
+class Input:
+    def __init__(self, values: List[int], flags: int):
+        self.values = values
+        self.flags = flags
 
 
 class TestCase:
-    def __init__(self, assembled, instruction: Instruction, set_flags: List[str], flags_not_set: List[str], operand_values: List[int], expected_values: List[int]):
+    def __init__(self, assembled, instruction: Instruction, set_flags: List[str], flags_not_set: List[str], args: Input, expected_values: List[int]):
         self.instruction = instruction if isinstance(
             instruction, Instruction) else Instruction.parse(instruction)
         assert isinstance(instruction, Instruction)
 
-        assert len(operand_values) == len(expected_values)
+        assert len(args.values) == len(expected_values)
 
         self.assembled_bytes = assembled
 
         self.flags_set = set_flags
         self.flags_not_set = flags_not_set
-        self.operand_values = operand_values
+        self.args = args
         self.expected_values = expected_values
 
     GOOD_TEST_VALUES = list(dict.fromkeys([
@@ -608,42 +627,56 @@ class TestCase:
         return list(filter(lambda o: not isinstance(o, ImmediateOperand), i.arguments + i.implicit_arguments))
 
     @staticmethod
-    def auto_learn_flags(i: Instruction, result_only: bool) -> List:
-        dynamic_operands = len(TestCase.dynamic_operands(i))
+    def permutate_with_flags(inputs: List[List[int]], flags_to_permutate: List[int]) -> List[Input]:
+        if len(flags_to_permutate) == 0:
+            return [Input(i, 0) for i in inputs]
+
+        permut = [0]
+        for f in flags_to_permutate:
+            permut += [x | f for x in permut]
+
+        return [Input(i, f) for i in inputs for f in permut]
+
+    @staticmethod
+    def generate_inputs(dynamic_operands: List[Operand]) -> List[List[int]]:
+        dynamic_operands = len(dynamic_operands)
+
         if dynamic_operands == 0:
-            return TestCase.learn_flags(i, [[]], result_only)
+            return [[]]
         elif dynamic_operands == 1:
-            return TestCase.learn_flags(i,
-                                        [[v]
-                                            for v in TestCase.GOOD_TEST_VALUES]
-                                        + [i for i in range(0, 1024)]
-                                        + [[random.randint(0, 2**64)]
-                                           for _ in range(50)],
-                                        result_only
-                                        )
+            return [[v] for v in TestCase.GOOD_TEST_VALUES] + \
+                [i for i in range(0, 1024)] + \
+                [[random.randint(0, 2**64)] for _ in range(50)]
         elif dynamic_operands == 2:
-            return TestCase.learn_flags(i,
-                                        [[v1, v2]
-                                            for v1 in TestCase.GOOD_TEST_VALUES for v2 in TestCase.GOOD_TEST_VALUES]
-                                        # random values and good test values
-                                        + [[random.randint(0, 2**64), v]
-                                            for v in TestCase.GOOD_TEST_VALUES]
-                                        + [[v, random.randint(0, 2**64)]
-                                            for v in TestCase.GOOD_TEST_VALUES]
-                                        # 50 random combinations
-                                        + [[random.randint(0, 2**64), random.randint(0, 2**64)]
-                                            for _ in range(50)],
-                                        result_only
-                                        )
+            return ([[v1, v2]
+                    for v1 in TestCase.GOOD_TEST_VALUES for v2 in TestCase.GOOD_TEST_VALUES]
+                    # random values and good test values
+                    + [[random.randint(0, 2**64), v]
+                        for v in TestCase.GOOD_TEST_VALUES]
+                    + [[v, random.randint(0, 2**64)]
+                        for v in TestCase.GOOD_TEST_VALUES]
+                    # 50 random combinations
+                    + [[random.randint(0, 2**64), random.randint(0, 2**64)]
+                        for _ in range(50)])
         else:
-            raise NotImplementedError()
+            raise NotImplementedError("Too many dynamic operands")
+
+    @staticmethod
+    def auto_learn_flags(i: Instruction, result_only: bool, flags_to_permutate: List[int]) -> List:
+        dynamic_operands = TestCase.dynamic_operands(i)
+
+        inputs = TestCase.generate_inputs(dynamic_operands)
+
+        with_flags = TestCase.permutate_with_flags(inputs, flags_to_permutate)
+
+        return TestCase.learn_flags(i, with_flags, result_only)
 
     NEWLINE = "\n"
 
     last_exception = None
 
     @staticmethod
-    def learn_single_flags(i: int, assembled, instruction: Instruction, operand_values: List[int], tmpdir: str):
+    def learn_single_flags(i: int, assembled, instruction: Instruction, args: Input, tmpdir: str):
         try:
             setup_code = []
 
@@ -653,7 +686,7 @@ class TestCase:
             for arg in dynamic_operands:
                 if isinstance(arg, RegisterOperand):
                     setup_code.append(
-                        f"mov {arg}, {operand_values[idx]}")
+                        f"mov {arg}, {args.values[idx]}")
                     idx += 1
                 elif isinstance(arg, MemoryOperand):
                     # write memory operands to the stack
@@ -662,7 +695,7 @@ class TestCase:
                     if arg.index_register is not None:
                         setup_code.append(f"mov {arg.index_register}, 0")
                     setup_code.append(
-                        f"mov {arg}, {operand_values[idx]}")
+                        f"mov {arg}, {args.values[idx]}")
                     idx += 1
                 else:
                     raise ValueError("invalid dynamic operand" + arg)
@@ -676,9 +709,7 @@ class TestCase:
             def get_rax(op):
                 return {1: 'al', 2: 'ax', 4: 'eax', 8: 'rax'}[op.size()]
 
-            with open(assembly_path, "w", encoding='utf8') as f:
-                f.write(
-                    f""".intel_syntax noprefix
+            generated_code = f""".intel_syntax noprefix
                 .data
                 rflags_dest: .space 8
                 output_val: .space 8
@@ -691,7 +722,7 @@ class TestCase:
 
                 push rax
                 # Reset flags
-                mov rax, 0x0000000000000000
+                mov rax, {hex(args.flags) if args.flags else 0}
                 push rax
                 POPFQ
                 pop rax # We can do this because push/pop doesn't affect flags
@@ -730,7 +761,10 @@ class TestCase:
                 mov rdi, 0
 
                 syscall
-                """)
+                """
+
+            with open(assembly_path, "w", encoding='utf8') as f:
+                f.write(generated_code)
 
             # assemble with as
             object_path = os.path.join(tmpdir, f"{i}.o")
@@ -760,7 +794,7 @@ class TestCase:
 
             # find out which flags were set
             set_flags, flags_not_set = [], []
-            for flag, flag_name in FLAGS:
+            for flag, flag_name in OUTPUT_FLAGS_TO_ANALYZE:
                 if rflags & flag:
                     set_flags.append("FLAG_" + flag_name)
                 else:
@@ -772,7 +806,7 @@ class TestCase:
                     instruction,
                     set_flags,
                     flags_not_set,
-                    [],
+                    Input([], []),
                     []
                 )
             elif len(dynamic_operands) == 1:
@@ -784,7 +818,7 @@ class TestCase:
                     instruction,
                     set_flags,
                     flags_not_set,
-                    operand_values,
+                    args,
                     [output_op_val1],
                 )
             elif len(dynamic_operands) == 2:
@@ -798,43 +832,47 @@ class TestCase:
                     instruction,
                     set_flags,
                     flags_not_set,
-                    operand_values,
+                    args,
                     [output_op_val1, output_op_val2],
                 )
             else:
                 raise ValueError(
                     "invalid number of dynamic operands")
         except Exception as e:
-            TestCase.last_exception = e
+            # include stack trace
+            TestCase.last_exception = traceback.format_exc()
             return None
 
     @staticmethod
-    def learn_flags(instruction: Instruction, operand_values_arg: List[List[int]], result_only: bool):
+    def learn_flags(instruction: Instruction, input_args: List[Input], result_only: bool):
         results: List[TestCase] = []
 
         assembled = assemble(instruction)
 
-        def is_new(flags_set, flags_not_set):
+        def is_new(flags_set, flags_not_set, input_flags):
             if result_only:
                 return True
 
             for ts in results:
-                if ts.flags_set == flags_set and ts.flags_not_set == flags_not_set:
+                if ts.flags_set == flags_set and ts.flags_not_set == flags_not_set and ts.args.flags == input_flags:
                     return False
             return True
 
         with tempfile.TemporaryDirectory(prefix="ax_flag_learner", dir="/dev/shm") as tmpdir:
+            def imap_func(input: Tuple[int, Input]):
+                return TestCase.learn_single_flags(
+                    input[0], assembled, instruction, input[1], tmpdir
+                )
+
             with Pool(os.cpu_count() * 4) as p:
                 temp_results = list(
                     tqdm(
-                        p.imap(lambda tpl: TestCase.learn_single_flags(
-                            tpl[0],  assembled, instruction, tpl[1], tmpdir
-                        ), enumerate(operand_values_arg)),
-                        total=len(operand_values_arg)
+                        p.imap(imap_func, enumerate(input_args)),
+                        total=len(input_args)
                     ))
 
             for r in temp_results:
-                if r is not None and is_new(r.flags_set, r.flags_not_set):
+                if r is not None and is_new(r.flags_set, r.flags_not_set, r.args.flags):
                     # Only keep tests we know will work later (sometimes immediate values are too large, but this is ignored by as)
                     try:
                         str(r)
@@ -851,7 +889,8 @@ class TestCase:
         return results
 
     def test_id(self):
-        return test_id(self.instruction, self.flags_set, self.operand_values)
+        flags =  ("_" + joinflags(self.args.flags, separator="_").replace("FLAG_", "")) if self.args.flags else ""
+        return test_id(self.instruction, self.flags_set, self.args.values) + flags.lower()
 
     def __str__(self):
         dynamic_operands = self.dynamic_operands(self.instruction)
@@ -886,7 +925,8 @@ f'{TestCase.NEWLINE}        write_reg_value!({operand.index_register.size_letter
         if len(dynamic_operands) == 0:
             return f"""// {self.instruction}
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: Axecutor| {{
-        todo!("Asset state of registers and/or memory");
+        todo!("Asset state of registers and/or memory");{
+f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if self.args.flags else ''}
     }};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
@@ -894,7 +934,8 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: Axecutor| {{
             return f"""// {self.instruction}
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
-        {operand_write(dynamic_operands[0], self.operand_values[0])}
+        {operand_write(dynamic_operands[0], self.args.values[0])}{
+f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if self.args.flags else ''}
     }};
     |a: Axecutor| {{
         {assert_operand(dynamic_operands[0], self.expected_values[0])}
@@ -905,8 +946,9 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
             return f"""// {self.instruction}
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
-        {operand_write(dynamic_operands[0], self.operand_values[0])}
-        {operand_write(dynamic_operands[1], self.operand_values[1])}
+        {operand_write(dynamic_operands[0], self.args.values[0])}
+        {operand_write(dynamic_operands[1], self.args.values[1])}{
+f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if self.args.flags else ''}
     }};
     |a: Axecutor| {{
         {assert_operand(dynamic_operands[0], self.expected_values[0])}
@@ -915,6 +957,18 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
         raise ValueError("invalid number of dynamic operands")
+
+def parse_flags(text) -> List[int]:
+    flags = [s.strip().upper() for s in text.split(',')]
+    valid = all(map(lambda f: any(map(lambda t: t[1] == f, OUTPUT_FLAGS_TO_ANALYZE)), flags))
+
+    if not valid:
+        raise ValueError(
+            f"Invalid flags: {text}, valid flags are {FLAGS}")
+
+    flags = list(map(lambda t: t[0], filter(lambda t: t[1] in flags, FLAGS)))
+
+    return flags
 
 
 def main():
@@ -925,6 +979,8 @@ def main():
         '-t', '--test', help='Run tests for this script', dest='test', action='store_true')
     parser.add_argument(
         '-f', '--flags', help='Select flags to test for', action='store', dest='flags',)
+    parser.add_argument('-s', '--set', help='Flags that should be set or not set before the instruction is executed',
+                        action='store', dest='flags_set',)
     parser.add_argument('-e',                       '--extreme',
                         help='Run more tests (default for < 2 dynamic arguments)', action='store_true', dest='extreme',)
     parser.add_argument("-i", "--implicit-operands",
@@ -953,9 +1009,16 @@ def main():
         if not valid:
             raise ValueError(
                 f"Invalid flags: {args.flags}, valid flags are {FLAGS}")
-        FLAGS = list(filter(lambda t: t[1] in flags, FLAGS))
+        global OUTPUT_FLAGS_TO_ANALYZE
+        OUTPUT_FLAGS_TO_ANALYZE = list(filter(lambda t: t[1] in flags, FLAGS))
 
         print(f"Testing flags: {FLAGS}")
+
+    permut_flags = []
+    if args.flags_set:
+        permut_flags = parse_flags(args.flags_set)
+        print(f"Permuting the following flags: {permut_flags}")
+
 
     # Implicit operands, such as RAX:RDX in CQO
     if args.implicit_operands:
@@ -969,7 +1032,7 @@ def main():
     print(
         f"Testing instruction {instruction} with more than {len(TestCase.GOOD_TEST_VALUES)} values (all combinations)")
 
-    test_cases = TestCase.auto_learn_flags(instruction, args.result)
+    test_cases = TestCase.auto_learn_flags(instruction, args.result, permut_flags)
 
     test_cases.sort(key=lambda t: t.test_id())
 
@@ -1019,6 +1082,8 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+    except Exception as e:
+        raise e
     finally:
         if delete_at_exit:
             shutil.rmtree(temp_dir_filesystem)
