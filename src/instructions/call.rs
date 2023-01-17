@@ -84,13 +84,7 @@ impl Axecutor {
 
         match i.op0_kind() {
             OpKind::NearBranch64 => {
-                // push_rip!(self);
-
-                let rip = self.reg_read_64(RIP)?;
-                let rsp = self.reg_read_64(RSP)?;
-                self.mem_write_64(rsp, rip)?;
-                self.reg_write_64(RSP, rsp - 8)?;
-
+                push_rip!(self);
                 let offset = i.near_branch64() as i64 as u64;
                 self.reg_write_64(RIP, offset)?;
                 Ok(())

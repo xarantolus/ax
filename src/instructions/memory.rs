@@ -296,7 +296,7 @@ impl Axecutor {
     pub fn mem_write_32(&mut self, address: u64, data: u64) -> Result<(), AxError> {
         assert_fatal!(
             data <= u32::MAX as u64,
-            "Could not write {:x} to 4 bytes of memory, value is too large",
+            "Could not write {:#x} to 4 bytes of memory, value is too large",
             data
         );
 
@@ -307,7 +307,7 @@ impl Axecutor {
     pub fn mem_write_16(&mut self, address: u64, data: u64) -> Result<(), AxError> {
         assert_fatal!(
             data <= u16::MAX as u64,
-            "Could not write {:x} to 2 bytes of memory, value is too large",
+            "Could not write {:#x} to 2 bytes of memory, value is too large",
             data
         );
         self.mem_write_bytes(address, &(data as u16).to_le_bytes())
@@ -317,7 +317,7 @@ impl Axecutor {
     pub fn mem_write_8(&mut self, address: u64, data: u64) -> Result<(), AxError> {
         assert_fatal!(
             data <= u8::MAX as u64,
-            "Could not write {:x} to 1 byte of memory, value is too large",
+            "Could not write {:#x} to 1 byte of memory, value is too large",
             data
         );
 

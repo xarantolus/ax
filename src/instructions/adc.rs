@@ -125,7 +125,7 @@ impl Axecutor {
                 if (result & 0x8000000000000000 != (d as u128) & 0x8000000000000000) && (result & 0x8000000000000000 != (s as u128) & 0x8000000000000000) { FLAG_OF } else { 0 } |
                 if result & 0x10000000000000000u128 != 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// ADC r8, r/m8
@@ -147,7 +147,7 @@ impl Axecutor {
                 if (result & 0x80 != (d as u16) & 0x80) && (result & 0x80 != (s as u16) & 0x80) { FLAG_OF } else { 0 } |
                 if result & 0x100 != 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// ADC r16, r/m16
@@ -169,7 +169,7 @@ impl Axecutor {
                 if (result & 0x8000 != (d as u32) & 0x8000) && (result & 0x8000 != (s as u32) & 0x8000) { FLAG_OF } else { 0 } |
                 if result & 0x10000 != 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// ADC r32, r/m32
@@ -191,7 +191,7 @@ impl Axecutor {
                 if (result & 0x80000000 != (d as u64) & 0x80000000) && (result & 0x80000000 != (s as u64) & 0x80000000) { FLAG_OF } else { 0 } |
                 if result & 0x100000000 != 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// ADC r64, r/m64
@@ -213,7 +213,7 @@ impl Axecutor {
                 if (result & 0x8000000000000000 != (d as u128) & 0x8000000000000000) && (result & 0x8000000000000000 != (s as u128) & 0x8000000000000000) { FLAG_OF } else { 0 } |
                 if result & 0x10000000000000000u128 != 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_OF | FLAG_CF)]
     }
 
     /// ADC AL, imm8

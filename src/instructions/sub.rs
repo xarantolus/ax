@@ -54,7 +54,7 @@ impl Axecutor {
                 if ((d as i16 ^ s as i16) & (d as i16 ^ result as i16) & 0x80) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i16 | 0x100).wrapping_sub(s as i16)) & 0x100 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r/m16, r16
@@ -71,7 +71,7 @@ impl Axecutor {
                 if ((d as i32 ^ s as i32) & (d as i32 ^ result as i32) & 0x8000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i32 | 0x10000).wrapping_sub(s as i32)) & 0x10000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r/m32, r32
@@ -88,7 +88,7 @@ impl Axecutor {
                 if ((d as i64 ^ s as i64) & (d as i64 ^ result as i64) & 0x80000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i64 | 0x100000000).wrapping_sub(s as i64)) & 0x100000000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r/m64, r64
@@ -105,7 +105,7 @@ impl Axecutor {
                 if ((d as i128 ^ s as i128) & (d as i128 ^ result as i128) & 0x8000000000000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i128 | 0x10000000000000000).wrapping_sub(s as i128)) & 0x10000000000000000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r8, r/m8
@@ -122,7 +122,7 @@ impl Axecutor {
                 if ((d as i16 ^ s as i16) & (d as i16 ^ result as i16) & 0x80) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i16 | 0x100).wrapping_sub(s as i16)) & 0x100 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r16, r/m16
@@ -139,7 +139,7 @@ impl Axecutor {
                 if ((d as i32 ^ s as i32) & (d as i32 ^ result as i32) & 0x8000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i32 | 0x10000).wrapping_sub(s as i32)) & 0x10000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r32, r/m32
@@ -156,7 +156,7 @@ impl Axecutor {
                 if ((d as i64 ^ s as i64) & (d as i64 ^ result as i64) & 0x80000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i64 | 0x100000000).wrapping_sub(s as i64)) & 0x100000000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r64, r/m64
@@ -173,7 +173,7 @@ impl Axecutor {
                 if ((d as i128 ^ s as i128) & (d as i128 ^ result as i128) & 0x8000000000000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i128 | 0x10000000000000000).wrapping_sub(s as i128)) & 0x10000000000000000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB AL, imm8
@@ -224,7 +224,7 @@ impl Axecutor {
                 if ((d as i16 ^ s as i16) & (d as i16 ^ result as i16) & 0x80) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i16 | 0x100).wrapping_sub(s as i16)) & 0x100 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r/m16, imm16
@@ -239,7 +239,7 @@ impl Axecutor {
                 if ((d as i32 ^ s as i32) & (d as i32 ^ result as i32) & 0x8000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i32 | 0x10000).wrapping_sub(s as i32)) & 0x10000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r/m32, imm32
@@ -254,7 +254,7 @@ impl Axecutor {
                 if ((d as i64 ^ s as i64) & (d as i64 ^ result as i64) & 0x80000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i64 | 0x100000000).wrapping_sub(s as i64)) & 0x100000000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r/m64, imm32
@@ -269,7 +269,7 @@ impl Axecutor {
                 if ((d as i128 ^ s as i128) & (d as i128 ^ result as i128) & 0x8000000000000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i128 | 0x10000000000000000).wrapping_sub(s as i128)) & 0x10000000000000000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r/m8, imm8
@@ -295,7 +295,7 @@ impl Axecutor {
                 if ((d as i32 ^ s as i32) & (d as i32 ^ result as i32) & 0x8000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i32 | 0x10000).wrapping_sub(s as i32)) & 0x10000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r/m32, imm8
@@ -312,7 +312,7 @@ impl Axecutor {
                 if ((d as i64 ^ s as i64) & (d as i64 ^ result as i64) & 0x80000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i64 | 0x100000000).wrapping_sub(s as i64)) & 0x100000000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 
     /// SUB r/m64, imm8
@@ -329,7 +329,7 @@ impl Axecutor {
                 if ((d as i128 ^ s as i128) & (d as i128 ^ result as i128) & 0x8000000000000000) != 0 { FLAG_OF } else { 0 } |
                 if ((d as i128 | 0x10000000000000000).wrapping_sub(s as i128)) & 0x10000000000000000 == 0 { FLAG_CF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_CF | FLAG_OF )]
     }
 }
 

@@ -56,7 +56,7 @@ impl Axecutor {
                     // Overflow flag is only defined for shifts of 1, which are handled by another opcode
                     (0, if s == 8 && d & 1 == 1 {FLAG_CF} else {0})}
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF)]
     }
 
     /// SHL r/m16, imm8
@@ -82,7 +82,7 @@ impl Axecutor {
                     // Overflow flag is only defined for shifts of 1, which are handled by another opcode
                     (0, if s == 16 && d & 1 == 1 {FLAG_CF} else {0})}
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF)]
     }
 
     /// SHL r/m32, imm8
@@ -107,7 +107,7 @@ impl Axecutor {
                     panic!("u8 s & 0x1f should never be >=32");
                 }
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF)]
     }
 
     /// SHL r/m64, imm8
@@ -132,7 +132,7 @@ impl Axecutor {
                     panic!("u64 s & 0x1f should never be >=64");
                 }
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF)]
     }
 
     /// SHL r/m8, 1
@@ -149,7 +149,7 @@ impl Axecutor {
             let of = if (d & 0x40 == 0) == (cf == 0) {0} else {FLAG_OF};
 
             (d.wrapping_shl(1), cf | of)
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHL r/m16, 1
@@ -166,7 +166,7 @@ impl Axecutor {
             let of = if (d & 0x4000 == 0) == (cf == 0) {0} else {FLAG_OF};
 
             (d.wrapping_shl(1), cf | of)
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHL r/m32, 1
@@ -183,7 +183,7 @@ impl Axecutor {
             let of = if (d & 0x40000000 == 0) == (cf == 0) {0} else {FLAG_OF};
 
             (d.wrapping_shl(1), cf | of)
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHL r/m64, 1
@@ -200,7 +200,7 @@ impl Axecutor {
             let of = if (d & 0x8000000000000000) == ((d & 0x4000000000000000)<<1) {0} else {FLAG_OF};
 
             (d.wrapping_shl(1), cf | of)
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHL r/m8, CL
@@ -224,7 +224,7 @@ impl Axecutor {
                     (0, if s == 8 && d & 1 == 0 {0} else {FLAG_CF})
                 }
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHL r/m16, CL
@@ -248,7 +248,7 @@ impl Axecutor {
                     (0, if s == 16 && d & 1 == 0 {0} else {FLAG_CF})
                 }
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHL r/m32, CL
@@ -272,7 +272,7 @@ impl Axecutor {
                     panic!("u8 s & 0x1f should never be >=32");
                 }
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHL r/m64, CL
@@ -296,7 +296,7 @@ impl Axecutor {
                     panic!("u8 s & 0x3f should never be >=64");
                 }
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 }
 
@@ -304,9 +304,50 @@ impl Axecutor {
 mod tests {
     use crate::instructions::axecutor::Axecutor;
     use crate::instructions::tests::{
-        assert_mem_value, assert_reg_value, ax_test, write_reg_value,
+        assert_mem_value, assert_reg_value, ax_test, write_flags, write_reg_value,
     };
     use iced_x86::Register::*;
+    // shl al, cl
+    ax_test![shl_al_cl_sf_of_cf; 0xd2, 0xe0;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x1);
+            write_reg_value!(b; a; CL; 0x7);
+            write_flags!(a; FLAG_CF);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x80);
+            assert_reg_value!(b; a; CL; 0x7);
+        };
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF)
+    ];
+
+    // shl al, cl
+    ax_test![shl_al_cl_pf_zf_cf; 0xd2, 0xe0;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_reg_value!(b; a; CL; 0x1);
+            write_flags!(a; FLAG_CF);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x0);
+            assert_reg_value!(b; a; CL; 0x1);
+        };
+        (FLAG_PF | FLAG_ZF; FLAG_CF | FLAG_SF | FLAG_OF)
+    ];
+
+    // shl al, cl
+    ax_test![shl_al_cl_pf_cf; 0xd2, 0xe0;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0xf);
+            write_reg_value!(b; a; CL; 0x1);
+            write_flags!(a; FLAG_CF);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x1e);
+            assert_reg_value!(b; a; CL; 0x1);
+        };
+        (FLAG_PF; FLAG_CF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
 
     // shl bl, 0x0
     ax_test![shl_bl_0x0; 0xc0, 0xe3, 0x0;

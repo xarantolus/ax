@@ -73,7 +73,7 @@ impl Axecutor {
 mod tests {
     use crate::instructions::axecutor::Axecutor;
     use crate::instructions::tests::{
-        assert_mem_value, assert_reg_value, ax_test, write_reg_value,
+        assert_mem_value, assert_reg_value, ax_test, write_flags, write_reg_value,
     };
     use iced_x86::Register::*;
 
@@ -86,6 +86,30 @@ mod tests {
             assert_reg_value!(b; a; AL; 0xff);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // not al
+    ax_test![not_al_sf_of_sf_of; 0xf6, 0xd0;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_flags!(a; FLAG_SF | FLAG_OF);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0xff);
+        };
+        (FLAG_SF | FLAG_OF; FLAG_CF | FLAG_PF | FLAG_ZF)
+    ];
+
+    // not al
+    ax_test![not_al_sf_sf; 0xf6, 0xd0;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_flags!(a; FLAG_SF);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0xff);
+        };
+        (FLAG_SF; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_OF)
     ];
 
     // not al

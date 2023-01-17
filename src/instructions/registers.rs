@@ -369,7 +369,7 @@ impl Axecutor {
     pub fn reg_write_8(&mut self, reg: SupportedRegister, value: u64) -> Result<(), AxError> {
         assert_fatal!(
             value <= 0xFF,
-            "reg_write_8: value {:x} is too large to fit in 8 bits",
+            "reg_write_8: value {:#x} is too large to fit in 8 bits",
             value
         );
 
@@ -392,7 +392,7 @@ impl Axecutor {
         self.state.registers.insert(*qword_register, result_value);
 
         debug_log!(
-            "Wrote 0x{:x} to {:?}, setting {:?} to 0x{:x} (previously 0x{:x})",
+            "Wrote {:#x} to {:?}, setting {:?} to {:#x} (previously {:#x})",
             value,
             reg,
             qword_register,
@@ -407,7 +407,7 @@ impl Axecutor {
     pub fn reg_write_16(&mut self, reg: SupportedRegister, value: u64) -> Result<(), AxError> {
         assert_fatal!(
             value <= 0xFFFF,
-            "reg_write_16: value {:x} is too large to fit in 16 bits",
+            "reg_write_16: value {:#x} is too large to fit in 16 bits",
             value
         );
 
@@ -423,7 +423,7 @@ impl Axecutor {
         self.state.registers.insert(*qword_register, result_value);
 
         debug_log!(
-            "Wrote 0x{:x} to {:?}, setting {:?} to 0x{:x} (previously 0x{:x})",
+            "Wrote {:#x} to {:?}, setting {:?} to {:#x} (previously {:#x})",
             value,
             reg,
             qword_register,
@@ -439,7 +439,7 @@ impl Axecutor {
     pub fn reg_write_32(&mut self, reg: SupportedRegister, value: u64) -> Result<(), AxError> {
         assert_fatal!(
             value <= 0xFFFF_FFFF,
-            "reg_write_32: value {:x} is too large to fit in 32 bits",
+            "reg_write_32: value {:#x} is too large to fit in 32 bits",
             value
         );
 
@@ -455,13 +455,13 @@ impl Axecutor {
         let old = self.state.registers.insert(*qword_register, result_value);
 
         debug_log!(
-            "Wrote 0x{:x} to {:?}, setting {:?} to 0x{:x}{}",
+            "Wrote {:#x} to {:?}, setting {:?} to {:#x}{}",
             value,
             reg,
             qword_register,
             result_value,
             match old {
-                Some(o) => format!(" (previously 0x{:x})", o),
+                Some(o) => format!(" (previously {:#x})", o),
                 Option::None => "".to_string(),
             }
         );
@@ -482,11 +482,11 @@ impl Axecutor {
         let old = self.state.registers.insert(reg, value);
 
         debug_log!(
-            "Wrote 0x{:x} to {:?}{}",
+            "Wrote {:#x} to {:?}{}",
             value,
             reg,
             match old {
-                Some(o) => format!(" (previously 0x{:x})", o),
+                Some(o) => format!(" (previously {:#x})", o),
                 Option::None => "".to_string(),
             }
         );
@@ -512,7 +512,7 @@ impl Axecutor {
             (reg_value & 0xFF) as u8
         };
 
-        debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
+        debug_log!("Read value {:#x} from {:?}", result_value, reg);
 
         Ok(result_value as u64)
     }
@@ -529,7 +529,7 @@ impl Axecutor {
 
         let result_value = reg_value & 0xFFFF;
 
-        debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
+        debug_log!("Read value {:#x} from {:?}", result_value, reg);
 
         Ok(result_value)
     }
@@ -546,7 +546,7 @@ impl Axecutor {
 
         let result_value = reg_value & 0xFFFF_FFFF;
 
-        debug_log!("Read value 0x{:x} from {:?}", result_value, reg);
+        debug_log!("Read value {:#x} from {:?}", result_value, reg);
 
         Ok(result_value)
     }
@@ -562,7 +562,7 @@ impl Axecutor {
 
         let reg_value = *self.state.registers.get(&reg).unwrap();
 
-        debug_log!("Read value 0x{:x} from {:?}", reg_value, reg);
+        debug_log!("Read value {:#x} from {:?}", reg_value, reg);
 
         Ok(reg_value)
     }
@@ -571,7 +571,7 @@ impl Axecutor {
     pub fn read_fs(&self) -> u64 {
         let value = self.state.fs;
 
-        debug_log!("Read FS value 0x{:x}", value);
+        debug_log!("Read FS value {:#x}", value);
 
         value
     }
@@ -580,6 +580,6 @@ impl Axecutor {
     pub fn write_fs(&mut self, value: u64) {
         self.state.fs = value;
 
-        debug_log!("Wrote FS value 0x{:x}", value);
+        debug_log!("Wrote FS value {:#x}", value);
     }
 }

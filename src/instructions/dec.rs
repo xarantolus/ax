@@ -57,7 +57,7 @@ impl Axecutor {
                 result,
                 if val & 0x80 != 0 && result & 0x80 == 0 { FLAG_OF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_OF)]
     }
 
     /// DEC r/m16
@@ -72,7 +72,7 @@ impl Axecutor {
                 result,
                 if val & 0x8000 != 0 && result & 0x8000 == 0 { FLAG_OF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_OF)]
     }
 
     /// DEC r/m32
@@ -87,7 +87,7 @@ impl Axecutor {
                 result,
                 if val & 0x8000_0000 != 0 && result & 0x8000_0000 == 0 { FLAG_OF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_OF)]
     }
 
     /// DEC r/m64
@@ -102,7 +102,7 @@ impl Axecutor {
                 result,
                 if val & 0x8000_0000_0000_0000 != 0 && result & 0x8000_0000_0000_0000 == 0 { FLAG_OF } else { 0 }
             )
-        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: 0)]
+        }; (set: FLAG_SF | FLAG_ZF | FLAG_PF; clear: FLAG_OF)]
     }
 }
 

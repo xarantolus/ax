@@ -1058,9 +1058,10 @@ def main():
     print(f"Found {len(test_cases_str)} test cases for {assembly_code}")
 
     too_many = False
-    if len(test_cases_str) > 25:
-        print("Too many test cases, only a sample of 25 will be returned")
-        test_cases_str = random.sample(test_cases_str, 25)
+    TOO_MANY_TRESHOLD = 50
+    if len(test_cases_str) > TOO_MANY_TRESHOLD:
+        print(f"Too many test cases, only a sample of {TOO_MANY_TRESHOLD} will be returned")
+        test_cases_str = random.sample(test_cases_str, TOO_MANY_TRESHOLD)
         too_many = True
 
     tests = "\n\n".join(test_cases_str)
@@ -1076,7 +1077,7 @@ def main():
     print(f"Generated {len(test_cases_str)} tests" + " and copied them to the clipboard" if clipboard else "")
 
     if too_many:
-        print("Note that too many test cases were generated, so only a sample of 25 was returned")
+        print(f"Note that too many test cases were generated, so only a sample of {TOO_MANY_TRESHOLD} was returned")
 
 
 if __name__ == "__main__":

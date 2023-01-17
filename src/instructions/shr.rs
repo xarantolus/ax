@@ -52,7 +52,7 @@ impl Axecutor {
                 }
                 None => (0, if s == 8 && d & 0x80 != 0 { FLAG_CF } else {0})
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF)]
     }
 
     /// SHR r/m16, imm8
@@ -76,7 +76,7 @@ impl Axecutor {
                 }
                 None => (0, if s == 16 && d & 0x8000 != 0 { FLAG_CF } else {0})
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF)]
     }
 
     /// SHR r/m32, imm8
@@ -100,7 +100,7 @@ impl Axecutor {
                 }
                 None => (0, if s == 32 && d & 0x8000_0000 != 0 { FLAG_CF } else {0})
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF)]
     }
 
     /// SHR r/m64, imm8
@@ -124,7 +124,7 @@ impl Axecutor {
                 }
                 None => (0, if s == 64 && d & 0x8000_0000_0000_0000 != 0 { FLAG_CF } else {0})
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF)]
     }
 
     /// SHR r/m8, 1
@@ -141,7 +141,7 @@ impl Axecutor {
             let of = if d & 0x80 != 0 { FLAG_OF } else {0};
 
             (d.wrapping_shr(1), cf | of)
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHR r/m16, 1
@@ -158,7 +158,7 @@ impl Axecutor {
             let of = if d & 0x8000 != 0 { FLAG_OF } else {0};
 
             (d.wrapping_shr(1), cf | of)
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHR r/m32, 1
@@ -175,7 +175,7 @@ impl Axecutor {
             let of = if d & 0x8000_0000 != 0 { FLAG_OF } else {0};
 
             (d.wrapping_shr(1), cf | of)
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHR r/m64, 1
@@ -192,7 +192,7 @@ impl Axecutor {
             let of = if d & 0x8000_0000_0000_0000 != 0 { FLAG_OF } else {0};
 
             (d.wrapping_shr(1), cf | of)
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHR r/m8, CL
@@ -215,7 +215,7 @@ impl Axecutor {
                 }
                 None => (0, if s == 8 && d & 0x80 != 0 { FLAG_CF } else {0})
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHR r/m16, CL
@@ -238,7 +238,7 @@ impl Axecutor {
                 }
                 None => (0, if s == 16 && d & 0x8000 != 0 { FLAG_CF } else {0})
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHR r/m32, CL
@@ -261,7 +261,7 @@ impl Axecutor {
                 }
                 None => (0, if s == 32 && d & 0x8000_0000 != 0 { FLAG_CF } else {0})
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 
     /// SHR r/m64, CL
@@ -284,7 +284,7 @@ impl Axecutor {
                 }
                 None => (0, if s == 64 && d & 0x8000_0000_0000_0000 != 0 { FLAG_CF } else {0})
             }
-        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: 0)]
+        }; (set: FLAG_PF | FLAG_ZF | FLAG_SF; clear: FLAG_CF | FLAG_OF)]
     }
 }
 
