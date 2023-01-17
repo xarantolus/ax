@@ -11,7 +11,7 @@ You can try out the emulator right now by visiting [the website](https://ax.010.
 
 ### Usage on the web
 * The [demo site](https://ax.010.one) uses `ax` to run ELF binaries in the browser
-* [MemeAssembly](https://kammt.github.io/MemeAssembly/) is a meme programming language that compiles to x86-64 instructions. My [MemeAssembly Playground](https://memeasm.010.one) uses `ax` to run this language right in the browser, emulating some syscalls like `read`, `write` and `exit` to make the programs work.
+* [MemeAssembly](https://kammt.github.io/MemeAssembly/) is a meme programming language that compiles to x86-64 instructions. My [MemeAssembly Playground](https://memeasm.010.one) uses `ax` to run this language right in the browser, emulating some syscalls like `read` and `write` to make the programs work.
 * Maybe you? If you use `ax` in a project, please let me know and I'll add it here! :)
 
 ## How to use

@@ -656,26 +656,21 @@ class TestCase:
                         f"mov {arg}, {operand_values[idx]}")
                     idx += 1
                 elif isinstance(arg, MemoryOperand):
-                    # move rsp to base register to make sure memory operands
+                    # write memory operands to the stack
                     if arg.base_register != RegisterOperand("rsp"):
                         setup_code.append(f"mov {arg.base_register}, rsp")
-                    # set index register to 1
                     if arg.index_register is not None:
                         setup_code.append(f"mov {arg.index_register}, 0")
-                    # write to memory
                     setup_code.append(
                         f"mov {arg}, {operand_values[idx]}")
                     idx += 1
                 else:
-                    raise ValueError("invalid operand" + arg)
+                    raise ValueError("invalid dynamic operand" + arg)
 
-            assert idx == len(
-                dynamic_operands), "Not all setup operand values were used"
+            assert idx == len(dynamic_operands), "Not all dynamic operands were used in setup"
 
-            assert len(
-                dynamic_operands) <= 2, "Too many dynamic operands"
+            assert len(dynamic_operands) <= 2, "Too many dynamic operands"
 
-            # write assembly code to file
             assembly_path = os.path.join(tmpdir, f"{i}.asm")
 
             def get_rax(op):
@@ -728,14 +723,7 @@ class TestCase:
                 mov rax, 1
                 mov rdi, 1
                 lea rsi, [rip+rflags_dest]
-                mov rdx, 8
-                syscall
-
-
-                mov rax, 1
-                mov rdi, 1
-                lea rsi, [rip+output_val]
-                mov rdx, 16
+                mov rdx, 24
                 syscall
 
                 mov rax, 60
@@ -1013,13 +1001,16 @@ def main():
         too_many = True
 
     tests = "\n\n".join(test_cases_str)
+    clipboard = False
     try:
         pyperclip.copy(tests)
-        print(f"Copied {len(test_cases_str)} tests to clipboard")
+        clipboard = True
     except:
         pass
 
     print(tests)
+
+    print(f"Generated {len(test_cases_str)} tests" + " and copied them to the clipboard" if clipboard else "")
 
     if too_many:
         print("Note that too many test cases were generated, so only a sample of 25 was returned")
