@@ -94,7 +94,7 @@ python-dependencies:
 	@$(PY) -m pip install --quiet pyperclip tqdm
 
 clean:
-	rm -rf pkg target examples/web/node_modules examples/web/dist .vite
+	rm -rf pkg target examples/web/node_modules examples/web/dist examples/web/public/programs .vite
 	cd examples/programs && $(MAKE) clean
 	rm -f lcov.info
 

@@ -5,29 +5,34 @@
       This is the demo site for <a href="https://github.com/xarantolus/ax">ax, an x86-64 emulator</a>
       <template v-if="version && commit"> (v{{ version }}, <a :href="'https://github.com/xarantolus/ax/commit/' + commit">commit</a>)</template>.
     </p>
-    <br />
     <p>
-      Please select an ELF binary compiled with <code>-m64 -nostdlib -static</code> that only interacts with std{in,out,err}.
-      Some binaries, especially the ones that use libc, might not work.
+      To use it in your own projects, install the <a href="https://www.npmjs.com/package/ax-x86"><code>ax-x86</code> npm package</a>:
+    <div class="install">
+      <pre>npm install ax-x86</pre>
+    </div>
     </p>
-    <div>
+    <br />
+    <h2>Try it out</h2>
+    <p>
+      Here you can select an ELF binary compiled with <code>-m64 -nostdlib -static</code> that only interacts with std{in,out,err}.
+      Some binaries, especially the ones that use libc, might not yet work.
+    </p>
+    <div class="mt-1">
       <input type="file" ref="file">
       <button @click="runFile">Run!</button>
     </div>
     <br />
     <div v-if="programs.length > 0">
-      Click to load one of the following binaries:
+      Alternatively, you can load one of the following binaries by just clicking:
       <ul>
         <li v-for="program in programs" :key="program.name">
           <a :href="'/programs/' + program.binary" @click.prevent="setBinary(program.binary)">{{ program.name }}</a>: {{ program.description }} (<a :href="program_source_prefix + program.source_name" target="_blank">Source</a>)
         </li>
       </ul>
-      <br />
-      You can also download these binaries and run them on Linux. This of course shows that the emulator can run some real binaries without any modifications.
+      These exact binaries can also be run on Linux. This shows that the emulator can run some real binaries without any modifications.
     </div>
-    <br />
-    <h2>Console output</h2>
-    <Terminal ref="terminalRef" />
+    <h3 class="mt-1">Console output</h3>
+    <Terminal ref="terminalRef" class="mt-1" />
   </div>
 </template>
 
@@ -347,8 +352,31 @@ export default defineComponent({
 </script>
 
 <style>
+.install {
+  padding: 16px;
+  border-radius: 16px;
+  overflow: auto;
+  background-color: var(--vt-c-black-soft);
+}
+
+.install>pre::before {
+  content: "$ ";
+}
+
+button,
+input {
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 10%;
+  max-width: 40%;
+}
+
 .width-2-3 {
   width: 66.67%;
+}
+
+.mt-1 {
+  margin-top: 1%;
 }
 
 @media (max-width: 1440px) {
