@@ -48,11 +48,7 @@ impl Axecutor {
 
         let flags = self.state.rflags;
         calculate_rm_r![u8f; self; i; |d:u8, s:u8| {
-            let result = (d as u16).wrapping_add(s as u16).wrapping_add(if flags & FLAG_CF != 0 {
-                1
-            } else {
-                0
-            });
+            let result = (d as u16).wrapping_add(s as u16).wrapping_add(u16::from(flags & FLAG_CF != 0));
 
             (
                 result as u8,
@@ -70,11 +66,7 @@ impl Axecutor {
 
         let flags = self.state.rflags;
         calculate_rm_r![u16f; self; i; |d:u16, s:u16| {
-            let result = (d as u32).wrapping_add(s as u32).wrapping_add(if flags & FLAG_CF != 0 {
-                1
-            } else {
-                0
-            });
+            let result = (d as u32).wrapping_add(s as u32).wrapping_add(u32::from(flags & FLAG_CF != 0));
 
             (
                 result as u16,
@@ -92,11 +84,7 @@ impl Axecutor {
 
         let flags = self.state.rflags;
         calculate_rm_r![u32f; self; i; |d:u32, s:u32| {
-            let result = (d as u64).wrapping_add(s as u64).wrapping_add(if flags & FLAG_CF != 0 {
-                1
-            } else {
-                0
-            });
+            let result = (d as u64).wrapping_add(s as u64).wrapping_add(u64::from(flags & FLAG_CF != 0));
 
             (
                 result as u32,
@@ -114,11 +102,7 @@ impl Axecutor {
 
         let flags = self.state.rflags;
         calculate_rm_r![u64f; self; i; |d:u64, s:u64| {
-            let result = (d as u128).wrapping_add(s as u128).wrapping_add(if flags & FLAG_CF != 0 {
-                1
-            } else {
-                0
-            });
+            let result = (d as u128).wrapping_add(s as u128).wrapping_add(u128::from(flags & FLAG_CF != 0));
 
             (
                 result as u64,
@@ -136,11 +120,7 @@ impl Axecutor {
 
         let flags = self.state.rflags;
         calculate_r_rm![u8f; self; i; |d:u8, s:u8| {
-            let result = (d as u16).wrapping_add(s as u16).wrapping_add(if flags & FLAG_CF != 0 {
-                1
-            } else {
-                0
-            });
+            let result = (d as u16).wrapping_add(s as u16).wrapping_add(u16::from(flags & FLAG_CF != 0));
 
             (
                 result as u8,
@@ -158,11 +138,7 @@ impl Axecutor {
 
         let flags = self.state.rflags;
         calculate_r_rm![u16f; self; i; |d:u16, s:u16| {
-            let result = (d as u32).wrapping_add(s as u32).wrapping_add(if flags & FLAG_CF != 0 {
-                1
-            } else {
-                0
-            });
+            let result = (d as u32).wrapping_add(s as u32).wrapping_add(u32::from(flags & FLAG_CF != 0));
 
             (
                 result as u16,
@@ -180,11 +156,7 @@ impl Axecutor {
 
         let flags = self.state.rflags;
         calculate_r_rm![u32f; self; i; |d:u32, s:u32| {
-            let result = (d as u64).wrapping_add(s as u64).wrapping_add(if flags & FLAG_CF != 0 {
-                1
-            } else {
-                0
-            });
+            let result = (d as u64).wrapping_add(s as u64).wrapping_add(u64::from(flags & FLAG_CF != 0));
 
             (
                 result as u32,
@@ -202,11 +174,7 @@ impl Axecutor {
 
         let flags = self.state.rflags;
         calculate_r_rm![u64f; self; i; |d:u64, s:u64| {
-            let result = (d as u128).wrapping_add(s as u128).wrapping_add(if flags & FLAG_CF != 0 {
-                1
-            } else {
-                0
-            });
+            let result = (d as u128).wrapping_add(s as u128).wrapping_add(u128::from(flags & FLAG_CF != 0));
 
             (
                 result as u64,

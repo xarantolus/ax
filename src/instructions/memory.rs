@@ -5,7 +5,7 @@ use crate::instructions::{debug::debug_log, macros::assert_fatal, registers::Sup
 
 use super::{axecutor::Axecutor, errors::AxError};
 
-#[cfg(all(target_arch = "wasm32"))]
+#[cfg(all(target_arch = "wasm32", not(test)))]
 use wasm_bindgen::JsValue;
 
 use std::convert::TryInto;
