@@ -1,9 +1,11 @@
 # [ax](https://ax.010.one)
 This is a minimal x86-64 emulator for WebAssembly. It executes real machine code and can be used to emulate x86-64 user-space programs in the browser.
 
-Note that not all implemented instructions work exactly the same way as on real hardware, but the goal is to be as close as possible while staying reasonable. Currently only around <!-- stats-count-marker -->59 mnemonics/283 opcodes<!-- stats-count-marker --> are implemented. This count can also be found via the [`stats.py`](stats.py) script.
+Currently implemented are <!-- stats-count-marker -->283 opcodes for 59 mnemonics (31 complete, 28 partial)<!-- stats-count-marker -->, which is only a very small subset of the more than 981 available mnemonics with at least 3684 variants <sup>[Source](https://dl.acm.org/doi/pdf/10.1145/2908080.2908121)</sup>. More detailed stats can be found via the [`stats.py`](stats.py) script.
 
-Additionally, this repository contains scripts that should be interesting for anyone who wants to write an x86-64 emulator. The most important one, [`t.py`](t.py), automatically generates test cases for an instruction by trying out different inputs and thus finding many flag combinations. See [automatically generate test cases](#automatically-generate-test-cases) for more information.
+Note that not all implemented instructions work exactly the same way as on real hardware, but the goal is to be as close as possible while staying reasonable. Notable exceptions are instructions that interact with the operating system (interrupts, syscalls) and the omission of all flags that are not used by jump instructions.
+
+In addition to the emulator itself, this repository contains scripts that should be interesting for anyone who wants to write an x86-64 emulator. The most important one, [`t.py`](t.py), automatically generates test cases for an instruction by trying out different inputs and thus finding interesting inputs, outputs and flag combinations. See [automatically generate test cases](#automatically-generate-test-cases) for more information.
 
 ## Try it out!
 You can try out the emulator right now by visiting [the website](https://ax.010.one), selecting a suitable ELF binary and clicking "Run". The emulator will then execute the binary and show the output. Note that currently support for ELF binaries is limited/buggy (there are some problems getting libc to work), you can however use binaries from the [`examples/programs`](examples/programs) directory. The source code for this site is in the [`examples/web`](examples/web) directory.

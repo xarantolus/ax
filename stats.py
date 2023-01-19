@@ -10,7 +10,7 @@ def count_test_cases(content):
     return content.count("ax_test!") + content.count("test_async!") + content.count("jmp_test!")
 
 def extract_instruction_functions(content):
-    # find all lines starting with "fn instr_" and ending with "{"
+    # Basically we find the start of all opcode implementations and then find the end/matching brace.
     regex = re.compile(r"fn instr_.*?\{", re.DOTALL)
 
     functions_text = []
@@ -18,6 +18,7 @@ def extract_instruction_functions(content):
     for match in regex.finditer(content):
         lvl = 0
 
+        # This matching is really simple (and could be broken by braces in comments etc), but it's good enough
         for i in range(match.start(), len(content)):
             if content[i] == "{":
                 lvl += 1
@@ -31,7 +32,7 @@ def extract_instruction_functions(content):
 
     return functions_text
 
-def info_mnemonic(content):
+def mnemonic_info(content):
     functions = extract_instruction_functions(content)
 
     unimplemented = 0
@@ -47,9 +48,9 @@ def info_mnemonic(content):
     )
 
 
-def replace_in_readme(mnemonic_count, opcode_count):
-    # Replace the text between the two "<!-- stats-count-marker -->"
-    # with "x mnemonics/y opcodes"
+def replace_in_readme(total_mnemonic_count, full_count, partial_count, opcode_count):
+    new_text = f"""{opcode_count} opcodes for {total_mnemonic_count} mnemonics ({full_count} complete, {partial_count} partial)"""
+
     with open("README.md", "r") as f:
         content = f.read()
 
@@ -57,7 +58,7 @@ def replace_in_readme(mnemonic_count, opcode_count):
     end = content.find("<!-- stats-count-marker -->", start + 1)
 
     new_content = content[:start + len("<!-- stats-count-marker -->")] + \
-                  f"{mnemonic_count} mnemonics/{opcode_count} opcodes" + \
+                  new_text + \
                   content[end:]
 
     with open("README.md", "w") as f:
@@ -73,7 +74,7 @@ print(fmt.format("-" * 15, "-" * 9, "-" * 11, "-" * 13, "-" * 13, "-" * 10))
 files = os.listdir("src/instructions")
 
 total_opcodes = 0
-total_implemented = 0
+opcodes_implemented = 0
 total_partial = 0
 total_full = 0
 total_test_cases = 0
@@ -85,12 +86,12 @@ for file in files:
         if not is_instruction_file(content):
             continue
 
-        opcodes, implemented, unimplemented, tests = info_mnemonic(content)
+        opcodes, implemented, unimplemented, tests = mnemonic_info(content)
 
         print(fmt.format(file, opcodes, implemented, unimplemented, "{:.2f}%".format(implemented / opcodes * 100), tests))
 
         total_opcodes += opcodes
-        total_implemented += implemented
+        opcodes_implemented += implemented
         total_test_cases += tests
 
         if implemented == opcodes:
@@ -100,9 +101,9 @@ for file in files:
 
 print(fmt.format("-" * 15, "-" * 9, "-" * 11, "-" * 13, "-" * 13, "-" * 10))
 
-print(fmt.format("Total", total_opcodes, total_implemented, total_opcodes - total_implemented, "{:.2f}%".format(total_implemented / total_opcodes * 100), total_test_cases))
+print(fmt.format("Total", total_opcodes, opcodes_implemented, total_opcodes - opcodes_implemented, "{:.2f}%".format(opcodes_implemented / total_opcodes * 100), total_test_cases))
 
 
 print(f"{total_full} fully implemented, {total_partial} partially implemented mnemonics -> {total_full + total_partial} total")
 
-replace_in_readme(total_full + total_partial, total_implemented)
+replace_in_readme(total_full + total_partial, total_full, total_partial, opcodes_implemented)
