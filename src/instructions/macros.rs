@@ -1345,15 +1345,7 @@ impl Axecutor {
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
         let src_val = match src {
-            Operand::Immediate { size, data } => {
-                debug_assert_eq!(
-                    size,
-                    1,
-                    "Invalid immediate size for {:?} instruction",
-                    i.mnemonic()
-                );
-                data as u8
-            }
+            Operand::Immediate { size: _, data } => data as u8,
             _ => fatal_error!(
                 "Invalid source operand {:?} for {:?} instruction",
                 dest,
@@ -1399,15 +1391,7 @@ impl Axecutor {
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
         let src_val = match src {
-            Operand::Immediate { size, data } => {
-                debug_assert_eq!(
-                    size,
-                    1,
-                    "Invalid immediate size for {:?} instruction",
-                    i.mnemonic()
-                );
-                data as u8
-            }
+            Operand::Immediate { size: _, data } => data as u8,
             _ => fatal_error!(
                 "Invalid source operand {:?} for {:?} instruction",
                 dest,
@@ -1453,15 +1437,7 @@ impl Axecutor {
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
         let src_val = match src {
-            Operand::Immediate { size, data } => {
-                debug_assert_eq!(
-                    size,
-                    1,
-                    "Invalid immediate size for {:?} instruction",
-                    i.mnemonic()
-                );
-                data as u8
-            }
+            Operand::Immediate { size: _, data } => data as u8,
             _ => fatal_error!(
                 "Invalid source operand {:?} for {:?} instruction",
                 dest,
