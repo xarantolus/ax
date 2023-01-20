@@ -70,3 +70,110 @@ impl Axecutor {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::instructions::axecutor::Axecutor;
+    use crate::instructions::tests::{
+        assert_mem_value, assert_reg_value, ax_test, write_flags, write_reg_value,
+    };
+    use iced_x86::Register::*;
+    // cmovae bx, word ptr [rcx]
+    ax_test![cmovae_bx_word_ptr_rcx; 0x66, 0xf, 0x43, 0x19;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; BX; 0x0);
+            write_reg_value!(q; a; RCX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; BX; 0x0);
+            assert_reg_value!(q; a; RCX; 0x1000);
+            assert_mem_value!(w; a; 0x1000; 0x0);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // cmovae bx, word ptr [rcx]
+    ax_test![cmovae_bx_word_ptr_rcx_cf_cf; 0x66, 0xf, 0x43, 0x19;
+        |a: &mut Axecutor| {
+            write_reg_value!(w; a; BX; 0x0);
+            write_reg_value!(q; a; RCX; 0x1000);
+            a.mem_init_zero(0x1000, 2).unwrap();
+            a.mem_write_16(0x1000, 0x0).unwrap();
+            write_flags!(a; FLAG_CF);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(w; a; BX; 0x0);
+            assert_reg_value!(q; a; RCX; 0x1000);
+            assert_mem_value!(w; a; 0x1000; 0x0);
+        };
+        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // cmovae edx, dword ptr [rcx]
+    ax_test![cmovae_edx_dword_ptr_rcx; 0xf, 0x43, 0x11;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EDX; 0x0);
+            write_reg_value!(q; a; RCX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EDX; 0x0);
+            assert_reg_value!(q; a; RCX; 0x1000);
+            assert_mem_value!(d; a; 0x1000; 0x0);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // cmovae edx, dword ptr [rcx]
+    ax_test![cmovae_edx_dword_ptr_rcx_cf_cf; 0xf, 0x43, 0x11;
+        |a: &mut Axecutor| {
+            write_reg_value!(d; a; EDX; 0x0);
+            write_reg_value!(q; a; RCX; 0x1000);
+            a.mem_init_zero(0x1000, 4).unwrap();
+            a.mem_write_32(0x1000, 0x0).unwrap();
+            write_flags!(a; FLAG_CF);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(d; a; EDX; 0x0);
+            assert_reg_value!(q; a; RCX; 0x1000);
+            assert_mem_value!(d; a; 0x1000; 0x0);
+        };
+        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // cmovae rdx, qword ptr [rcx]
+    ax_test![cmovae_rdx_qword_ptr_rcx; 0x48, 0xf, 0x43, 0x11;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RDX; 0x0);
+            write_reg_value!(q; a; RCX; 0x1000);
+            a.mem_init_zero(0x1000, 8).unwrap();
+            a.mem_write_64(0x1000, 0x0).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RDX; 0x0);
+            assert_reg_value!(q; a; RCX; 0x1000);
+            assert_mem_value!(q; a; 0x1000; 0x0);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // cmovae rdx, qword ptr [rcx]
+    ax_test![cmovae_rdx_qword_ptr_rcx_cf_cf; 0x48, 0xf, 0x43, 0x11;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RDX; 0x0);
+            write_reg_value!(q; a; RCX; 0x1000);
+            a.mem_init_zero(0x1000, 8).unwrap();
+            a.mem_write_64(0x1000, 0x0).unwrap();
+            write_flags!(a; FLAG_CF);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RDX; 0x0);
+            assert_reg_value!(q; a; RCX; 0x1000);
+            assert_mem_value!(q; a; 0x1000; 0x0);
+        };
+        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+}

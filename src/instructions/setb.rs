@@ -37,4 +37,31 @@ impl Axecutor {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use crate::instructions::axecutor::Axecutor;
+    use crate::instructions::tests::{assert_reg_value, ax_test, write_flags, write_reg_value};
+    use iced_x86::Register::*;
+
+    // setb al
+    ax_test![setb_al; 0xf, 0x92, 0xc0;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x0);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // setb al
+    ax_test![setb_al_cf_cf; 0xf, 0x92, 0xc0;
+        |a: &mut Axecutor| {
+            write_reg_value!(b; a; AL; 0x0);
+            write_flags!(a; FLAG_CF);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x1);
+        };
+        (FLAG_CF; FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+}
