@@ -1,4 +1,4 @@
-.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax
+.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax generate
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -44,6 +44,9 @@ RM_TARGETS += ax$(EXE_SUFFIX)
 # fmt will fail if switch or stats are not up to date
 precommit: build-web switch stats fmt test test-scripts ax build
 
+# targets that might change files and thus prevent precommit from passing, especially when the version changes
+generate: build-web switch stats test-js
+
 test-scripts: python-dependencies
 	$(PY) t.py --test
 RM_TARGETS += __pycache__
@@ -84,7 +87,7 @@ fmt:
 coverage:
 	$(MOLD) cargo tarpaulin --out Lcov --skip-clean
 
-test: test-local test-node
+test: test-local test-node test-js
 
 test-local:
 	@echo "Running tests on processor..."
