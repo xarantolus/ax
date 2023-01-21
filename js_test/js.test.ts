@@ -200,7 +200,7 @@ describe('Segment registers work', () => {
 		expect(axecutor.read_fs()).toBe(0x1234n);
 	});
 
-	it('should read and write segment registers ion hooks', async () => {
+	it('should read and write segment registers in hooks', async () => {
 		let axecutor = new Axecutor(correctX86Code, 0x1000n, 0x1000n);
 
 		axecutor.write_fs(0n);

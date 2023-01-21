@@ -14,34 +14,36 @@ use std::{
     fmt::{Display, Formatter},
 };
 
-#[cfg(not(all(target_arch = "wasm32", not(test))))]
+use crate::helpers::debug::debug_log;
+use crate::instructions::generated::SupportedMnemonic;
+use crate::{axecutor::Axecutor, helpers::errors::AxError};
 use std::error::Error;
-
 use std::fmt::Debug;
 
-use crate::instructions::generated::SupportedMnemonic;
-
-use crate::{axecutor::Axecutor, helpers::errors::AxError};
-
-use crate::helpers::debug::debug_log;
-
-#[cfg(all(target_arch = "wasm32", not(test)))]
-type Function = js_sys::Function;
-
-#[cfg(not(all(target_arch = "wasm32", not(test))))]
-type Function = fn(&mut Axecutor, SupportedMnemonic) -> Result<(), Box<dyn Error>>;
+// (possible asynchronous) callback function (closure) taking an Axecutor and Mnemonic, returning a result
+pub type RustCallbackFunction =
+    dyn Fn(&mut Axecutor, SupportedMnemonic) -> Result<(), Box<dyn Error>>;
 
 #[derive(Clone)]
 pub(crate) struct Hook {
-    before: Vec<Function>,
-    after: Vec<Function>,
+    native_before: Vec<&'static RustCallbackFunction>,
+    native_after: Vec<&'static RustCallbackFunction>,
+
+    #[cfg(all(target_arch = "wasm32", not(test)))]
+    js_before: Vec<js_sys::Function>,
+    #[cfg(all(target_arch = "wasm32", not(test)))]
+    js_after: Vec<js_sys::Function>,
 }
 
 impl Hook {
     pub fn new() -> Self {
         Self {
-            before: Vec::new(),
-            after: Vec::new(),
+            native_before: Vec::new(),
+            native_after: Vec::new(),
+            #[cfg(all(target_arch = "wasm32", not(test)))]
+            js_before: Vec::new(),
+            #[cfg(all(target_arch = "wasm32", not(test)))]
+            js_after: Vec::new(),
         }
     }
 
@@ -52,9 +54,24 @@ impl Hook {
         mnemonic: SupportedMnemonic,
     ) -> Result<(), AxError> {
         ax.hooks.running = true;
-        for fnt in if before { &self.before } else { &self.after } {
-            #[cfg(all(target_arch = "wasm32", not(test)))]
-            {
+
+        let functions = if before {
+            &self.native_before
+        } else {
+            &self.native_after
+        };
+
+        for function in functions {
+            function(ax, mnemonic)?;
+        }
+
+        #[cfg(all(target_arch = "wasm32", not(test)))]
+        {
+            for fnt in if before {
+                &self.js_before
+            } else {
+                &self.js_after
+            } {
                 let res = run_function(ax, fnt.clone(), vec![JsValue::from(mnemonic as u32)]).await;
                 if let Err(e) = res {
                     debug_log!("Error running hook: {:?}", e);
@@ -62,16 +79,8 @@ impl Hook {
                     return Err(e.into());
                 }
             }
-            #[cfg(not(all(target_arch = "wasm32", not(test))))]
-            {
-                let res = fnt(ax, mnemonic);
-                if let Err(e) = res {
-                    debug_log!("Error running hook: {:?}", e);
-                    ax.hooks.running = false;
-                    return Err(AxError::from(format!("Error running hook: {}", e)));
-                }
-            }
         }
+
         ax.hooks.running = false;
 
         Ok(())
@@ -82,9 +91,16 @@ impl Hook {
         ax: &mut Axecutor,
         mnemonic: SupportedMnemonic,
     ) -> Result<(), AxError> {
+        #[cfg(all(target_arch = "wasm32", not(test)))]
         debug_log!(
-            "Calling Hook::run_before with {} hook function(s)",
-            self.before.len()
+            "Calling Hook::run_before with {} native and {} JS hook function(s)",
+            self.native_before.len(),
+            self.js_before.len()
+        );
+        #[cfg(not(all(target_arch = "wasm32", not(test))))]
+        debug_log!(
+            "Calling Hook::run_before with {} native hook function(s)",
+            self.native_before.len()
         );
 
         self.run_functions(true, ax, mnemonic).await?;
@@ -98,9 +114,16 @@ impl Hook {
         ax: &mut Axecutor,
         mnemonic: SupportedMnemonic,
     ) -> Result<(), AxError> {
+        #[cfg(all(target_arch = "wasm32", not(test)))]
         debug_log!(
-            "Calling Hook::run_after with {} hook function(s)",
-            self.after.len()
+            "Calling Hook::run_after with {} native and {} JS hook function(s)",
+            self.native_after.len(),
+            self.js_after.len()
+        );
+        #[cfg(not(all(target_arch = "wasm32", not(test))))]
+        debug_log!(
+            "Calling Hook::run_after with {} native hook function(s)",
+            self.native_after.len()
         );
 
         self.run_functions(false, ax, mnemonic).await?;
@@ -112,9 +135,19 @@ impl Hook {
 
 impl Debug for Hook {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        #[cfg(all(target_arch = "wasm32", not(test)))]
+        {
+            f.debug_struct("Hook")
+                .field("js_before", &self.js_before.len())
+                .field("js_after", &self.js_after.len())
+                .field("native_before", &self.native_before.len())
+                .field("native_after", &self.native_after.len())
+                .finish()
+        }
+        #[cfg(not(all(target_arch = "wasm32", not(test))))]
         f.debug_struct("Hook")
-            .field("before", &self.before.len())
-            .field("after", &self.after.len())
+            .field("native_before", &self.native_before.len())
+            .field("native_after", &self.native_after.len())
             .finish()
     }
 }
@@ -139,13 +172,29 @@ impl Display for HookProcessor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{{")?;
         for (mnem, hook) in self.mnemonic_hooks.iter() {
-            writeln!(
-                f,
-                "\n    {:?}: {{ before: {}, after: {} }}",
-                mnem,
-                hook.before.len(),
-                hook.after.len()
-            )?;
+            #[cfg(all(target_arch = "wasm32", not(test)))]
+            {
+                write!(
+                    f,
+                    "\n    {:?}: {{ js_before: {}, js_after: {}, native_before: {}, native_after: {} }}",
+                    mnem,
+                    hook.js_before.len(),
+                    hook.js_after.len(),
+                    hook.native_before.len(),
+                    hook.native_after.len()
+                )?;
+            }
+
+            #[cfg(not(all(target_arch = "wasm32", not(test))))]
+            {
+                write!(
+                    f,
+                    "\n    {:?}: {{ native_before: {}, native_after: {} }}",
+                    mnem,
+                    hook.native_before.len(),
+                    hook.native_after.len()
+                )?;
+            }
         }
 
         write!(f, "}}")
@@ -172,7 +221,7 @@ impl Axecutor {
     pub fn hook_before_mnemonic(
         &mut self,
         mnemonic: SupportedMnemonic,
-        cb: Function,
+        cb: js_sys::Function,
     ) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::hook_before_mnemonic, hooks_running={}",
@@ -186,7 +235,7 @@ impl Axecutor {
         }
 
         if cb.has_type::<js_sys::Function>() {
-            let function = cb.dyn_into::<Function>().map_err(|_| {
+            let function = cb.dyn_into::<js_sys::Function>().map_err(|_| {
                 AxError::from("The provided callback is not a function. Please provide a function.")
             })?;
 
@@ -199,7 +248,7 @@ impl Axecutor {
                 .mnemonic_hooks
                 .entry(mnemonic)
                 .or_insert_with(Hook::new)
-                .before
+                .js_before
                 .push(function);
 
             debug_log!(
@@ -227,7 +276,7 @@ impl Axecutor {
     pub fn hook_after_mnemonic(
         &mut self,
         mnemonic: SupportedMnemonic,
-        cb: JsValue,
+        cb: js_sys::Function,
     ) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::hook_after_mnemonic, hooks_running={}",
@@ -240,7 +289,7 @@ impl Axecutor {
         }
 
         if cb.has_type::<js_sys::Function>() {
-            let function = cb.dyn_into::<Function>().map_err(|_| {
+            let function = cb.dyn_into::<js_sys::Function>().map_err(|_| {
                 AxError::from("The provided callback is not a function. Please provide a function.")
             })?;
 
@@ -252,7 +301,7 @@ impl Axecutor {
                 .mnemonic_hooks
                 .entry(mnemonic)
                 .or_insert_with(Hook::new)
-                .after
+                .js_after
                 .push(function);
 
             debug_log!(
@@ -276,10 +325,10 @@ impl Axecutor {
     /// Unlike the JS API, you don't need to return any special values.
     /// The function will be called with the Axecutor object and mnemonic as arguments.
     /// You can register multiple functions for the same mnemonic, the order of execution is however not defined.
-    pub fn hook_before_mnemonic(
+    pub fn hook_before_mnemonic_native(
         &mut self,
         mnemonic: SupportedMnemonic,
-        cb: Function,
+        cb: &'static RustCallbackFunction,
     ) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::hook_before_mnemonic, hooks_running={}",
@@ -300,7 +349,7 @@ impl Axecutor {
             .mnemonic_hooks
             .entry(mnemonic)
             .or_insert_with(Hook::new)
-            .before
+            .native_before
             .push(cb);
 
         debug_log!(
@@ -314,10 +363,10 @@ impl Axecutor {
     /// Unlike the JS API, you don't need to return any special values.
     /// The function will be called with the Axecutor object and mnemonic as arguments.
     /// You can register multiple functions for the same mnemonic, the order of execution is however not defined.
-    pub fn hook_after_mnemonic(
+    pub fn hook_after_mnemonic_native(
         &mut self,
         mnemonic: SupportedMnemonic,
-        cb: Function,
+        cb: &'static RustCallbackFunction,
     ) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::hook_after_mnemonic, hooks_running={}",
@@ -337,7 +386,7 @@ impl Axecutor {
             .mnemonic_hooks
             .entry(mnemonic)
             .or_insert_with(Hook::new)
-            .after
+            .native_after
             .push(cb);
 
         debug_log!(
@@ -416,7 +465,7 @@ mod tests {
         )
         .expect("Failed to create axecutor");
 
-        let fnt: Function = |ax: &mut Axecutor, mnemonic: SupportedMnemonic| {
+        let fnt: &RustCallbackFunction = &|ax: &mut Axecutor, mnemonic: SupportedMnemonic| {
             assert_eq!(mnemonic, SupportedMnemonic::Syscall, "Wrong mnemonic passed to hook handling Syscall");
 
             assert_reg_value!(q; ax; RAX; 5);
@@ -425,7 +474,7 @@ mod tests {
             Ok(())
         };
 
-        ax.hook_before_mnemonic(SupportedMnemonic::Syscall, fnt)
+        ax.hook_before_mnemonic_native(SupportedMnemonic::Syscall, fnt)
             .expect("Failed to add hook");
 
         ax.execute().await.expect("Failed to execute");
@@ -444,7 +493,7 @@ mod tests {
         )
         .expect("Failed to create axecutor");
 
-        let fnt: Function = |ax: &mut Axecutor, mnemonic: SupportedMnemonic| {
+        let fnt: &RustCallbackFunction = &|ax: &mut Axecutor, mnemonic: SupportedMnemonic| {
             assert_eq!(mnemonic, SupportedMnemonic::Syscall, "Wrong mnemonic passed to hook handling Syscall");
 
             assert_reg_value!(q; ax; RAX; 5);
@@ -453,7 +502,7 @@ mod tests {
             Ok(())
         };
 
-        ax.hook_after_mnemonic(SupportedMnemonic::Syscall, fnt)
+        ax.hook_after_mnemonic_native(SupportedMnemonic::Syscall, fnt)
             .expect("Failed to add hook");
 
         ax.execute().await.expect("Failed to execute");
@@ -471,7 +520,7 @@ mod tests {
             0x1000,
         ).expect("Failed to create axecutor");
 
-        ax.hook_after_mnemonic(SupportedMnemonic::Mov, |ax: &mut Axecutor, mnemonic: SupportedMnemonic| {
+        ax.hook_after_mnemonic_native(SupportedMnemonic::Mov, &|ax: &mut Axecutor, mnemonic: SupportedMnemonic| {
             assert_eq!(mnemonic, SupportedMnemonic::Mov, "Wrong mnemonic passed to hook handling Mov");
 
             ax.stop();
@@ -479,12 +528,52 @@ mod tests {
             Ok(())
         }).expect("Failed to add hook");
 
-        ax.hook_before_mnemonic(SupportedMnemonic::Syscall, |_: &mut Axecutor, _: SupportedMnemonic| {
+        ax.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|_: &mut Axecutor, _: SupportedMnemonic| {
             unreachable!("Syscall hook should not be called as we stop before it");
         }).expect("Failed to add hook");
 
         ax.execute().await.expect("Failed to execute");
 
         assert_reg_value!(q; ax; RAX; 5);
+    }];
+
+    test_async![modify_outside_vars; async {
+        let mut ax = Axecutor::new(
+            &[
+                0x48, 0xc7, 0xc0, 0x5, 0, 0, 0, // mov rax, 5
+                0xf, 0x5, // syscall
+            ],
+            0x1000,
+            0x1000,
+        ).expect("Failed to create axecutor");
+
+        // outside_var should last for static so we can use it in a closure/callback
+        #[allow(non_upper_case_globals)]
+        static mut outside_var: u64 = 0;
+
+        // Make sure we keep access to the outside variable without "temporary value dropped while borrowed" error
+        ax.hook_after_mnemonic_native(SupportedMnemonic::Mov, &|_: &mut Axecutor, mnemonic: SupportedMnemonic| {
+            assert_eq!(mnemonic, SupportedMnemonic::Mov, "Wrong mnemonic passed to hook handling Mov");
+
+            unsafe {
+                outside_var = 10;
+            }
+
+            Ok(())
+        }).expect("Failed to add hook");
+
+        ax.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|_: &mut Axecutor, _: SupportedMnemonic| {
+            unsafe {
+                assert_eq!(outside_var, 10, "Outside variable was not modified");
+            }
+
+            Ok(())
+        }).expect("Failed to add hook");
+
+        ax.execute().await.expect("Failed to execute");
+
+        unsafe {
+            assert_eq!(outside_var, 10, "Outside variable was not modified");
+        }
     }];
 }
