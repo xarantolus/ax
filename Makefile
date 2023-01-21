@@ -21,13 +21,17 @@ else
   PY := py -3
 endif
 
+RM_TARGETS := *.out Cargo.lock target
+
 all: ax build build-cjs
 
 build:
 	$(MOLD) wasm-pack build --target web --release
+RM_TARGETS += pkg
 
 build-cjs:
 	$(MOLD) wasm-pack build --target nodejs --release --out-dir pkg-cjs
+RM_TARGETS += pkg-cjs
 
 debug:
 	$(MOLD) wasm-pack build --target web --debug
@@ -35,12 +39,14 @@ debug:
 bin: ax
 ax:
 	$(MOLD) cargo build --release && cp target/release/ax$(EXE_SUFFIX) .
+RM_TARGETS += ax$(EXE_SUFFIX)
 
 # fmt will fail if switch or stats are not up to date
 precommit: build-web switch stats fmt test test-scripts ax build
 
 test-scripts: python-dependencies
 	$(PY) t.py --test
+RM_TARGETS += __pycache__
 
 stats:
 	@$(PY) stats.py
@@ -56,16 +62,19 @@ watch-debug:
 
 watch-tests:
 	$(MOLD) cargo watch --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
+RM_TARGETS += lcov.info
 
 web: copy-programs build
 	cd examples/web && npm install && npm run dev
 
 build-web: copy-programs build
 	cd examples/web && npm install && npm run build
+RM_TARGETS += examples/web/node_modules examples/web/dist .vite
 
 copy-programs: example-programs
 	mkdir -p examples/web/public/programs
 	cp -r $(shell find examples/programs -name "*.bin") examples/web/public/programs
+RM_TARGETS += examples/web/public/programs
 
 fmt:
 	$(MOLD) cargo fix --allow-staged --all --all-features && \
@@ -101,7 +110,6 @@ python-dependencies:
 	@$(PY) -m pip install --quiet pyperclip tqdm
 
 clean:
-	rm -rf pkg pkg-cjs target examples/web/node_modules examples/web/dist examples/web/public/programs .vite
+	rm -rf $(RM_TARGETS)
 	cd examples/programs && $(MAKE) clean
-	rm -f lcov.info
 
