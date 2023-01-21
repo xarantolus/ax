@@ -33,9 +33,13 @@ impl Axecutor {
             Some(section) => section,
             None => return Err(AxError::from("ELF: No .text section")),
         };
+        let text_section_content = match text_section.content() {
+            Some(content) => content,
+            None => return Err(AxError::from("ELF: .text section has no content")),
+        };
 
         let mut axecutor = Axecutor::new(
-            text_section.content(),
+            text_section_content,
             text_section.addr(),
             match obj_file.entry_point() {
                 0 => text_section.addr(),
@@ -45,6 +49,10 @@ impl Axecutor {
 
         // See https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
         for (i, header) in obj_file.program_header_iter().enumerate() {
+            let content = match header.content() {
+                Some(c) => c,
+                None => continue,
+            };
             if header.vaddr() == text_section.addr() {
                 // skip .text section -- we already loaded it
                 // Aspirationally this should go away once the memory implementation also holds the code
@@ -61,18 +69,18 @@ impl Axecutor {
                             format!("elf_zeroed_header{}", i),
                         )?;
 
-                        if header.content().len() > header.memsz() as usize {
+                        if content.len() > header.memsz() as usize {
                             return Err(AxError::from(
                                 "ELF: content of program header is longer than headers' memsz"
                                     .to_string(),
                             ));
                         }
 
-                        axecutor.mem_write_bytes(header.vaddr(), header.content())?;
+                        axecutor.mem_write_bytes(header.vaddr(), content)?;
                     } else {
                         axecutor.mem_init_area_named(
                             header.vaddr(),
-                            header.content().to_vec(),
+                            content.to_vec(),
                             Some(format!("elf_header{}", i)),
                         )?;
                     }
