@@ -1,9 +1,13 @@
 import { beforeAll, it, describe, expect, beforeEach } from 'vitest';
 import { readFile } from 'fs/promises';
 
-const { version, commit, Axecutor, Register, Mnemonic } = require('ax-x86');
+const { version, commit, Axecutor, Register, Mnemonic, Syscall } = require('ax-x86');
 
 let correctX86Code = new Uint8Array([0x48, 0x89, 0xd8]); // mov rax, rbx
+
+// mov rax, 60; mov rdi, 18; syscall
+let exitX86Code = new Uint8Array([0x48, 0xc7, 0xc0, 0x3c, 0, 0, 0, 0x48, 0xc7, 0xc7, 0x12, 0, 0, 0, 0xf, 0x5]);
+
 
 describe('Axecutor', () => {
 	it('should execute correct code', async () => {
@@ -295,5 +299,38 @@ describe('Mnemonic hooks', () => {
 			return 123;
 		});
 		await expect(axecutor.execute()).rejects.toThrow();
+	});
+});
+
+describe('Native syscall handlers', () => {
+	it('should crash when no syscall handlers are registered', async () => {
+		let axecutor = new Axecutor(exitX86Code, 0x1000n, 0x1000n);
+		await expect(axecutor.execute()).rejects.toThrow();
+	});
+
+	it('should execute a native syscall handler', async () => {
+		let axecutor = new Axecutor(exitX86Code, 0x1000n, 0x1000n);
+
+		axecutor.handle_syscalls([Syscall.Exit]);
+
+		// if it doesn't throw, the syscall got handled
+		await axecutor.execute();
+	});
+
+	it('should should be possible to have both native and JS syscalls', async () => {
+		let axecutor = new Axecutor(exitX86Code, 0x1000n, 0x1000n);
+
+		axecutor.handle_syscalls([Syscall.Exit]);
+
+		// The native syscall handler will stop execution before the JS handler even runs
+		let called = false;
+		axecutor.hook_before_mnemonic(Mnemonic.Syscall, (ax) => {
+			called = true;
+			return ax.stop();
+		});
+
+		await axecutor.execute();
+
+		expect(called).toBe(false);
 	});
 });

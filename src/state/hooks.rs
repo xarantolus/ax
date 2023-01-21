@@ -63,6 +63,10 @@ impl Hook {
 
         for function in functions {
             function(ax, mnemonic)?;
+            if ax.state.finished {
+                ax.hooks.running = false;
+                return Ok(());
+            }
         }
 
         #[cfg(all(target_arch = "wasm32", not(test)))]
@@ -77,6 +81,10 @@ impl Hook {
                     debug_log!("Error running hook: {:?}", e);
                     ax.hooks.running = false;
                     return Err(e.into());
+                }
+                if ax.state.finished {
+                    ax.hooks.running = false;
+                    return Ok(());
                 }
             }
         }
@@ -319,7 +327,6 @@ impl Axecutor {
 }
 
 // Normal implementation
-#[cfg(not(all(target_arch = "wasm32", not(test))))]
 impl Axecutor {
     /// Register a function to be called before a mnemonic is executed.
     /// Unlike the JS API, you don't need to return any special values.
