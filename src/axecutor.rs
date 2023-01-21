@@ -44,7 +44,6 @@ pub struct Axecutor {
     pub(crate) hooks: HookProcessor,
 }
 
-#[wasm_bindgen]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct MachineState {
     // TODO: memory could better be modeled with some kind of interval tree that allows storing additional data with each interval
@@ -60,8 +59,7 @@ pub(crate) struct MachineState {
 
 #[wasm_bindgen]
 impl MachineState {
-    #[wasm_bindgen(js_name = toStringIdent)]
-    pub fn to_string_ident(&self, i: usize) -> String {
+    pub(crate) fn to_string_ident(&self, i: usize) -> String {
         let mut s = String::new();
 
         s.push_str("MachineState {\n");
