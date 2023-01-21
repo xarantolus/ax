@@ -183,7 +183,7 @@ If you want to contribute to this project, that's great! A good way to involved 
 You could e.g. get started by adding support for a new instruction mnemonic. There's a tutorial on how to do that below.
 If you run into problems setting up the development tools or have any other questions, feel free to open an issue.
 
-The [`Makefile`](Makefile) has a lot of targets that can be useful for development. The `test` target runs tests both on your native machine and in WASM via NodeJS, making sure implemented instructions behave as expected in the target environment.
+The [`Makefile`](Makefile) has a lot of targets that can be useful for development. The `test` target runs tests both on your native machine and in WASM via NodeJS, making sure implemented instructions behave as expected in the target environment. The `test-js` target makes sure the public-facing JS API works as expected.
 
 For any changes you want to make, you can branch off from the `develop` branch. Please format the code using `make fmt` before submitting a pull request and make sure that `make precommit` passes.
 

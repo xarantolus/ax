@@ -87,7 +87,7 @@ test-node:
 	@echo "Running tests in Node/WASM..."
 	wasm-pack test --node
 
-test-js:
+test-js: build-cjs
 	@echo "Testing JS API"
 	cd js_test && npm install && npm test
 
@@ -101,7 +101,7 @@ python-dependencies:
 	@$(PY) -m pip install --quiet pyperclip tqdm
 
 clean:
-	rm -rf pkg target examples/web/node_modules examples/web/dist examples/web/public/programs .vite
+	rm -rf pkg pkg-cjs target examples/web/node_modules examples/web/dist examples/web/public/programs .vite
 	cd examples/programs && $(MAKE) clean
 	rm -f lcov.info
 
