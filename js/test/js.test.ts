@@ -125,7 +125,7 @@ describe('Run ELF binaries', () => {
 
 	it('should run a simple hello world program', async () => {
 		let elf = await readFile(
-			new URL('../testdata/hello_world.bin', import.meta.url)
+			new URL('../../testdata/hello_world.bin', import.meta.url)
 		);
 
 		let axecutor = Axecutor.from_binary(elf);
@@ -139,7 +139,7 @@ describe('Run ELF binaries', () => {
 
 	it('should run a simple alphabet program', async () => {
 		let elf = await readFile(
-			new URL('../testdata/alphabet.bin', import.meta.url)
+			new URL('../../testdata/alphabet.bin', import.meta.url)
 		);
 
 		let axecutor = Axecutor.from_binary(elf);
@@ -153,7 +153,7 @@ describe('Run ELF binaries', () => {
 
 	it('should run a more complex argument print program', async () => {
 		let elf = await readFile(
-			new URL('../testdata/args.bin', import.meta.url)
+			new URL('../../testdata/args.bin', import.meta.url)
 		);
 
 		let axecutor = Axecutor.from_binary(elf);

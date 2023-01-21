@@ -14,6 +14,6 @@
     "vitest": "^0.27.2"
   },
   "dependencies": {
-    "ax-x86": "file:../pkg-cjs"
+    "ax-x86": "file:../../pkg-cjs"
   }
 }
