@@ -9,6 +9,7 @@ use super::{debug::debug_log, errors::AxError};
 
 #[wasm_bindgen]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+/// Syscalls that can be registered for automatic handling
 pub enum Syscall {
     Exit = 60,
 }

@@ -101,7 +101,7 @@ test-node:
 
 test-js: build-cjs
 	@echo "Testing JS API"
-	cd js_test && npm install && npm test
+	cd js/test && npm install && npm test
 
 switch:
 	$(PY) generate.py switch
