@@ -111,6 +111,15 @@ mod tests {
 
                 let mut ax = Axecutor::from_binary(binary).expect("Failed to parse binary");
 
+                ax.init_stack_program_start(
+                    0x1000,
+                    vec!["/bin/my_binary".to_string(), "arg1".to_string()],
+                    vec!["env1=val1".to_string(), "env2=val2".to_string()],
+                ).expect("Failed to init stack");
+
+                #[allow(non_upper_case_globals)]
+                static mut output: String = String::new();
+
                 let cb = &move |ax: &mut Axecutor, _: SupportedMnemonic| {
                     let syscall_num = ax.reg_read_64(SupportedRegister::RAX)?;
                     let rdi = ax.reg_read_64(SupportedRegister::RDI)?;
@@ -128,7 +137,9 @@ mod tests {
                             let result_buf = ax.mem_read_bytes(rsi, rdx)?;
                             let output_text = String::from_utf8(result_buf)?;
 
-                            assert_eq!(output_text, $expected_output, "Output of first write call does not match");
+                            unsafe {
+                                output.push_str(&output_text);
+                            }
 
                             // Return number of bytes written
                             ax.reg_write_64(SupportedRegister::RAX, rdx)?;
@@ -149,6 +160,7 @@ mod tests {
 
                 ax.execute().await.expect("Failed to execute");
 
+                assert_eq!(unsafe { output.clone() }, $expected_output, "Output does not match");
 
                 let exit_code = ax.reg_read_64(SupportedRegister::RDI).expect("Failed to read exit code from RDI");
                 assert_eq!(exit_code, $expected_exit_code, "Exit code does not match");
@@ -160,4 +172,14 @@ mod tests {
 
     test_binary![test_hello_world; "../../testdata/hello_world.bin"; "Hello, World!\n"; 0];
     test_binary![test_alphabet; "../../testdata/alphabet.bin"; "abcdefghijklmnopqrstuvwxyz\n"; 0];
+    test_binary![test_args; "../../testdata/args.bin"; "--------------------------------------------------\n\
+                                                        argv values:\n\
+                                                        --------------------------------------------------\n\
+                                                        /bin/my_binary\n\
+                                                        arg1\n\
+                                                        --------------------------------------------------\n\
+                                                        envp values:\n\
+                                                        --------------------------------------------------\n\
+                                                        env1=val1\n\
+                                                        env2=val2\n"; 2];
 }
