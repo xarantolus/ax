@@ -1,4 +1,4 @@
-.PHONY: build debug watch test test-local test-node test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax
+.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -21,10 +21,13 @@ else
   PY := py -3
 endif
 
-all: ax build
+all: ax build build-cjs
 
 build:
 	$(MOLD) wasm-pack build --target web --release
+
+build-cjs:
+	$(MOLD) wasm-pack build --target nodejs --release --out-dir pkg-cjs
 
 debug:
 	$(MOLD) wasm-pack build --target web --debug
@@ -83,6 +86,10 @@ test-wasm: test-node
 test-node:
 	@echo "Running tests in Node/WASM..."
 	wasm-pack test --node
+
+test-js:
+	@echo "Testing JS API"
+	cd js_test && npm install && npm test
 
 switch:
 	$(PY) generate.py switch

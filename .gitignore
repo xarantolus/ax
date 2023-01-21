@@ -2,7 +2,7 @@
 **/*.rs.bk
 Cargo.lock
 bin/
-pkg/
+pkg*/
 wasm-pack.log
 lcov.info
 *.s
@@ -18,3 +18,4 @@ ax
 # ide dirs
 .vscode
 .idea
+node_modules

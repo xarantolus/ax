@@ -1,0 +1,19 @@
+{
+  "name": "js_test",
+  "version": "0.0.0",
+  "description": "Tests for ax, an x86 emulator for WASM",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "watch": "vitest watch",
+    "coverage": "vitest run --coverage"
+  },
+  "author": "xarantolus",
+  "devDependencies": {
+    "typescript": "^4.9.4",
+    "vitest": "^0.27.2"
+  },
+  "dependencies": {
+    "ax-x86": "file:../pkg-cjs"
+  }
+}
