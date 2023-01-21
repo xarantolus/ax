@@ -2,12 +2,12 @@ use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Lea;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
 
-use crate::instructions::macros::fatal_error;
+use crate::helpers::macros::fatal_error;
 
-use crate::instructions::operand::Operand;
+use crate::helpers::operand::Operand;
 
 impl Axecutor {
     pub fn mnemonic_lea(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -81,8 +81,8 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use crate::instructions::axecutor::Axecutor;
-    use crate::instructions::tests::{assert_reg_value, ax_test, write_reg_value};
+    use crate::axecutor::Axecutor;
+    use crate::helpers::tests::{assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
 
     // lea ax, word ptr [rax]

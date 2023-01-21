@@ -2,13 +2,13 @@ use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Idiv;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
 
-use crate::instructions::macros::fatal_error;
+use crate::helpers::macros::fatal_error;
 
-use crate::instructions::operand::Operand;
-use crate::instructions::registers::SupportedRegister::*;
+use crate::helpers::operand::Operand;
+use crate::state::registers::SupportedRegister::*;
 
 impl Axecutor {
     pub fn mnemonic_idiv(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -152,10 +152,10 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
+    use crate::axecutor::Axecutor;
 
-    use crate::instructions::registers::SupportedRegister;
-    use crate::instructions::tests::{assert_reg_value, ax_test, write_reg_value};
+    use crate::helpers::tests::{assert_reg_value, ax_test, write_reg_value};
+    use crate::state::registers::SupportedRegister;
     use iced_x86::Register::*;
 
     async fn assert_divide_by_zero_error(code: &[u8]) {

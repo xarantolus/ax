@@ -1,10 +1,8 @@
 #[cfg(test)]
 mod test {
     // You can add more tests here using the a.py script, e.g. run `python3 a.py "mov rax, 0x1234567890abcdef; xor eax, eax"` (select "ts" for setup) to generate a test case
-    use crate::instructions::axecutor::Axecutor;
-    use crate::instructions::tests::{
-        assert_mem_value, assert_reg_value, ax_test, write_reg_value,
-    };
+    use crate::axecutor::Axecutor;
+    use crate::helpers::tests::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
 
     // push rax; xor rax, rax; pop rbx
@@ -181,7 +179,7 @@ mod test {
             {
                 let output_str = String::from_utf8(output).expect("Failed to convert output to string");
                 let input_str = String::from_utf8(Vec::from(STRING_REVERSE_INPUT)).expect("Failed to convert input to string");
-                crate::instructions::debug::debug_log!("Reversed string {:?} to {:?}", input_str, output_str);
+                crate::helpers::debug::debug_log!("Reversed string {:?} to {:?}", input_str, output_str);
                 assert_eq!(output_str, STRING_REVERSE_INPUT.iter().rev().skip(1).map(|&b| b as char).collect::<String>() + "\n");
             }
         }

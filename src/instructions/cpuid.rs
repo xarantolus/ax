@@ -3,12 +3,12 @@ use iced_x86::Code;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Cpuid;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
 
-use crate::instructions::macros::fatal_error;
+use crate::helpers::macros::fatal_error;
 
-use crate::instructions::registers::SupportedRegister;
+use crate::state::registers::SupportedRegister;
 
 impl Axecutor {
     pub fn mnemonic_cpuid(&mut self, i: Instruction) -> Result<(), AxError> {

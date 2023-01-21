@@ -3,13 +3,13 @@ use iced_x86::Instruction;
 use iced_x86::Mnemonic::Call;
 use iced_x86::OpKind;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
 
-use crate::instructions::macros::fatal_error;
-use crate::instructions::macros::opcode_unimplemented;
-use crate::instructions::operand::Operand;
-use crate::instructions::registers::SupportedRegister::*;
+use crate::helpers::macros::fatal_error;
+use crate::helpers::macros::opcode_unimplemented;
+use crate::helpers::operand::Operand;
+use crate::state::registers::SupportedRegister::*;
 
 macro_rules! push_rip {
     ($self:ident) => {{
@@ -162,8 +162,8 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use crate::instructions::tests::{assert_mem_value, assert_reg_value, jmp_test, test_async};
-    use crate::instructions::{axecutor::Axecutor, flags::*};
+    use crate::helpers::tests::{assert_mem_value, assert_reg_value, jmp_test, test_async};
+    use crate::{axecutor::Axecutor, state::flags::*};
     use iced_x86::Register::*;
 
     test_async![test_call_rel32_64; async {
@@ -185,7 +185,7 @@ mod tests {
             .expect("Failed to init memory");
 
         if let Err(e) = ax.execute().await {
-            crate::instructions::macros::fatal_error!("Failed to execute: {:?}", e);
+            crate::helpers::macros::fatal_error!("Failed to execute: {:?}", e);
         }
 
         assert!(

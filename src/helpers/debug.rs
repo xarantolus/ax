@@ -10,7 +10,7 @@ macro_rules! debug_log {
     ($str:expr) => {
         #[cfg(all(target_arch = "wasm32", debug_assertions, not(test)))]
         {
-            use $crate::instructions::debug::js_debug_log;
+            use $crate::helpers::debug::js_debug_log;
             js_debug_log(&*format!("{}:{}: {}", file!(), line!(), $str));
         }
 
@@ -22,7 +22,7 @@ macro_rules! debug_log {
     ($fmt:expr, $($arg:tt)*) => {
         #[cfg(all(target_arch = "wasm32", debug_assertions, not(test)))]
         {
-            use $crate::instructions::debug::js_debug_log;
+            use $crate::helpers::debug::js_debug_log;
             js_debug_log(&*format!("{}:{}: {}", file!(), line!(), format!($fmt, $($arg)*)));
         }
 

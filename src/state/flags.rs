@@ -3,7 +3,7 @@ use std::collections::HashMap;
 extern crate lazy_static;
 use lazy_static::lazy_static;
 
-use crate::instructions::axecutor::Axecutor;
+use crate::axecutor::Axecutor;
 
 // See Figure 3-8. EFLAGS Register in Intel SDM
 pub const FLAG_CF: u64 = 0x0001; // Carry Flag

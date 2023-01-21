@@ -3,8 +3,8 @@ use elf_rs::*;
 use std::string::FromUtf8Error;
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::instructions::debug::debug_log;
-use crate::instructions::{axecutor::Axecutor, errors::AxError};
+use crate::helpers::debug::debug_log;
+use crate::{axecutor::Axecutor, helpers::errors::AxError};
 
 impl From<Error> for AxError {
     fn from(err: Error) -> Self {
@@ -90,14 +90,14 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use crate::instructions::tests::test_async;
+    use crate::helpers::tests::test_async;
 
     // This macro is very limited as it only allows checking the first write call and exit code
     macro_rules! test_binary {
         [$name:ident; $binary_path:expr; $expected_output:expr; $expected_exit_code:expr] => {
             test_async![$name; async {
                 use crate::instructions::generated::SupportedMnemonic;
-                use crate::instructions::registers::SupportedRegister;
+                use crate::state::registers::SupportedRegister;
 
                 let binary = include_bytes!($binary_path);
 

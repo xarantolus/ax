@@ -3,11 +3,11 @@ use std::{cmp::min, convert::TryInto};
 use iced_x86::{Decoder, DecoderOptions, Instruction, Register};
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::instructions::debug::debug_log;
+use crate::helpers::debug::debug_log;
 
-use crate::instructions::{generated::SupportedMnemonic, registers::SupportedRegister};
+use crate::{instructions::generated::SupportedMnemonic, state::registers::SupportedRegister};
 
-use super::{axecutor::Axecutor, errors::AxError};
+use crate::{axecutor::Axecutor, helpers::errors::AxError};
 
 #[wasm_bindgen]
 impl Axecutor {
@@ -107,7 +107,7 @@ impl Axecutor {
                 // In tests, `.into` panics with a very non-helpful message, so we just panic before with a helpful message
                 #[cfg(test)]
                 {
-                    crate::instructions::macros::fatal_error!("{}", err_info);
+                    crate::helpers::macros::fatal_error!("{}", err_info);
                 }
 
                 // Throw normal JS exception when running in browser

@@ -1,11 +1,11 @@
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Int3;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
 
+use crate::helpers::macros::fatal_error;
 use crate::instructions::generated::SupportedMnemonic;
-use crate::instructions::macros::fatal_error;
 
 impl Axecutor {
     pub fn mnemonic_int3(&mut self, i: Instruction) -> Result<(), AxError> {

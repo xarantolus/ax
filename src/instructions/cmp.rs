@@ -2,14 +2,14 @@ use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Cmp;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
-use super::macros::calculate_rm_imm;
-use crate::instructions::flags::*;
-use crate::instructions::macros::calculate_r_rm;
-use crate::instructions::macros::calculate_rm_r;
-use crate::instructions::macros::fatal_error;
-use crate::instructions::macros::NO_WRITEBACK;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
+use crate::helpers::macros::calculate_r_rm;
+use crate::helpers::macros::calculate_rm_imm;
+use crate::helpers::macros::calculate_rm_r;
+use crate::helpers::macros::fatal_error;
+use crate::helpers::macros::NO_WRITEBACK;
+use crate::state::flags::*;
 
 impl Axecutor {
     pub fn mnemonic_cmp(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -335,10 +335,8 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::axecutor::Axecutor;
-    use crate::instructions::tests::{
-        assert_mem_value, assert_reg_value, ax_test, write_reg_value,
-    };
+    use crate::axecutor::Axecutor;
+    use crate::helpers::tests::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
     use iced_x86::Register::*;
     // cmp byte ptr [rax], bl
     ax_test![cmp_byte_ptr_rax_bl; 0x38, 0x18;

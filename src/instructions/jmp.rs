@@ -4,11 +4,11 @@ use iced_x86::Mnemonic::Jmp;
 use iced_x86::OpKind;
 use iced_x86::Register::*;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
 
-use crate::instructions::macros::fatal_error;
-use crate::instructions::macros::opcode_unimplemented;
+use crate::helpers::macros::fatal_error;
+use crate::helpers::macros::opcode_unimplemented;
 
 impl Axecutor {
     pub fn mnemonic_jmp(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -182,8 +182,8 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use crate::instructions::axecutor::Axecutor;
-    use crate::instructions::tests::{assert_reg_value, ax_test, jmp_test, write_reg_value};
+    use crate::axecutor::Axecutor;
+    use crate::helpers::tests::{assert_reg_value, ax_test, jmp_test, write_reg_value};
     use iced_x86::Register::*;
 
     // mov rax, 5; JMP .Llabel; xor rax, rax; .Llabel:

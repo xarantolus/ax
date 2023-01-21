@@ -2,9 +2,9 @@
 
 use std::println;
 
-use ax_x86::instructions::{
-    axecutor::Axecutor, errors::AxError, generated::SupportedMnemonic::Syscall,
-    registers::SupportedRegister,
+use ax_x86::{
+    axecutor::Axecutor, helpers::errors::AxError,
+    instructions::generated::SupportedMnemonic::Syscall, state::registers::SupportedRegister,
 };
 
 #[async_std::main]

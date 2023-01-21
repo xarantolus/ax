@@ -4,12 +4,12 @@ use iced_x86::Mnemonic::Pop;
 
 use iced_x86::Register;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
 
-use crate::instructions::macros::fatal_error;
-use crate::instructions::macros::opcode_unimplemented;
-use crate::instructions::registers::SupportedRegister;
+use crate::helpers::macros::fatal_error;
+use crate::helpers::macros::opcode_unimplemented;
+use crate::state::registers::SupportedRegister;
 
 impl Axecutor {
     pub fn mnemonic_pop(&mut self, i: Instruction) -> Result<(), AxError> {

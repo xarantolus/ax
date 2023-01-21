@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::instructions::{debug::debug_log, macros::assert_fatal, registers::SupportedRegister};
+use crate::helpers::debug::debug_log;
+use crate::{helpers::macros::assert_fatal, state::registers::SupportedRegister};
 
-use super::{axecutor::Axecutor, errors::AxError};
+use crate::{axecutor::Axecutor, helpers::errors::AxError};
 
 #[cfg(all(target_arch = "wasm32", not(test)))]
 use wasm_bindgen::JsValue;

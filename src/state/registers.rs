@@ -8,9 +8,10 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::instructions::{debug::debug_log, errors::AxError, macros::assert_fatal};
+use crate::helpers::debug::debug_log;
+use crate::helpers::{errors::AxError, macros::assert_fatal};
 
-use super::axecutor::Axecutor;
+use crate::axecutor::Axecutor;
 
 lazy_static! {
     pub(crate) static ref REGISTER_TO_QWORD: HashMap<SupportedRegister, SupportedRegister> =

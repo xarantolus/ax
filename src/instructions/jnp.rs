@@ -3,14 +3,14 @@ use iced_x86::Instruction;
 use iced_x86::Mnemonic::Jnp;
 use iced_x86::OpKind;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
 
-use crate::instructions::flags::*;
+use crate::state::flags::*;
 
-use crate::instructions::macros::fatal_error;
-use crate::instructions::macros::opcode_unimplemented;
-use crate::instructions::registers::SupportedRegister::*;
+use crate::helpers::macros::fatal_error;
+use crate::helpers::macros::opcode_unimplemented;
+use crate::state::registers::SupportedRegister::*;
 
 impl Axecutor {
     pub fn mnemonic_jnp(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -104,7 +104,7 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use crate::instructions::tests::{assert_reg_value, jmp_test};
+    use crate::helpers::tests::{assert_reg_value, jmp_test};
 
     jmp_test![mov_rax_2_cmp_rax_1_jnp_end_mov_rax_42_end_nop;
         start: 0x401010; end: 0x40102d;

@@ -1,7 +1,7 @@
-use crate::instructions::operand::Operand;
+use crate::helpers::operand::Operand;
 use iced_x86::Instruction;
 
-use super::{axecutor::Axecutor, errors::AxError, registers::SupportedRegister};
+use crate::{axecutor::Axecutor, helpers::errors::AxError, state::registers::SupportedRegister};
 
 pub(crate) const NO_WRITEBACK: u64 = 0x8000_0000_0000_0000;
 
@@ -1357,9 +1357,9 @@ impl Axecutor {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_16(self.mem_addr(m))?;
                 let (result, flags) = op(dest_val as u16, src_val);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.mem_write_16(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
@@ -1367,9 +1367,9 @@ impl Axecutor {
             Operand::Register(r) => {
                 let dest_val = self.reg_read_16(r)?;
                 let (result, flags) = op(dest_val as u16, src_val);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.reg_write_16(r, result as u64)?;
                 }
                 Ok(())
@@ -1403,9 +1403,9 @@ impl Axecutor {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_32(self.mem_addr(m))?;
                 let (result, flags) = op(dest_val as u32, src_val);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.mem_write_32(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
@@ -1413,9 +1413,9 @@ impl Axecutor {
             Operand::Register(r) => {
                 let dest_val = self.reg_read_32(r)?;
                 let (result, flags) = op(dest_val as u32, src_val);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.reg_write_32(r, result as u64)?;
                 }
                 Ok(())
@@ -1449,9 +1449,9 @@ impl Axecutor {
             Operand::Memory(m) => {
                 let dest_val = self.mem_read_64(self.mem_addr(m))?;
                 let (result, flags) = op(dest_val, src_val);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.mem_write_64(self.mem_addr(m), result)?;
                 }
                 Ok(())
@@ -1459,9 +1459,9 @@ impl Axecutor {
             Operand::Register(r) => {
                 let dest_val = self.reg_read_64(r)?;
                 let (result, flags) = op(dest_val, src_val);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.reg_write_64(r, result)?;
                 }
                 Ok(())
@@ -1551,9 +1551,9 @@ impl Axecutor {
             Operand::Register(r) => {
                 let src_val = self.reg_read_8(r)?;
                 let (result, flags) = op(src_val as u8);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.reg_write_8(r, result as u64)?;
                 }
                 Ok(())
@@ -1561,9 +1561,9 @@ impl Axecutor {
             Operand::Memory(m) => {
                 let src_val = self.mem_read_8(self.mem_addr(m))?;
                 let (result, flags) = op(src_val as u8);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u8(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.mem_write_8(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
@@ -1590,9 +1590,9 @@ impl Axecutor {
             Operand::Register(r) => {
                 let src_val = self.reg_read_16(r)?;
                 let (result, flags) = op(src_val as u16);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.reg_write_16(r, result as u64)?;
                 }
                 Ok(())
@@ -1600,9 +1600,9 @@ impl Axecutor {
             Operand::Memory(m) => {
                 let src_val = self.mem_read_16(self.mem_addr(m))?;
                 let (result, flags) = op(src_val as u16);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u16(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.mem_write_16(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
@@ -1629,9 +1629,9 @@ impl Axecutor {
             Operand::Register(r) => {
                 let src_val = self.reg_read_32(r)?;
                 let (result, flags) = op(src_val as u32);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.reg_write_32(r, result as u64)?;
                 }
                 Ok(())
@@ -1639,9 +1639,9 @@ impl Axecutor {
             Operand::Memory(m) => {
                 let src_val = self.mem_read_32(self.mem_addr(m))?;
                 let (result, flags) = op(src_val as u32);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u32(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.mem_write_32(self.mem_addr(m), result as u64)?;
                 }
                 Ok(())
@@ -1668,9 +1668,9 @@ impl Axecutor {
             Operand::Register(r) => {
                 let src_val = self.reg_read_64(r)?;
                 let (result, flags) = op(src_val);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.reg_write_64(r, result)?;
                 }
                 Ok(())
@@ -1678,9 +1678,9 @@ impl Axecutor {
             Operand::Memory(m) => {
                 let src_val = self.mem_read_64(self.mem_addr(m))?;
                 let (result, flags) = op(src_val);
-                debug_assert!(flags & crate::instructions::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
+                debug_assert!(flags & crate::helpers::macros::NO_WRITEBACK == 0, "NO_WRITEBACK flag must not be returned by operation lambda, set it as $flags_to_set");
                 self.set_flags_u64(flags_to_set | flags, flags_to_clear, result);
-                if (flags_to_set & crate::instructions::macros::NO_WRITEBACK) == 0 {
+                if (flags_to_set & crate::helpers::macros::NO_WRITEBACK) == 0 {
                     self.mem_write_64(self.mem_addr(m), result)?;
                 }
                 Ok(())
@@ -1744,12 +1744,12 @@ pub(crate) use fatal_error;
 macro_rules! assert_fatal {
     ($cond:expr, $message:expr, $($arg:tt)*) => {{
         if !($cond) {
-            $crate::instructions::macros::fatal_error!($message, $($arg)*);
+            $crate::helpers::macros::fatal_error!($message, $($arg)*);
         }
     }};
     ($cond:expr, $message:expr) => {{
         if !($cond) {
-            $crate::instructions::macros::fatal_error!($message);
+            $crate::helpers::macros::fatal_error!($message);
         }
     }};
 }

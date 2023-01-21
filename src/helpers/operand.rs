@@ -2,9 +2,9 @@ use std::convert::TryFrom;
 
 use iced_x86::Instruction;
 
-use crate::instructions::debug::debug_log;
+use crate::helpers::debug::debug_log;
 
-use super::{axecutor::Axecutor, errors::AxError, registers::SupportedRegister};
+use crate::{axecutor::Axecutor, helpers::errors::AxError, state::registers::SupportedRegister};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct MemOperand {
@@ -262,7 +262,7 @@ impl Axecutor {
 mod tests {
     use iced_x86::Register;
 
-    use crate::instructions::operand::{MemOperand, SupportedSegmentRegister};
+    use crate::helpers::operand::{MemOperand, SupportedSegmentRegister};
 
     use super::{Axecutor, Operand, Operand::*};
 

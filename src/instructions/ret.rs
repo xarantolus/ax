@@ -2,12 +2,12 @@ use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Ret;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
 
-use crate::instructions::macros::fatal_error;
-use crate::instructions::macros::opcode_unimplemented;
-use crate::instructions::registers::SupportedRegister::*;
+use crate::helpers::macros::fatal_error;
+use crate::helpers::macros::opcode_unimplemented;
+use crate::state::registers::SupportedRegister::*;
 
 macro_rules! pop_rip {
     ($self:ident) => {{
@@ -155,7 +155,7 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use crate::instructions::tests::{assert_reg_value, jmp_test};
+    use crate::helpers::tests::{assert_reg_value, jmp_test};
 
     // The same testcase is available for the call instruction
     jmp_test![jmp_lcall_func_mov_rax_42_ret_lcall_mov_rax_50_call_func_nop_ret;

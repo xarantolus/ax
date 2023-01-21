@@ -1,10 +1,10 @@
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Syscall;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
 
-use crate::instructions::macros::fatal_error;
+use crate::helpers::macros::fatal_error;
 
 use crate::instructions::generated::SupportedMnemonic;
 

@@ -3,13 +3,13 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
-use crate::instructions::debug::debug_log;
-use crate::instructions::flags::FLAG_TO_NAMES;
+use crate::helpers::debug::debug_log;
+use crate::state::flags::FLAG_TO_NAMES;
 
-use super::errors::AxError;
-use super::hooks::HookProcessor;
-use super::memory::MemoryArea;
-use super::registers::{randomized_register_set, SupportedRegister};
+use crate::helpers::errors::AxError;
+use crate::state::hooks::HookProcessor;
+use crate::state::memory::MemoryArea;
+use crate::state::registers::{randomized_register_set, SupportedRegister};
 
 extern crate console_error_panic_hook;
 
@@ -78,7 +78,7 @@ impl MachineState {
         s.push_str(&format!("{}    registers: {{\n", " ".repeat(i * 4)));
 
         // Iterate over all registers, sorted by the order i like
-        for register in super::registers::NATURAL_REGISTER_ORDER.iter() {
+        for register in crate::state::registers::NATURAL_REGISTER_ORDER.iter() {
             if let Some(value) = self.registers.get(register) {
                 s.push_str(&format!(
                     "{}        {}: {}{:#018x},\n",
@@ -293,7 +293,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::instructions::tests::test_async;
+    use crate::helpers::tests::test_async;
 
     use iced_x86::Register;
 
@@ -313,7 +313,7 @@ mod tests {
         let mut ax = Axecutor::new(&code, 0x1000, 0x1000).unwrap();
         ax.init_stack(0).expect("Failed to init stack");
         if let Err(e) = ax.execute().await {
-            crate::instructions::macros::fatal_error!("Failed to execute: {:?}", e);
+            crate::helpers::macros::fatal_error!("Failed to execute: {:?}", e);
         }
         assert!(ax.state.finished);
     }];

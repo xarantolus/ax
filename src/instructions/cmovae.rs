@@ -2,13 +2,13 @@ use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Cmovae;
 
-use super::axecutor::Axecutor;
-use super::errors::AxError;
-use crate::instructions::flags::*;
+use crate::axecutor::Axecutor;
+use crate::helpers::errors::AxError;
+use crate::state::flags::*;
 
-use crate::instructions::macros::calculate_r_rm;
+use crate::helpers::macros::calculate_r_rm;
 
-use crate::instructions::macros::fatal_error;
+use crate::helpers::macros::fatal_error;
 
 impl Axecutor {
     pub fn mnemonic_cmovae(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -73,8 +73,8 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use crate::instructions::axecutor::Axecutor;
-    use crate::instructions::tests::{
+    use crate::axecutor::Axecutor;
+    use crate::helpers::tests::{
         assert_mem_value, assert_reg_value, ax_test, write_flags, write_reg_value,
     };
     use iced_x86::Register::*;
