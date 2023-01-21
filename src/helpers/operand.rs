@@ -269,9 +269,8 @@ mod tests {
     const TEST_RIP_VALUE: u64 = 0x1000;
 
     macro_rules! operand_test {
-		[$test_name:ident; $($bytes:expr),*; $expected:expr] => {
-			#[test]
-			fn $test_name () {
+        [$test_name:ident; $($bytes:expr),*; $expected:expr] => {
+			crate::helpers::tests::test_async![$test_name; async {
 				let expected : Vec<Operand> = $expected;
 				let axecutor = Axecutor::new(&[$($bytes),*], TEST_RIP_VALUE, TEST_RIP_VALUE).expect("Failed to create axecutor");
 
@@ -283,11 +282,10 @@ mod tests {
 
 					assert_eq!(operand, expected[i], "Operand {} mismatch", i);
 				}
-			}
+			}];
 		};
 		[$test_name:ident; $($bytes:expr),*; $expected:expr; $setup:expr; $memaddrs:expr] => {
-			#[test]
-			fn $test_name () {
+			crate::helpers::tests::test_async![$test_name; async {
 				let expected : Vec<Operand> = $expected;
 				let mut axecutor = Axecutor::new(&[$($bytes),*], 0x1000, 0x1000).expect("Failed to create axecutor");
 				let instruction = axecutor.decode_next().expect("Failed to get instruction");
@@ -310,7 +308,7 @@ mod tests {
 				}
 
 				assert_eq!(mem_addr_counter, $memaddrs.len(), "Provided memory addresses do not match the number of memory operands");
-			}
+			}];
 		};
 	}
 

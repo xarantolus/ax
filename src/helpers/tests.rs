@@ -1,3 +1,8 @@
+// A common theme in this file is that we have to differentiate between "normal" and "wasm" tests:
+// WASM tests run via wasm-pack test, which does not work with the normal #[test] macro.
+// The other tests just use the normal #[test] macro that works with cargo test.
+// To only write one test case that works with both, most macros here use #[test] or #[wasm_bindgen_test] depending on the target.
+
 #[cfg(test)]
 use crate::axecutor::Axecutor;
 

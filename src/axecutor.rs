@@ -297,18 +297,17 @@ mod tests {
 
     use iced_x86::Register;
 
-    #[test]
-    fn test_rip() {
+    test_async![test_rip; async {
         let code = [0x48, 0xc7, 0xc0, 0x3, 0x0, 0x0, 0x0];
         let ax = Axecutor::new(&code, 0x1000, 0x1000).unwrap();
         let instruction = ax.decode_next().expect("Failed to get instruction");
         assert_eq!(instruction.ip(), 0x1000);
         assert_eq!(instruction.next_ip(), 0x1000 + code.len() as u64);
         assert_eq!(ax.reg_read_64(Register::RIP.into()).unwrap(), 0x1000);
-    }
+    }];
 
     test_async![top_lvl_return_with_stack_setup; async {
-        // ret
+        // Basically if we ret from the top of the stack, we want to finish without error
         let code = [0xc3];
         let mut ax = Axecutor::new(&code, 0x1000, 0x1000).unwrap();
         ax.init_stack(0).expect("Failed to init stack");
