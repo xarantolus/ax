@@ -44,7 +44,7 @@ async fn main_impl() -> Result<i32, AxError> {
 
     ax.init_stack_program_start(0x2000, Vec::from(argv), envp)?;
 
-    ax.hook_before_mnemonic(Syscall, |ax, _| {
+    ax.hook_before_mnemonic_native(Syscall, &|ax: &mut Axecutor, _| {
         let syscall_num = ax.reg_read_64(SupportedRegister::RAX)?;
         let rdi = ax.reg_read_64(SupportedRegister::RDI)?;
         let rsi = ax.reg_read_64(SupportedRegister::RSI)?;

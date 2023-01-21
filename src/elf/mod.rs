@@ -111,7 +111,7 @@ mod tests {
 
                 let mut ax = Axecutor::from_binary(binary).expect("Failed to parse binary");
 
-                ax.hook_before_mnemonic(SupportedMnemonic::Syscall, move |ax, _| {
+                let cb = &move |ax: &mut Axecutor, _: SupportedMnemonic| {
                     let syscall_num = ax.reg_read_64(SupportedRegister::RAX)?;
                     let rdi = ax.reg_read_64(SupportedRegister::RDI)?;
                     let rsi = ax.reg_read_64(SupportedRegister::RSI)?;
@@ -143,7 +143,9 @@ mod tests {
                     }
 
                     Ok(())
-                }).expect("Failed add hook before Syscall");
+                };
+
+                ax.hook_before_mnemonic_native(SupportedMnemonic::Syscall, cb).expect("Failed add hook before Syscall");
 
                 ax.execute().await.expect("Failed to execute");
 
