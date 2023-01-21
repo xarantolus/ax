@@ -104,17 +104,7 @@ impl Axecutor {
 
                 debug_log!("Throwing error: {}", err_info);
 
-                // In tests, `.into` panics with a very non-helpful message, so we just panic before with a helpful message
-                #[cfg(test)]
-                {
-                    crate::helpers::macros::fatal_error!("{}", err_info);
-                }
-
-                // Throw normal JS exception when running in browser
-                #[allow(unreachable_code)]
-                {
-                    return Err(err_info);
-                }
+                return Err(err_info);
             }
         }
 

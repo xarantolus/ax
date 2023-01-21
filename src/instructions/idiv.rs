@@ -154,51 +154,33 @@ impl Axecutor {
 mod tests {
     use crate::axecutor::Axecutor;
 
-    use crate::helpers::tests::{assert_reg_value, ax_test, write_reg_value};
+    use crate::helpers::tests::{assert_reg_value, ax_test, test_async, write_reg_value};
     use crate::state::registers::SupportedRegister;
     use iced_x86::Register::*;
 
     async fn assert_divide_by_zero_error(code: &[u8]) {
         let mut ax = Axecutor::new(code, 0x1000, 0x1000).expect("Failed to create Axecutor");
         ax.reg_write_64(SupportedRegister::RAX, 0).unwrap();
-        let _ = ax.execute().await;
+        ax.execute()
+            .await
+            .expect_err("Expected divide by zero error");
     }
 
-    #[test]
-    #[should_panic]
-    fn signed_divide_by_zero_error_r8() {
-        async_std::task::block_on(async {
-            // idiv al
-            assert_divide_by_zero_error(&[0xf6, 0xf8]).await;
-        });
-    }
+    test_async![signed_divide_by_zero_error_r8; async {
+        assert_divide_by_zero_error(&[0xf6, 0xf8]).await;
+    }];
 
-    #[test]
-    #[should_panic]
-    fn signed_divide_by_zero_error_r16() {
-        async_std::task::block_on(async {
-            // idiv ax
-            assert_divide_by_zero_error(&[0x66, 0xf7, 0xf8]).await;
-        });
-    }
+    test_async![signed_divide_by_zero_error_r16; async {
+        assert_divide_by_zero_error(&[0x66, 0xf7, 0xf8]).await;
+    }];
 
-    #[test]
-    #[should_panic]
-    fn divide_by_zero_error_r32() {
-        async_std::task::block_on(async {
-            // idiv eax
-            assert_divide_by_zero_error(&[0xf7, 0xf8]).await;
-        });
-    }
+    test_async![divide_by_zero_error_r32; async {
+        assert_divide_by_zero_error(&[0xf7, 0xf8]).await;
+    }];
 
-    #[test]
-    #[should_panic]
-    fn divide_by_zero_error_r64() {
-        async_std::task::block_on(async {
-            // idiv rax
-            assert_divide_by_zero_error(&[0x48, 0xf7, 0xf8]).await;
-        });
-    }
+    test_async![divide_by_zero_error_r64; async {
+        assert_divide_by_zero_error(&[0x48, 0xf7, 0xf8]).await;
+    }];
 
     // idiv bl
     ax_test![idiv_bl_ax_0; 0xf6, 0xfb; |a: &mut Axecutor| {
