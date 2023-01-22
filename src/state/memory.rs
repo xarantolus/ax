@@ -326,7 +326,6 @@ impl Axecutor {
     }
 
     /// Resize the already existing section of memory with start address `start_addr` to `new_size`
-    /// It is not possible the reduce the size of a section.
     /// The code section cannot be resized.
     pub fn mem_resize_section(&mut self, start_addr: u64, new_size: u64) -> Result<(), AxError> {
         debug_log!(
@@ -362,10 +361,15 @@ impl Axecutor {
         }
 
         if let Some(i) = area_to_resize {
-            // allocate a new buffer, copy the old data into it, and replace the old buffer
+            // Resize the area -- this works for both shrinking and growing
             let mut new_data = vec![0; new_size as usize];
-            new_data.copy_from_slice(&self.state.memory[i].data);
+            let old_data = &self.state.memory[i].data;
 
+            // Copy the old data into the new data
+            let copy_len = std::cmp::min(old_data.len(), new_data.len());
+            new_data[..copy_len].copy_from_slice(&old_data[..copy_len]);
+
+            // Update the area
             self.state.memory[i].data = new_data;
             self.state.memory[i].length = new_size;
 

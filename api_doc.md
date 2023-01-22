@@ -100,7 +100,6 @@ This is useful for emulating ELF binaries.
 
 ##### `Axecutor.mem_resize_section(start_addr: bigint, new_size: bigint) => void`
 Resize the already existing section of memory with start address `start_addr` to `new_size`
-It is not possible the reduce the size of a section.
 The code section cannot be resized.
 
 
@@ -223,6 +222,7 @@ Syscalls that can be registered for automatic handling
 
 ```ts
 export enum Syscall {
+  Brk,
   Exit,
 }
 ```
