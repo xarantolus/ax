@@ -311,7 +311,7 @@ describe('Native syscall handlers', () => {
 	it('should execute a native syscall handler', async () => {
 		let axecutor = new Axecutor(exitX86Code, 0x1000n, 0x1000n);
 
-		axecutor.handle_syscalls([Syscall.Exit]);
+		axecutor.handle_syscalls(Syscall.Exit);
 
 		// if it doesn't throw, the syscall got handled
 		await axecutor.execute();
@@ -320,7 +320,7 @@ describe('Native syscall handlers', () => {
 	it('should should be possible to have both native and JS syscalls', async () => {
 		let axecutor = new Axecutor(exitX86Code, 0x1000n, 0x1000n);
 
-		axecutor.handle_syscalls([Syscall.Exit]);
+		axecutor.handle_syscalls(Syscall.Exit);
 
 		// The native syscall handler will stop execution before the JS handler even runs
 		let called = false;

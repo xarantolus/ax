@@ -323,7 +323,7 @@ export default defineComponent({
           "COLORTERM=truecolor",
           "TERM=xterm-256color",
         ]);
-        ax.handle_syscalls([Syscall.Exit]);
+        ax.handle_syscalls(Syscall.Exit);
         ax.hook_before_mnemonic(Mnemonic.Syscall, this.syscallHandler);
       }
       catch (e) {
