@@ -114,7 +114,11 @@ The emulator also has some convenience functions for handling Linux/ELF binaries
 <details>
 <summary>Open for more info on how to emulate ELF files</summary>
 
-One thing to note is that binaries usually exit via the `exit` syscall, which is not implemented by default (same as any other syscall). You must handle it yourself, like in the following example:
+
+One thing to note is that binaries usually exit via the `exit` syscall, which is not implemented by default (same as any other syscall).
+You can either implement your own syscall handler that handles the `exit` syscall, or you can use the [`handle_syscalls` method](https://github.com/xarantolus/ax/blob/develop/api_doc.md#syscalls) to register predefined handlers for a small set of syscalls.
+
+
 
 ```js
 let ax = Axecutor.from_binary(/* elf file content as Uint8Array */);
@@ -128,7 +132,10 @@ ax.init_stack_program_start(
   ["COLORTERM=truecolor", "TERM=xterm-256color" ] // environment variables
 );
 
+// Use a predefined handler for the `exit` syscall, which just stops execution
+ax.handle_syscalls(Syscall.Exit);
 
+// Register a syscall handler for the `write` syscall (1)
 let syscallHandler = async function (ax: Axecutor) {
   let syscall_num = ax.reg_read_64(Register.RAX);
   let rdi = ax.reg_read_64(Register.RDI);
@@ -158,11 +165,6 @@ let syscallHandler = async function (ax: Axecutor) {
       ax.reg_write_64(Register.RAX, rdx);
 
       return ax.commit();
-    }
-    case 60n: {
-      // EXIT syscall
-      console.log("EXIT syscall: exiting with code " + rdi);
-      return ax.stop();
     }
   }
 

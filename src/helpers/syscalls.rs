@@ -8,6 +8,9 @@ use crate::{
     state::registers::SupportedRegister,
 };
 
+#[cfg(all(target_arch = "wasm32", not(test)))]
+use wasm_bindgen::JsValue;
+
 use super::{debug::debug_log, errors::AxError};
 
 #[wasm_bindgen]
@@ -36,21 +39,32 @@ impl TryFrom<isize> for Syscall {
 #[wasm_bindgen]
 #[cfg(all(target_arch = "wasm32", not(test)))]
 impl Axecutor {
-    /// Register syscalls that the emulator should handle automatically
-    pub fn handle_syscalls(&mut self, list: Vec<wasm_bindgen::JsValue>) -> Result<(), AxError> {
-        self.handle_syscalls_impl(from_js_vec(list)?)
+    /// Register syscalls that the emulator should handle automatically.
+    /// The function takes variadic arguments, where each argument is a number of one of the supported Syscalls
+    #[wasm_bindgen(variadic)]
+    pub fn handle_syscalls(&mut self, syscalls: wasm_bindgen::JsValue) -> Result<(), AxError> {
+        self.handle_syscalls_impl(get_js_list(syscalls)?)
     }
 }
 
 #[cfg(all(target_arch = "wasm32", not(test)))]
-fn from_js_vec(vec: Vec<wasm_bindgen::JsValue>) -> Result<Vec<Syscall>, AxError> {
+fn get_js_list(vec: JsValue) -> Result<Vec<Syscall>, AxError> {
+    use js_sys::Array;
+
     let mut result = Vec::new();
-    for s in vec {
-        let number = s
-            .as_f64()
-            .ok_or_else(|| AxError::from(format!("Invalid syscall: {:?}", s).as_str()))?;
-        result.push(Syscall::try_from(number as isize)?);
+
+    let array = Array::try_from(vec).map_err(|_| AxError::from("Invalid syscall list"))?;
+
+    for i in 0..array.length() {
+        let item = array.get(i);
+
+        if let Some(n) = item.as_f64() {
+            result.push(Syscall::try_from(n.round() as isize)?);
+        } else {
+            return Err(AxError::from("Invalid syscall list"));
+        }
     }
+
     Ok(result)
 }
 

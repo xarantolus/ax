@@ -227,8 +227,9 @@ export enum Syscall {
 }
 ```
 
-#### `Axecutor.handle_syscalls(list: any[]) => void`
+#### `Axecutor.handle_syscalls(...syscalls: any) => void`
 Register syscalls that the emulator should handle automatically.
+The function takes variadic arguments, where each argument is a number of one of the supported Syscalls.
 
 
 ### Other
