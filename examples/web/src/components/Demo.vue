@@ -39,7 +39,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
 import Terminal from './Terminal.vue';
-import init, { Axecutor, Mnemonic, Register, version, commit } from 'ax-x86';
+import init, { Axecutor, Mnemonic, Register, Syscall, version, commit } from 'ax-x86';
 
 export default defineComponent({
   components: {
@@ -191,11 +191,6 @@ export default defineComponent({
 
           return ax.unchanged();
         }
-        case 60n: {
-          console.log("EXIT syscall: exiting with code " + rdi.toString(16));
-          // EXIT syscall
-          return ax.stop();
-        }
         case 12n: {
           // brk syscall
 
@@ -306,12 +301,12 @@ export default defineComponent({
         let files = (this.$refs.file as any).files as FileList;
         console.log(files);
         if (files.length != 1) {
-          this.termWrite("Please select exactly one file");
+          this.termWrite("Please select exactly one file\n");
           return;
         }
         let content = await files.item(0)?.arrayBuffer().then(buf => new Uint8Array(buf));
         if (!content) {
-          this.termWrite("Failed to read file, please only use statically linked ELF binaries.");
+          this.termWrite("Failed to read file, please only use statically linked ELF binaries.\n");
           return;
         }
         ax = Axecutor.from_binary(content);
@@ -328,6 +323,7 @@ export default defineComponent({
           "COLORTERM=truecolor",
           "TERM=xterm-256color",
         ]);
+        ax.handle_syscalls([Syscall.Exit]);
         ax.hook_before_mnemonic(Mnemonic.Syscall, this.syscallHandler);
       }
       catch (e) {
