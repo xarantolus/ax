@@ -205,7 +205,7 @@ export default defineComponent({
           if (rdi == 0n) {
             if (this.brk_start == 0n) {
               const len = 0x1000n;
-              let start_addr = ax.init_zero_anywhere(len);
+              let start_addr = ax.mem_init_zero_anywhere(len);
               this.brk_start = start_addr;
               this.brk_len = len;
 
