@@ -3,7 +3,10 @@ use std::convert::TryFrom;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::{axecutor::Axecutor, instructions::generated::SupportedMnemonic};
+use crate::{
+    axecutor::Axecutor, instructions::generated::SupportedMnemonic,
+    state::registers::SupportedRegister,
+};
 
 use super::{debug::debug_log, errors::AxError};
 
@@ -69,6 +72,10 @@ impl Axecutor {
 
     fn register_exit(&mut self) -> Result<(), AxError> {
         self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
+            if ax.reg_read_64(SupportedRegister::RAX)? != Syscall::Exit as u64 {
+                return Ok(());
+            }
+
             debug_log!("Running native exit syscall");
             ax.state.finished = true;
             Ok(())

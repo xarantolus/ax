@@ -50,8 +50,11 @@ export default defineComponent({
 
 			if (termBuffer.length === 0) return;
 
-			const event = new Event('buffer');
-			inputBufferEventElement.dispatchEvent(event);
+			// Only trigger the event if there is a newline in the buffer, just like in most terminals
+			if (termBuffer.includes('\n'.charCodeAt(0))) {
+				const event = new Event('buffer');
+				inputBufferEventElement.dispatchEvent(event);
+			}
 		}
 
 		onMounted(() => {
