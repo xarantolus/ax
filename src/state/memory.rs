@@ -328,9 +328,9 @@ impl Axecutor {
     /// Resize the already existing section of memory with start address `start_addr` to `new_size`
     /// It is not possible the reduce the size of a section.
     /// The code section cannot be resized.
-    pub fn resize_section(&mut self, start_addr: u64, new_size: u64) -> Result<(), AxError> {
+    pub fn mem_resize_section(&mut self, start_addr: u64, new_size: u64) -> Result<(), AxError> {
         debug_log!(
-            "Calling Axecutor::resize_section, start_addr={:#x}, new_size={}",
+            "Calling Axecutor::mem_resize_section, start_addr={:#x}, new_size={}",
             start_addr,
             new_size
         );
@@ -453,7 +453,7 @@ impl Axecutor {
 
     /// Initialize a memory area of the given length at a random address.
     /// The start address is returned.
-    pub fn init_zero_anywhere(&mut self, length: u64) -> Result<u64, AxError> {
+    pub fn mem_init_zero_anywhere(&mut self, length: u64) -> Result<u64, AxError> {
         let mut start: u64 = 0x1000;
 
         loop {
@@ -474,7 +474,11 @@ impl Axecutor {
 
     /// Initialize a memory area with the given data at a random address.
     /// The start address is returned.
-    pub fn init_anywhere(&mut self, data: Vec<u8>, name: Option<String>) -> Result<u64, AxError> {
+    pub fn mem_init_anywhere(
+        &mut self,
+        data: Vec<u8>,
+        name: Option<String>,
+    ) -> Result<u64, AxError> {
         let mut start: u64 = 0x1000;
 
         loop {
@@ -588,7 +592,7 @@ impl Axecutor {
             arg_bytes.push(0);
 
             // Allocate space for the string
-            let str_addr = self.init_anywhere(arg_bytes, Some(format!("arg{}", i)))?;
+            let str_addr = self.mem_init_anywhere(arg_bytes, Some(format!("arg{}", i)))?;
             stack_layout.push(str_addr);
         }
         // argv[argc] = NULL
@@ -600,7 +604,7 @@ impl Axecutor {
             env_bytes.push(0);
 
             // Allocate space for the string
-            let str_addr = self.init_anywhere(env_bytes, Some(format!("env{}", i)))?;
+            let str_addr = self.mem_init_anywhere(env_bytes, Some(format!("env{}", i)))?;
             stack_layout.push(str_addr);
         }
 

@@ -164,6 +164,7 @@ impl Axecutor {
 
     #[wasm_bindgen(js_name = toString)]
     #[allow(clippy::inherent_to_string)]
+    /// Returns a string representation of the Axecutor instance that can be useful for debugging
     pub fn to_string(&self) -> String {
         debug_log!("Calling Axecutor::to_string");
         format!(

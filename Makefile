@@ -1,4 +1,4 @@
-.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax generate
+.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax generate docs
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -42,7 +42,7 @@ ax:
 RM_TARGETS += ax$(EXE_SUFFIX)
 
 # fmt will fail if switch or stats are not up to date
-precommit: build-web switch stats fmt test test-scripts ax build
+precommit: build-web switch stats fmt docs test test-scripts ax build
 
 # targets that might change files and thus prevent precommit from passing, especially when the version changes
 generate: build-web switch stats test-js
@@ -53,6 +53,9 @@ RM_TARGETS += __pycache__
 
 stats:
 	@$(PY) stats.py
+
+docs: build
+	cd js/docs && npm install && npm run build && npm run generate
 
 example-programs:
 	cd examples/programs && $(MAKE) build
@@ -110,7 +113,7 @@ dependencies: python-dependencies
 	cargo install cargo-tarpaulin cargo-watch python-launcher
 
 python-dependencies:
-	@$(PY) -m pip install --quiet pyperclip tqdm
+	$(PY) -m pip install pyperclip tqdm
 
 clean:
 	rm -rf $(RM_TARGETS)
