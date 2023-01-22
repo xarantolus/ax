@@ -1012,7 +1012,7 @@ def main():
         global OUTPUT_FLAGS_TO_ANALYZE
         OUTPUT_FLAGS_TO_ANALYZE = list(filter(lambda t: t[1] in flags, FLAGS))
 
-        print(f"Testing flags: {FLAGS}")
+        print(f"Testing flags: {OUTPUT_FLAGS_TO_ANALYZE}")
 
     permut_flags = []
     if args.flags_set:
