@@ -33,6 +33,7 @@ impl TryFrom<isize> for Syscall {
 #[wasm_bindgen]
 #[cfg(all(target_arch = "wasm32", not(test)))]
 impl Axecutor {
+    /// Register syscalls that the emulator should handle automatically
     pub fn handle_syscalls(&mut self, list: Vec<wasm_bindgen::JsValue>) -> Result<(), AxError> {
         self.handle_syscalls_impl(from_js_vec(list)?)
     }

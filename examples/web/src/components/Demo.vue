@@ -226,7 +226,7 @@ export default defineComponent({
 
             console.log("brk syscall: resizing memory from " + this.brk_len.toString(16) + " to " + new_length.toString(16));
 
-            ax.resize_section(this.brk_start, new_length);
+            ax.mem_resize_section(this.brk_start, new_length);
 
             this.brk_len = new_length;
           }

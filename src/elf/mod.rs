@@ -24,6 +24,9 @@ impl From<FromUtf8Error> for AxError {
 
 #[wasm_bindgen]
 impl Axecutor {
+    /// Create a new Axecutor from the bytes of an ELF binary.
+    /// This will load the `.text` section into memory and set the program counter to the entry point.
+    /// One thing to note is that you might want to set up the stack via `init_stack_program_start` before running the binary.
     pub fn from_binary(binary: &[u8]) -> Result<Axecutor, AxError> {
         debug_log!("Calling Axecutor::from_binary");
 
