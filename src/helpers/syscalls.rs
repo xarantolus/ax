@@ -80,6 +80,12 @@ impl Axecutor {
     }
 
     pub fn handle_syscalls_impl(&mut self, list: Vec<Syscall>) -> Result<(), AxError> {
+        if self.hooks.running {
+            return Err(AxError::from(
+                "Cannot register syscalls while hooks are running",
+            ));
+        }
+
         for syscall in list {
             if self.state.syscalls.registered.contains(&syscall) {
                 continue;
