@@ -20,6 +20,11 @@ pub enum Syscall {
     Exit = 60,
 }
 
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub(crate) struct SyscallState {
+    registered: Vec<Syscall>,
+}
+
 impl TryFrom<isize> for Syscall {
     type Error = AxError;
 
@@ -76,9 +81,15 @@ impl Axecutor {
 
     pub fn handle_syscalls_impl(&mut self, list: Vec<Syscall>) -> Result<(), AxError> {
         for syscall in list {
+            if self.state.syscalls.registered.contains(&syscall) {
+                continue;
+            }
+
             match syscall {
                 Syscall::Exit => self.register_exit()?,
             }
+
+            self.state.syscalls.registered.push(syscall);
         }
 
         Ok(())

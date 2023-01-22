@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use crate::helpers::debug::debug_log;
+use crate::helpers::syscalls::SyscallState;
 use crate::state::flags::FLAG_TO_NAMES;
 
 use crate::helpers::errors::AxError;
@@ -55,6 +56,9 @@ pub(crate) struct MachineState {
     pub(crate) finished: bool,
     // executed_instructions_count is the number of instructions that have been executed so far
     pub(crate) executed_instructions_count: u64,
+
+    // syscalls holds state for syscalls, e.g. the program break for brk
+    pub(crate) syscalls: SyscallState,
 }
 
 #[wasm_bindgen]
@@ -158,6 +162,7 @@ impl Axecutor {
                 // Also the initial value shouldn't matter much
                 rflags: 0,
                 fs: 0,
+                syscalls: SyscallState::default(),
             },
         })
     }
