@@ -1,19 +1,23 @@
-from multiprocessing.dummy import Pool
-import re
-import shutil
-import traceback
-import pyperclip
+from __future__ import annotations
+
 import abc
-from curses.ascii import isspace
 import os
 import random
+import re
+import shutil
 import subprocess
-from tqdm import tqdm
 import sys
 import tempfile
-from typing import Generator, List, Literal, Tuple, Union
+import traceback
 import unittest
+from curses.ascii import isspace
+from multiprocessing.dummy import Pool
+from typing import Literal, Final
 
+import pyperclip
+from tqdm import tqdm
+
+# TODO: why rip here but not in a.py?
 qword_registers = ["rip", "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp",
                    "rsp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
 dword_registers = ["eax", "ebx", "ecx", "edx", "esi", "edi", "ebp",
@@ -23,16 +27,15 @@ word_registers = ["ax", "bx", "cx", "dx", "si", "di", "bp", "sp",
 byte_registers = ["al", "ah", "bl", "bh", "cl", "ch", "dl", "dh", "sil", "dil",
                   "bpl", "spl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b"]
 
-registers = (byte_registers + word_registers +
-             dword_registers + qword_registers)
+registers: Final[list[str]] = (byte_registers + word_registers + dword_registers + qword_registers)
 # Sorting makes sure we find e.g. "rax" first instead of "ax"
 registers.sort(key=len, reverse=True)
 
-FLAG_CF: int = 0x0001
-FLAG_PF: int = 0x0004
-FLAG_ZF: int = 0x0040
-FLAG_SF: int = 0x0080
-FLAG_OF: int = 0x0800
+FLAG_CF: Final[int] = 0x0001
+FLAG_PF: Final[int] = 0x0004
+FLAG_ZF: Final[int] = 0x0040
+FLAG_SF: Final[int] = 0x0080
+FLAG_OF: Final[int] = 0x0800
 OUTPUT_FLAGS_TO_ANALYZE = [
     (FLAG_CF, "CF"),
     (FLAG_PF, "PF"),
@@ -42,23 +45,32 @@ OUTPUT_FLAGS_TO_ANALYZE = [
 ]
 FLAGS = OUTPUT_FLAGS_TO_ANALYZE
 
-# test if /dev/shm is available by writing a file
-temp_dir_filesystem = "/dev/shm"
-delete_at_exit = False
-try:
-    with open(os.path.join(temp_dir_filesystem, "test"), "w") as f:
-        f.write("test")
-    os.remove(os.path.join(temp_dir_filesystem, "test"))
-except:
-    temp_dir_filesystem = tempfile.gettempdir()
-    delete_at_exit = True
-    print("WARNING: /dev/shm not available, using non-RAM " + temp_dir_filesystem)
+
+def check_temp_dir():
+    # test if /dev/shm is available by writing a file
+    temp_dir_filesystem = "/dev/shm"
+    delete_at_exit = False
+    try:
+        with open(os.path.join(temp_dir_filesystem, "test"), "w") as f:
+            f.write("test")
+        os.remove(os.path.join(temp_dir_filesystem, "test"))
+    except:
+        temp_dir_filesystem = tempfile.gettempdir()
+        delete_at_exit = True
+        print("WARNING: /dev/shm not available, using non-RAM " + temp_dir_filesystem)
+    return temp_dir_filesystem, delete_at_exit
+
+
+temp_dir_filesystem, delete_at_exit = check_temp_dir()
 
 
 class Operand(abc.ABC):
-    @abc.abstractclassmethod
-    def size(self) -> int:
-        pass
+    name: str
+    base_register: RegisterOperand
+
+    @abc.abstractmethod
+    def size(self) -> Literal[1, 2, 4, 8]:
+        ...
 
     def size_letter(self):
         size = self.size()
@@ -79,7 +91,7 @@ class RegisterOperand(Operand):
 
     def __init__(self, name):
         self.name = name.lower()
-        self.size()
+        self.size()  # TODO: why call this here?
 
     def size(self):
         if self.name in qword_registers:
@@ -101,17 +113,16 @@ class RegisterOperand(Operand):
 
 
 class ImmediateOperand(Operand):
-    def __init__(self, number):
+    def __init__(self, number: str | int):
         if isinstance(number, str):
             number = int(number, base=0)
         self.number = number
 
     def hexify(self, target: Operand):
         if pow(2, target.size() * 8) <= self.number:
-            raise ValueError(
-                f"Number {hex(self.number)} too big for target register {target.name}")
+            raise ValueError(f"Number {hex(self.number)} too big for target register {target.name}")
 
-        if self.number >= (2147483647):
+        if self.number >= 2147483647:
             if target.size() == 4:
                 return hex(self.number) + "u32"
             return hex(self.number) + "u64"
@@ -129,27 +140,35 @@ class ImmediateOperand(Operand):
 
 
 class MemoryOperand(Operand):
-    def __init__(self, base_register, offset=None, scale=1, index_register=None, size=None):
-        self.base_register = base_register if isinstance(
-            base_register, RegisterOperand) else RegisterOperand(base_register)
+    def __init__(
+            self,
+            base_register: RegisterOperand | str,
+            offset: int = 0,
+            scale: int = 1,
+            index_register: RegisterOperand | str | None = None,
+            size: Literal[1, 2, 4, 8] = None
+    ):
+        self.base_register = base_register if isinstance(base_register, RegisterOperand) else RegisterOperand(base_register)
 
-        self.offset = 0 if offset is None else offset
-        self.scale = 1 if scale is None else scale
+        self.offset = offset
+        self.scale = scale
 
-        self.index_register = index_register if isinstance(
-            index_register, RegisterOperand) else (
-                RegisterOperand(index_register) if index_register != None else None)
+        self.index_register = index_register if isinstance(index_register, RegisterOperand) else RegisterOperand(index_register) if index_register is not None else None
 
         assert size in [1, 2, 4, 8]
         self._size = size
 
-    def size(self) -> Literal[1, 2, 4, 8]:
+    def size(self):
         return self._size
 
-    def __eq__(self, other):
-        return self.base_register == other.base_register and self.offset == other.offset and self.scale == other.scale and self.index_register == other.index_register and self._size == other._size
+    def __eq__(self, other: MemoryOperand) -> bool:
+        return self.base_register == other.base_register and \
+            self.offset == other.offset and \
+            self.scale == other.scale and \
+            self.index_register == other.index_register and \
+            self._size == other._size
 
-    def __str__(self):
+    def __str__(self) -> str:
         size_prefix = ""
         if self._size == 1:
             size_prefix = "byte ptr "
@@ -161,21 +180,17 @@ class MemoryOperand(Operand):
             size_prefix = "qword ptr "
 
         if self.index_register is None:
-            if self.offset == 0:
-                return f"{size_prefix}[{self.base_register.name}]"
-            else:
-                return f"{size_prefix}[{self.base_register.name}+{self.offset}]"
-        else:
-            if self.offset == 0:
-                if self.scale != 1:
-                    return f"{size_prefix}[{self.base_register.name}+{self.scale}*{self.index_register.name}]"
-                else:
-                    return f"{size_prefix}[{self.base_register.name}+{self.index_register.name}]"
-            else:
-                raise ValueError("cannot have offset and index register")
+            return f"{size_prefix}[{self.base_register.name}]" if self.offset == 0 else \
+                    f"{size_prefix}[{self.base_register.name}+{self.offset}]"
+
+        if self.offset == 0:
+            return f"{size_prefix}[{self.base_register.name}+{self.scale}*{self.index_register.name}]" \
+                if self.scale != 1 \
+                else f"{size_prefix}[{self.base_register.name}+{self.index_register.name}]"
+        raise ValueError("cannot have offset and index register")
 
     @staticmethod
-    def parse(argument: str, other_operand: Union[Operand, None]):
+    def parse(argument: str, other_operand: Operand | None) -> MemoryOperand:
         original_argument = argument
         argument = argument.lower()
 
@@ -231,7 +246,7 @@ class MemoryOperand(Operand):
                     continue
                 else:
                     break
-            argument = argument[len(offset)-1:]
+            argument = argument[len(offset) - 1:]
             offset = int(offset, base=0)
         else:
             offset = 0
@@ -258,14 +273,22 @@ class MemoryOperand(Operand):
             index_register = None
 
         if len(argument) > 0:
-            raise ValueError("Could not parse memory argument: " + original_argument + "(rest is " + argument + ")"
-                             "\nNote that the parser is very basic and cares about order")
+            raise ValueError(f"Could not parse memory argument: {original_argument}(rest is {argument})\n"
+                             "Note that the parser is very basic and cares about order")
 
         return MemoryOperand(base_register, offset, scale, index_register, size)
 
 
 class Instruction:
-    def __init__(self, mnemonic: str, arguments: List[Operand], additional_imm: Union[ImmediateOperand, None], implicit: List[Operand] = []):
+    def __init__(
+            self,
+            mnemonic: str,
+            arguments: list[Operand],
+            additional_imm: ImmediateOperand | None,
+            implicit: list[Operand] | None = None
+    ):
+        if implicit is None:
+            implicit = []
         self.mnemonic = mnemonic.lower()
         self.arguments = arguments
         self.implicit_arguments = implicit
@@ -273,12 +296,12 @@ class Instruction:
         assert len(self.arguments) + len(self.implicit_arguments) <= 2
         self.additional_imm = additional_imm
 
-    def set_implicit(self, implicit: List[Operand]):
+    def set_implicit(self, implicit: list[Operand]):
         self.implicit_arguments = implicit
         assert len(self.arguments) + len(self.implicit_arguments) <= 2
 
     @staticmethod
-    def parse_operand(argument: str, other_operand: Union[Operand, None]):
+    def parse_operand(argument: str, other_operand: Operand | None):
         # try to parse as register
         try:
             return RegisterOperand(argument)
@@ -300,7 +323,7 @@ class Instruction:
         raise ValueError("Could not parse operand: " + argument)
 
     @staticmethod
-    def parse(argument: str):
+    def parse(argument: str) -> Instruction:
         # parse GNU Assembler syntax instructions, e.g.
         # mov rax, 0x5
         # mov rax, [rsp+8]
@@ -372,7 +395,7 @@ class Instruction:
     def __eq__(self, other):
         return self.mnemonic == other.mnemonic and self.arguments == other.arguments
 
-    def __str__(self):
+    def __str__(self) -> str:
         if len(self.arguments) == 0:
             assert self.additional_imm is None
             return self.mnemonic
@@ -385,8 +408,7 @@ class Instruction:
             else:
                 return f"{self.mnemonic} {self.arguments[0]}, {self.arguments[1]}, {self.additional_imm}"
         else:
-            raise ValueError(
-                "str not implement for Instruction with more than 2 operands")
+            raise ValueError("str not implement for Instruction with more than 2 operands")
 
 
 class Tests(unittest.TestCase):
@@ -395,9 +417,8 @@ class Tests(unittest.TestCase):
             "[rsp+8* Rcx]", RegisterOperand("al")),
             MemoryOperand("rsp", 0, 8, "rcx", 1),
         )
-        self.assertEqual(
-            MemoryOperand.parse(
-                "byte ptr [rax]", RegisterOperand("rax")),
+        self.assertEqual(MemoryOperand.parse(
+            "byte ptr [rax]", RegisterOperand("rax")),
             MemoryOperand("rax", 0, 1, None, 1),
             "byte ptr [rax]"
         )
@@ -456,18 +477,15 @@ class Tests(unittest.TestCase):
         instr = Instruction.parse("mov rax, [rsp+8]")
         self.assertEqual(instr.mnemonic, "mov")
         self.assertEqual(instr.arguments[0].name, "rax")
-        self.assertEqual(
-            instr.arguments[1].base_register, RegisterOperand("rsp"))
+        self.assertEqual(instr.arguments[1].base_register, RegisterOperand("rsp"))
         self.assertEqual(instr.arguments[1].offset, 8)
 
         instr = Instruction.parse("mov [rsp+4*rcx], rax")
         self.assertEqual(instr.mnemonic, "mov")
-        self.assertEqual(
-            instr.arguments[0].base_register, RegisterOperand("rsp"))
+        self.assertEqual(instr.arguments[0].base_register, RegisterOperand("rsp"))
         self.assertEqual(instr.arguments[0].offset, 0)
         self.assertEqual(instr.arguments[0].scale, 4)
-        self.assertEqual(
-            instr.arguments[0].index_register, RegisterOperand("rcx"))
+        self.assertEqual(instr.arguments[0].index_register, RegisterOperand("rcx"))
         self.assertEqual(instr.arguments[1].name, "rax")
 
         instr = Instruction.parse("push rax")
@@ -483,7 +501,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(instr.arguments, [])
 
 
-def assemble(instruction: Union[Instruction, str]):
+def assemble(instruction: Instruction | str) -> list[str]:
     # create temporary directory
     with tempfile.TemporaryDirectory(prefix="ax_assemble", dir="/dev/shm") as tmpdir:
         # write assembly code to file
@@ -530,7 +548,7 @@ def assemble(instruction: Union[Instruction, str]):
         return hex_arr
 
 
-def test_id(instruction: Union[Instruction, str], flags_set, inputs=None):
+def test_id(instruction: Instruction | str, flags_set, inputs=None):
     def map_flags(f):
         # remove the FLAG_ prefix from each flag
         return [x[5:] for x in f]
@@ -539,7 +557,7 @@ def test_id(instruction: Union[Instruction, str], flags_set, inputs=None):
     test_name = f"{instruction}_{'_'.join(map_flags(flags_set))}"
 
     if isinstance(instruction, Instruction) and len(instruction.implicit_arguments) > 0 and inputs is not None:
-        test_name += f"_{'_'.join([f'{op}_{inputs[i+len(instruction.arguments)]}' for i, op in enumerate(instruction.implicit_arguments)])}"
+        test_name += f"_{'_'.join([f'{op}_{inputs[i + len(instruction.arguments)]}' for i, op in enumerate(instruction.implicit_arguments)])}"
 
     # only keep alphanumerial characters
     test_name = re.sub(r'\W+', '_', test_name)
@@ -549,7 +567,8 @@ def test_id(instruction: Union[Instruction, str], flags_set, inputs=None):
 
     return test_name.strip("_").lower()
 
-def flag_to_literal(flag):
+
+def flag_to_literal(flag: str | int):
     # if string return as is
     if isinstance(flag, str):
         return flag
@@ -561,25 +580,35 @@ def flag_to_literal(flag):
 
     return lit
 
-def joinflags(flags, separator=" | "):
+
+def joinflags(flags: list[str | int] | int, separator: str = " | ") -> str:
     if isinstance(flags, int):
         return flag_to_literal(flags).replace(" | ", separator)
     return separator.join(list(map(flag_to_literal, flags))) if len(flags) > 0 else "0"
 
-def flags_to_str(set, notset):
+
+def flags_to_str(set: list[str], notset: list[str]):
     return f"{joinflags(set)}; {joinflags(notset)}"
 
+
 class Input:
-    def __init__(self, values: List[int], flags: int):
+    def __init__(self, values: list[int], flags: list[int] | int):
         self.values = values
         self.flags = flags
 
 
 class TestCase:
-    def __init__(self, assembled, instruction: Instruction, set_flags: List[str], flags_not_set: List[str], args: Input, expected_values: List[int]):
-        self.instruction = instruction if isinstance(
-            instruction, Instruction) else Instruction.parse(instruction)
-        assert isinstance(instruction, Instruction)
+    def __init__(
+            self,
+            assembled: list[str],
+            instruction: Instruction,
+            set_flags: list[str],
+            flags_not_set: list[str],
+            args: Input,
+            expected_values: list[int]
+    ):
+        self.instruction = instruction if isinstance(instruction, Instruction) else Instruction.parse(instruction)
+        assert isinstance(self.instruction, Instruction)
 
         assert len(args.values) == len(expected_values)
 
@@ -590,44 +619,45 @@ class TestCase:
         self.args = args
         self.expected_values = expected_values
 
-    GOOD_TEST_VALUES = list(dict.fromkeys([
-        0x0,
-        0x1,
-        7,
-        8,
-        15,
-        16,
-        17,
-        31,
-        32,
-        33,
-        63,
-        64,
-        65,
-        0x7f,
-        0x80,
-        0xff,
-        0x100,
-        0x100,
-        0x7fff,
-        0x8000,
-        0x10000,
-        0x7fffffff,
-        0x80000000,
-        0x100000000,
-        0x7fffffffffffffff,
-        0x8000000000000000,
-    ]
+    GOOD_TEST_VALUES = list(dict.fromkeys(
+        [
+            0x0,
+            0x1,
+            7,
+            8,
+            15,
+            16,
+            17,
+            31,
+            32,
+            33,
+            63,
+            64,
+            65,
+            0x7f,
+            0x80,
+            0xff,
+            0x100,
+            0x100,
+            0x7fff,
+            0x8000,
+            0x10000,
+            0x7fffffff,
+            0x80000000,
+            0x100000000,
+            0x7fffffffffffffff,
+            0x8000000000000000,
+        ]
         +  # powers of 2
-        [2**i for i in range(64)]
+        [2 ** i for i in range(64)]
     ))
 
     @staticmethod
-    def dynamic_operands(i: Instruction) -> List[Operand]:
+    def dynamic_operands(i: Instruction) -> list[Operand]:
         return list(filter(lambda o: not isinstance(o, ImmediateOperand), i.arguments + i.implicit_arguments))
 
     @staticmethod
-    def permutate_with_flags(inputs: List[List[int]], flags_to_permutate: List[int]) -> List[Input]:
+    def permutate_with_flags(inputs: list[list[int]], flags_to_permutate: list[int]) -> list[Input]:
         if len(flags_to_permutate) == 0:
             return [Input(i, 0) for i in inputs]
 
@@ -638,31 +668,32 @@ class TestCase:
         return [Input(i, f) for i in inputs for f in permut]
 
     @staticmethod
-    def generate_inputs(dynamic_operands: List[Operand]) -> List[List[int]]:
+    def generate_inputs(dynamic_operands: list[Operand]) -> list[list[int]]:
         dynamic_operands = len(dynamic_operands)
 
         if dynamic_operands == 0:
             return [[]]
         elif dynamic_operands == 1:
+            # TODO: changed to [i] but was i
             return [[v] for v in TestCase.GOOD_TEST_VALUES] + \
-                [i for i in range(0, 1024)] + \
-                [[random.randint(0, 2**64)] for _ in range(50)]
+                [[i] for i in range(0, 1024)] + \
+                [[random.randint(0, 2 ** 64)] for _ in range(50)]
         elif dynamic_operands == 2:
             return ([[v1, v2]
-                    for v1 in TestCase.GOOD_TEST_VALUES for v2 in TestCase.GOOD_TEST_VALUES]
+                     for v1 in TestCase.GOOD_TEST_VALUES for v2 in TestCase.GOOD_TEST_VALUES]
                     # random values and good test values
-                    + [[random.randint(0, 2**64), v]
-                        for v in TestCase.GOOD_TEST_VALUES]
-                    + [[v, random.randint(0, 2**64)]
-                        for v in TestCase.GOOD_TEST_VALUES]
+                    + [[random.randint(0, 2 ** 64), v]
+                       for v in TestCase.GOOD_TEST_VALUES]
+                    + [[v, random.randint(0, 2 ** 64)]
+                       for v in TestCase.GOOD_TEST_VALUES]
                     # 50 random combinations
-                    + [[random.randint(0, 2**64), random.randint(0, 2**64)]
-                        for _ in range(50)])
+                    + [[random.randint(0, 2 ** 64), random.randint(0, 2 ** 64)]
+                       for _ in range(50)])
         else:
             raise NotImplementedError("Too many dynamic operands")
 
     @staticmethod
-    def auto_learn_flags(i: Instruction, result_only: bool, flags_to_permutate: List[int]) -> List:
+    def auto_learn_flags(i: Instruction, result_only: bool, flags_to_permutate: list[int]) -> list:
         dynamic_operands = TestCase.dynamic_operands(i)
 
         inputs = TestCase.generate_inputs(dynamic_operands)
@@ -676,7 +707,13 @@ class TestCase:
     last_exception = None
 
     @staticmethod
-    def learn_single_flags(i: int, assembled, instruction: Instruction, args: Input, tmpdir: str):
+    def learn_single_flags(
+            i: int,
+            assembled: list[str],
+            instruction: Instruction,
+            args: Input,
+            tmpdir: str
+    ) -> TestCase | None:
         try:
             setup_code = []
 
@@ -685,8 +722,7 @@ class TestCase:
             idx = 0
             for arg in dynamic_operands:
                 if isinstance(arg, RegisterOperand):
-                    setup_code.append(
-                        f"mov {arg}, {args.values[idx]}")
+                    setup_code.append(f"mov {arg}, {args.values[idx]}")
                     idx += 1
                 elif isinstance(arg, MemoryOperand):
                     # write memory operands to the stack
@@ -698,7 +734,7 @@ class TestCase:
                         f"mov {arg}, {args.values[idx]}")
                     idx += 1
                 else:
-                    raise ValueError("invalid dynamic operand" + arg)
+                    raise ValueError("invalid dynamic operand" + str(arg))
 
             assert idx == len(dynamic_operands), "Not all dynamic operands were used in setup"
 
@@ -782,15 +818,13 @@ class TestCase:
             os.remove(object_path)
 
             # run executable and capture 24 bytes of output
-            output = subprocess.run(
-                [executable_path], stdout=subprocess.PIPE).stdout
+            output = subprocess.run([executable_path], stdout=subprocess.PIPE).stdout
 
             os.remove(executable_path)
 
             assert len(output) == 24, "Output is not 24 bytes long"
 
-            rflags = int.from_bytes(
-                output[:8], byteorder="little", signed=False)
+            rflags = int.from_bytes(output[:8], byteorder="little", signed=False)
 
             # find out which flags were set
             set_flags, flags_not_set = [], []
@@ -836,16 +870,15 @@ class TestCase:
                     [output_op_val1, output_op_val2],
                 )
             else:
-                raise ValueError(
-                    "invalid number of dynamic operands")
-        except Exception as e:
+                raise ValueError("invalid number of dynamic operands")
+        except Exception:
             # include stack trace
             TestCase.last_exception = traceback.format_exc()
             return None
 
     @staticmethod
-    def learn_flags(instruction: Instruction, input_args: List[Input], result_only: bool):
-        results: List[TestCase] = []
+    def learn_flags(instruction: Instruction, input_args: list[Input], result_only: bool) -> list[TestCase]:
+        results: list[TestCase] = []
 
         assembled = assemble(instruction)
 
@@ -859,10 +892,8 @@ class TestCase:
             return True
 
         with tempfile.TemporaryDirectory(prefix="ax_flag_learner", dir="/dev/shm") as tmpdir:
-            def imap_func(input: Tuple[int, Input]):
-                return TestCase.learn_single_flags(
-                    input[0], assembled, instruction, input[1], tmpdir
-                )
+            def imap_func(input: tuple[int, Input]):
+                return TestCase.learn_single_flags(input[0], assembled, instruction, input[1], tmpdir)
 
             with Pool(os.cpu_count() * 4) as p:
                 temp_results = list(
@@ -876,7 +907,7 @@ class TestCase:
                     # Only keep tests we know will work later (sometimes immediate values are too large, but this is ignored by as)
                     try:
                         str(r)
-                    except Exception as e:
+                    except Exception:
                         continue
 
                     results.append(r)
@@ -889,7 +920,7 @@ class TestCase:
         return results
 
     def test_id(self):
-        flags =  ("_" + joinflags(self.args.flags, separator="_").replace("FLAG_", "")) if self.args.flags else ""
+        flags = "_" + joinflags(self.args.flags, separator="_").replace("FLAG_", "") if self.args.flags else ""
         return test_id(self.instruction, self.flags_set, self.args.values) + flags.lower()
 
     def __str__(self):
@@ -904,7 +935,7 @@ class TestCase:
             elif isinstance(operand, MemoryOperand):
                 # Set up base and index registers, as well as memory
                 return f"""write_reg_value!({operand.base_register.size_letter()}; a; {operand.base_register.name.upper()}; {hex(mem_start + operand.offset)});{
-f'{TestCase.NEWLINE}        write_reg_value!({operand.index_register.size_letter()}; a; {operand.index_register.name.upper()}; 0);' if operand.index_register is not None else ''}
+                f'{TestCase.NEWLINE}        write_reg_value!({operand.index_register.size_letter()}; a; {operand.index_register.name.upper()}; 0);' if operand.index_register is not None else ''}
         a.mem_init_zero({hex(mem_start + operand.offset)}, {operand.size()}).unwrap();
         a.mem_write_{operand.size() * 8}({hex(mem_start + operand.offset)}, {ImmediateOperand(value).hexify(operand)}).unwrap();"""
             else:
@@ -926,7 +957,7 @@ f'{TestCase.NEWLINE}        write_reg_value!({operand.index_register.size_letter
             return f"""// {self.instruction}
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: Axecutor| {{
         todo!("Asset state of registers and/or memory");{
-f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if self.args.flags else ''}
+            f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if self.args.flags else ''}
     }};
     ({flags_to_str(self.flags_set, self.flags_not_set)})
 ];"""
@@ -935,7 +966,7 @@ f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if s
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
         {operand_write(dynamic_operands[0], self.args.values[0])}{
-f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if self.args.flags else ''}
+            f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if self.args.flags else ''}
     }};
     |a: Axecutor| {{
         {assert_operand(dynamic_operands[0], self.expected_values[0])}
@@ -948,7 +979,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: &mut Axecutor| {{
         {operand_write(dynamic_operands[0], self.args.values[0])}
         {operand_write(dynamic_operands[1], self.args.values[1])}{
-f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if self.args.flags else ''}
+            f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if self.args.flags else ''}
     }};
     |a: Axecutor| {{
         {assert_operand(dynamic_operands[0], self.expected_values[0])}
@@ -958,7 +989,8 @@ f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if s
 ];"""
         raise ValueError("invalid number of dynamic operands")
 
-def parse_flags(text) -> List[int]:
+
+def parse_flags(text: str) -> list[int]:
     flags = [s.strip().upper() for s in text.split(',')]
     valid = all(map(lambda f: any(map(lambda t: t[1] == f, OUTPUT_FLAGS_TO_ANALYZE)), flags))
 
@@ -975,18 +1007,16 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Generate tests for axecutor')
-    parser.add_argument(
-        '-t', '--test', help='Run tests for this script', dest='test', action='store_true')
-    parser.add_argument(
-        '-f', '--flags', help='Select flags to test for', action='store', dest='flags',)
+    parser.add_argument('-t', '--test', help='Run tests for this script', dest='test', action='store_true')
+    parser.add_argument('-f', '--flags', help='Select flags to test for', action='store', dest='flags')
     parser.add_argument('-s', '--set', help='Flags that should be set or not set before the instruction is executed',
-                        action='store', dest='flags_set',)
-    parser.add_argument('-e',                       '--extreme',
-                        help='Run more tests (default for < 2 dynamic arguments)', action='store_true', dest='extreme',)
-    parser.add_argument("-i", "--implicit-operands",
-                        help="Test implicit operands", action="store", dest="implicit_operands")
-    parser.add_argument("-r", "--result", help="Deduplicate by result of test, not by flags set",
-                        action="store_true", dest="result")
+                        action='store', dest='flags_set')
+    parser.add_argument('-e', '--extreme', help='Run more tests (default for < 2 dynamic arguments)',
+                        action='store_true', dest='extreme')
+    parser.add_argument("-i", "--implicit-operands", help="Test implicit operands", action="store",
+                        dest="implicit_operands")
+    parser.add_argument("-r", "--result", help="Deduplicate by result of test, not by flags set", action="store_true",
+                        dest="result")
 
     parser.add_argument('rest', nargs=argparse.REMAINDER, action='store')
 
@@ -1018,7 +1048,6 @@ def main():
     if args.flags_set:
         permut_flags = parse_flags(args.flags_set)
         print(f"Permuting the following flags: {permut_flags}")
-
 
     # Implicit operands, such as RAX:RDX in CQO
     if args.implicit_operands:
