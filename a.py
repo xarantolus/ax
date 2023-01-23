@@ -31,7 +31,7 @@ word_registers = ["ax", "bx", "cx", "dx", "si", "di", "bp", "sp",
 byte_registers = ["al", "ah", "bl", "bh", "cl", "ch", "dl", "dh", "sil", "dil",
                   "bpl", "spl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b"]
 
-registers: Final[list[str]] = byte_registers + word_registers + dword_registers + qword_registers
+registers: Final[list[str]] = qword_registers + dword_registers + word_registers + byte_registers
 
 
 def find_register(assembly_code: str) -> str:
