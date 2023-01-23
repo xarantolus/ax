@@ -1,12 +1,17 @@
 # generate jump definitions
-from t import *
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+import tempfile
 
 import pyperclip
 
-NEWLINE = '\n'
+from t import OUTPUT_FLAGS_TO_ANALYZE, assemble, flags_to_str, test_id
 
 
-def generate_assembly(initial: str, padding: int, final: str):
+def generate_assembly(initial: str, padding: int, final: str) -> str:
     return f"""
 .intel_syntax noprefix
 .data
@@ -50,7 +55,18 @@ syscall
 
 class JumpTestCase:
     # set_flags, flags_not_set, initial_rip, final_rip, initial_bytes, final_bytes, padding
-    def __init__(self, set_flags: List[str], flags_not_set: List[str], initial_rip: int, final_rip: int, initial_bytes: List[str], final_bytes: List[str], padding: int, initial_code: str, final_code: str):
+    def __init__(
+            self,
+            set_flags: list[str],
+            flags_not_set: list[str],
+            initial_rip: int,
+            final_rip: int,
+            initial_bytes: list[str],
+            final_bytes: list[str],
+            padding: int,
+            initial_code: str,
+            final_code: str
+    ):
         self.set_flags = set_flags
         self.flags_not_set = flags_not_set
         self.initial_rip = initial_rip
@@ -62,15 +78,15 @@ class JumpTestCase:
         self.final_code = final_code
 
     @staticmethod
-    def _sublist_index(sublist: List[str], superlist: List[str]):
+    def _sublist_index(sublist: list[str], superlist: list[str]) -> int:
         sublist_len = len(sublist)
         for i in range(len(superlist) - sublist_len + 1):
-            if superlist[i:i+sublist_len] == sublist:
+            if superlist[i:i + sublist_len] == sublist:
                 return i
         return -1
 
     @staticmethod
-    def create(initial: str, padding: int, final: str):
+    def create(initial: str, padding: int, final: str) -> JumpTestCase:
         with tempfile.TemporaryDirectory(prefix="ax_jumper_", dir="/dev/shm") as tmpdir:
             # write assembly code to file
             assembly_path = os.path.join(tmpdir, "a.S")
@@ -79,17 +95,14 @@ class JumpTestCase:
 
             # turn into executable with gcc, symbol _start
             executable_path = os.path.join(tmpdir, "a")
-            subprocess.run(["gcc", "-m64", "-nostdlib", "-static",
-                        "-o", executable_path, assembly_path])
+            subprocess.run(["gcc", "-m64", "-nostdlib", "-static", "-o", executable_path, assembly_path])
 
             # run executable and capture 24 bytes of output
-            output = subprocess.run(
-                [executable_path], stdout=subprocess.PIPE).stdout
+            output = subprocess.run([executable_path], stdout=subprocess.PIPE).stdout
 
             assert len(output) == 24, "Output is not 24 bytes long, check for stack overflows, missing returns and other errors!"
 
-            rflags = int.from_bytes(
-                output[:8], byteorder="little", signed=False)
+            rflags = int.from_bytes(output[:8], byteorder="little", signed=False)
 
             # find out which flags were set
             set_flags, flags_not_set = [], []
@@ -99,10 +112,8 @@ class JumpTestCase:
                 else:
                     flags_not_set.append("FLAG_" + flag_name)
 
-            initial_rip = int.from_bytes(
-                output[8:16], byteorder="little", signed=False)
-            final_rip = int.from_bytes(
-                output[16:24], byteorder="little", signed=False)
+            initial_rip = int.from_bytes(output[8:16], byteorder="little", signed=False)
+            final_rip = int.from_bytes(output[16:24], byteorder="little", signed=False)
 
             final_rip -= 7  # mov [rip+initial_rip]
             final_rip -= 7  # lea rax, [rip]
@@ -123,9 +134,19 @@ class JumpTestCase:
             initial_bytes = hex_arr[:index]
             final_bytes = hex_arr[index + padding:]
 
-            return JumpTestCase(set_flags, flags_not_set, initial_rip, final_rip, initial_bytes, final_bytes, padding, initial, final)
+            return JumpTestCase(
+                set_flags,
+                flags_not_set,
+                initial_rip,
+                final_rip,
+                initial_bytes,
+                final_bytes,
+                padding,
+                initial,
+                final
+            )
 
-    def with_setup_asserts(self):
+    def with_setup_asserts(self) -> str:
         return f"""jmp_test![{test_id(self.initial_code + "_" + self.final_code, self.set_flags)};
     start: {hex(self.initial_rip)}; end: {hex(self.final_rip)};
     {', '.join(self.initial_bytes)}; // {self.initial_code}
@@ -140,7 +161,7 @@ class JumpTestCase:
     ({flags_to_str(self.set_flags, self.flags_not_set)})
 ];"""
 
-    def no_setup_asserts(self):
+    def no_setup_asserts(self) -> str:
         return f"""jmp_test![{test_id(self.initial_code + "_" + self.final_code, self.set_flags)};
     start: {hex(self.initial_rip)}; end: {hex(self.final_rip)};
     {', '.join(self.initial_bytes)}; // {self.initial_code}
@@ -149,7 +170,7 @@ class JumpTestCase:
     ({flags_to_str(self.set_flags, self.flags_not_set)})
 ];"""
 
-    def no_setup_only_asserts(self):
+    def no_setup_only_asserts(self) -> str:
         return f"""jmp_test![{test_id(self.initial_code + "_" + self.final_code, self.set_flags)};
     start: {hex(self.initial_rip)}; end: {hex(self.final_rip)};
     {', '.join(self.initial_bytes)}; // {self.initial_code}
@@ -162,7 +183,7 @@ class JumpTestCase:
 ];"""
 
 
-if __name__ == '__main__':
+def main():
     if len(sys.argv) == 1:
         sys.argv += ["mov rax, 0; JMP .Llabel", "50", "function: add rax, 5; ret; .Llabel: call function", ]
 
@@ -183,19 +204,20 @@ if __name__ == '__main__':
     code_end = sys.argv[3]
 
     if code_end.strip().endswith(":"):
-        print("Error: Final code cannot be a label, as otherwise the test case won't work. You should insert e.g. a NOP")
+        print(
+            "Error: Final code cannot be a label, as otherwise the test case won't work. You should insert e.g. a NOP")
         sys.exit(1)
 
     # ask user which variant they want
     setup = input("Include setup+assert, only asserts or only rip+flag test code? [s/a/r/c] ").strip().lower()
 
-    if setup.lower() == "s":
+    if setup == "s":
         testcase = JumpTestCase.create(code_start, padding, code_end)
         tc_str = testcase.with_setup_asserts()
-    elif setup.lower() == "a":
+    elif setup == "a":
         testcase = JumpTestCase.create(code_start, padding, code_end)
         tc_str = testcase.no_setup_only_asserts()
-    elif setup.lower() == "c":
+    elif setup == "c":
         tc_str = generate_assembly(code_start, padding, code_end)
     else:
         testcase = JumpTestCase.create(code_start, padding, code_end)
@@ -206,3 +228,7 @@ if __name__ == '__main__':
         print("Copied test case to clipboard!")
     except:
         print(tc_str)
+
+
+if __name__ == '__main__':
+    main()
