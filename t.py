@@ -258,7 +258,7 @@ class MemoryOperand(Operand):
             offset = 0
             argument = argument[1:]
         else:
-            scale = None
+            scale = 1
 
         argument = argument.strip()
 
