@@ -42,10 +42,10 @@ ax:
 RM_TARGETS += ax$(EXE_SUFFIX)
 
 # fmt will fail if switch or stats are not up to date
-precommit: build-web switch stats fmt docs test test-scripts ax build
+precommit: generate fmt test test-scripts all
 
 # targets that might change files and thus prevent precommit from passing, especially when the version changes
-generate: build-web switch stats test-js
+generate: build-web switch stats test-js docs
 
 test-scripts: python-dependencies
 	$(PY) t.py --test
