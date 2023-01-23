@@ -1,10 +1,11 @@
 # Run cargo metadata
 # Parse the output
+from __future__ import annotations
+
 import json
 import os
 import subprocess
 import sys
-from typing import List, Union
 
 # Run cargo metadata
 output = subprocess.run(
@@ -47,8 +48,10 @@ def index_of_first(lst, pred):
     return None
 
 
-# read_mnemonics reads all mnemonic names from the iced-x86 crate
-def read_mnemonics(with_codes: bool) -> Union[list[str], list]:
+def read_mnemonics(with_codes: bool) -> list[str] | list:
+    """
+    Reads all mnemonic names from the iced-x86 crate
+    """
     mnemonic_rs_path = os.path.join(iced_package_dir, "mnemonic.rs")
     with open(mnemonic_rs_path, "r", encoding='utf8') as f:
         mnemonic_rs = f.readlines()
@@ -62,7 +65,7 @@ def read_mnemonics(with_codes: bool) -> Union[list[str], list]:
 
     if with_codes is True:
         mnemonics = map(lambda line: line.strip().split(",")[0].split("="), mnemonic_rs)
-        mnemonics = filter(lambda mnemonic: not (mnemonic)[0].startswith("//"), mnemonics)
+        mnemonics = filter(lambda mnemonic: not mnemonic[0].startswith("//"), mnemonics)
         mnemonics = filter(lambda line: len(line) == 2, mnemonics)
         mnemonics = list(map(lambda line: (line[0].strip(), int(line[1].strip())), mnemonics))
     else:
@@ -74,29 +77,30 @@ def read_mnemonics(with_codes: bool) -> Union[list[str], list]:
 
     return list(mnemonics)
 
-# Data class with Instruction description, encoding example, isa extension name
-
 
 class Instruction:
+    """
+    Data class with Instruction description, encoding example, isa extension name
+    """
     def __init__(self, description, code, isa, enum_name):
         self.description = description
         self.code = code
         self.isa = isa
         self.enum_name = enum_name
 
-# read_code reads all instruction codes from the iced-x86 crate
 
-
-def read_code() -> List[Instruction]:
+def read_code() -> list[Instruction]:
+    """
+    Reads all instruction codes from the iced-x86 crate
+    """
     code_rs_path = os.path.join(iced_package_dir, "code.rs")
     with open(code_rs_path, "r", encoding='utf8') as f:
         code_rs = f.readlines()
 
-    start_idx = index_of_first(
-        code_rs, lambda line: line.startswith("pub enum Code"))
+    start_idx = index_of_first(code_rs, lambda l: l.startswith("pub enum Code"))
     code_rs = code_rs[start_idx+1:]
 
-    end_idx = index_of_first(code_rs, lambda line: line.startswith("}"))
+    end_idx = index_of_first(code_rs, lambda l: l.startswith("}"))
     code_rs = code_rs[:end_idx]
 
     # Now parse something like the following into instruction class; first line is description
@@ -141,10 +145,9 @@ def read_code() -> List[Instruction]:
 
 
 available_codes = read_code()
-mnemonics = read_mnemonics(False)
 
 
-def generate_mnemonic_text(instruction_codes: List[Instruction], mnemonic: str):
+def generate_mnemonic_text(instruction_codes: list[Instruction], mnemonic: str):
     code = f"""use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::{mnemonic};
@@ -202,13 +205,15 @@ mod tests {
 
     return code
 
-def generate_mnemonic_file(mnemonic: str):
+
+def generate_mnemonic_file(mnemonic: str, mnemonics: list[str]):
     has_underscore = mnemonic.endswith("_")
     mnemonic = mnemonic.lower().strip("_")
     # find mnemonic from mnemonics string list
     normalized_mnemonic_idx = index_of_first(mnemonics, lambda m: m.lower() == mnemonic)
 
-    codes = list(filter(lambda instr: instr.enum_name.lower().startswith(mnemonic + ("_" if has_underscore else '')), available_codes))
+    codes = list(filter(lambda instr: instr.enum_name.lower().startswith(mnemonic + ("_" if has_underscore else '')),
+                        available_codes))
     if len(codes) == 0:
         print(f"Warning: no instructions for mnemonic {mnemonic}")
         return
@@ -238,13 +243,14 @@ def generate_mnemonic_file(mnemonic: str):
     # run rustfmt on files
     subprocess.run(["rustfmt", "--edition=2021", mnemonic_path, mod_path])
 
+
 def generate_all_switch():
     mnemonics = read_mnemonics(True)
 
     # Read list of files ending with ".rs" in src/instructions
     instructions_dir = os.path.join("src", "instructions")
     files = os.listdir(instructions_dir)
-    files = list(filter(lambda f: f.endswith(".rs"), files))
+    files = list(filter(lambda file: file.endswith(".rs"), files))
 
     mnems = list(filter(lambda m: m[0].lower()+".rs" in files, mnemonics))
 
@@ -317,14 +323,15 @@ impl TryFrom<Mnemonic> for SupportedMnemonic {
 }
 """
 
-
     # Write to file generated.rs
     with open("src/instructions/generated.rs", "w", encoding='utf8') as f:
         f.write(code)
     subprocess.run(["rustfmt", "--edition=2021", "src/instructions/generated.rs"])
 
 
-if __name__ == '__main__':
+def main():
+    mnemonics = read_mnemonics(False)
+
     mnemonics_to_generate = None
     # set to first argument and handle invalid inputs
     if len(sys.argv) > 1:
@@ -336,10 +343,14 @@ if __name__ == '__main__':
 
     if mnemonics_to_generate == "all":
         for mnemonic in filter(lambda m: m != "INVALID", mnemonics):
-            generate_mnemonic_file(mnemonic)
+            generate_mnemonic_file(mnemonic, mnemonics)
     elif mnemonics_to_generate is not None:
-        generate_mnemonic_file(mnemonics_to_generate)
+        generate_mnemonic_file(mnemonics_to_generate, mnemonics)
         print(f"Generated file for new mnemonic. To integrate this mnemonic into the project, run `make switch`")
     else:
         print("Usage: python3 generate.py <mnemonic>|switch|all")
         exit(1)
+
+
+if __name__ == '__main__':
+    main()
