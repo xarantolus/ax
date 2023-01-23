@@ -31,11 +31,12 @@ Several methods are available for interacting with registers, memory and hooks.
 There are two ways to execute code: `execute` and `step`.
 
 ##### `Axecutor.step() => Promise<boolean>`
-Execute the next instruction (including all registered hooks), returning if the execution has stopped.
+Execute the next instruction (including all registered hooks), returning if execution has stopped.
 
 
 ##### `Axecutor.execute() => Promise<void>`
-Execute all instructions until the execution has stopped.
+Execute all instructions until execution has stopped.
+Execution might stop due to hooks stopping emulation via the stop() method, execution reaching the end of the code, or an error.
 This is the same as calling `step` in a loop, but staying in WASM should be more efficient.
 
 

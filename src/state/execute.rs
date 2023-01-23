@@ -49,7 +49,7 @@ impl Axecutor {
         Ok(instr)
     }
 
-    /// Execute the next instruction (including all registered hooks), returning if the execution has stopped
+    /// Execute the next instruction (including all registered hooks), returning if execution has stopped
     pub async fn step(&mut self) -> Result<bool, AxError> {
         debug_log!(
             "Calling Axecutor::step, finished={}, rip={:#x}",
@@ -130,7 +130,8 @@ impl Axecutor {
         Ok(!self.state.finished)
     }
 
-    /// Execute all instructions until the execution has stopped.
+    /// Execute all instructions until execution has stopped.
+    /// Execution might stop due to hooks stopping emulation via the stop() method, execution reaching the end of the code, or an error.
     /// This is the same as calling `step` in a loop, but staying in WASM should be more efficient.
     pub async fn execute(&mut self) -> Result<(), AxError> {
         debug_log!("Calling Axecutor::execute");
