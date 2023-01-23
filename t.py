@@ -27,9 +27,8 @@ word_registers = ["ax", "bx", "cx", "dx", "si", "di", "bp", "sp",
 byte_registers = ["al", "ah", "bl", "bh", "cl", "ch", "dl", "dh", "sil", "dil",
                   "bpl", "spl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b"]
 
-registers: Final[list[str]] = (byte_registers + word_registers + dword_registers + qword_registers)
-# Sorting makes sure we find e.g. "rax" first instead of "ax"
-registers.sort(key=len, reverse=True)
+registers: Final[list[str]] = qword_registers + dword_registers + word_registers + byte_registers
+
 
 FLAG_CF: Final[int] = 0x0001
 FLAG_PF: Final[int] = 0x0004
@@ -241,7 +240,7 @@ class MemoryOperand(Operand):
 
             for char in argument:
                 if char.isdigit():
-                    offset += char
+                    offset += char  # TODO: what if it has two digits?
                 elif isspace(char):
                     continue
                 else:
@@ -256,7 +255,7 @@ class MemoryOperand(Operand):
         # parse scale
         if argument.startswith("*"):
             scale = offset
-            offset = None
+            offset = 0
             argument = argument[1:]
         else:
             scale = None
@@ -359,29 +358,24 @@ class Instruction:
         parsed_operands = []
         additional_immediate = None
         if len(operands) == 1:
-            parsed_operands.append(
-                Instruction.parse_operand(operands[0], None))
+            parsed_operands.append(Instruction.parse_operand(operands[0], None))
         elif len(operands) == 2:
             try:
                 first_operand = Instruction.parse_operand(operands[0], None)
-                second_operand = Instruction.parse_operand(
-                    operands[1], first_operand)
+                second_operand = Instruction.parse_operand(operands[1], first_operand)
             except:
                 second_operand = Instruction.parse_operand(operands[1], None)
-                first_operand = Instruction.parse_operand(
-                    operands[0], second_operand)
+                first_operand = Instruction.parse_operand(operands[0], second_operand)
 
             parsed_operands.append(first_operand)
             parsed_operands.append(second_operand)
         elif len(operands) == 3:
             try:
                 first_operand = Instruction.parse_operand(operands[0], None)
-                second_operand = Instruction.parse_operand(
-                    operands[1], first_operand)
+                second_operand = Instruction.parse_operand(operands[1], first_operand)
             except:
                 second_operand = Instruction.parse_operand(operands[1], None)
-                first_operand = Instruction.parse_operand(
-                    operands[0], second_operand)
+                first_operand = Instruction.parse_operand(operands[0], second_operand)
 
             additional_immediate = ImmediateOperand(operands[2])
 
