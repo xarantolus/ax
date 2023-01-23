@@ -17,6 +17,7 @@ describe('Axecutor', () => {
 		await axecutor.execute();
 
 		expect(axecutor.reg_read_64(Register.RAX)).toBe(0x1234567890abcdefn);
+		expect(axecutor.reg_read_64(Register.RBX)).toBe(0x1234567890abcdefn);
 	});
 });
 
