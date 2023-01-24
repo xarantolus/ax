@@ -876,7 +876,7 @@ class TestCase:
                 )
             else:
                 raise ValueError("invalid number of dynamic operands")
-        except Exception:
+        except subprocess.CalledProcessError:
             # include stack trace
             TestCase.last_exception = traceback.format_exc()
             return None
