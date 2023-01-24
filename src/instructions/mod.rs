@@ -3,6 +3,7 @@ pub mod add;
 pub mod and;
 pub mod call;
 pub mod cdq;
+pub mod cld;
 pub mod cmovae;
 pub mod cmove;
 pub mod cmovne;
