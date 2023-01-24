@@ -17,8 +17,7 @@ from typing import Literal, Final
 import pyperclip
 from tqdm import tqdm
 
-# TODO: why rip here but not in a.py?
-qword_registers = ["rip", "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp",
+qword_registers = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp",
                    "rsp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
 dword_registers = ["eax", "ebx", "ecx", "edx", "esi", "edi", "ebp",
                    "esp", "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d"]
@@ -43,6 +42,10 @@ OUTPUT_FLAGS_TO_ANALYZE = [
     (FLAG_OF, "OF"),
 ]
 FLAGS = OUTPUT_FLAGS_TO_ANALYZE
+
+
+class ParseError(Exception):
+    pass
 
 
 def check_temp_dir():
@@ -88,21 +91,22 @@ class Operand(abc.ABC):
 
 class RegisterOperand(Operand):
 
-    def __init__(self, name):
-        self.name = name.lower()
-        self.size()  # TODO: why call this here?
+    def __init__(self, name: str):
+        name = name.lower()
+        if name not in registers:
+            raise ParseError("Unknown register: " + str(name))
+        self.name = name
 
     def size(self):
         if self.name in qword_registers:
             return 8
-        elif self.name in dword_registers:
+        if self.name in dword_registers:
             return 4
-        elif self.name in word_registers:
+        if self.name in word_registers:
             return 2
-        elif self.name in byte_registers:
+        if self.name in byte_registers:
             return 1
-        else:
-            raise ValueError("Unknown register: " + str(self.name))
+        raise ValueError("Unknown register: " + str(self.name))
 
     def __eq__(self, other):
         return self.name == other.name
@@ -114,7 +118,10 @@ class RegisterOperand(Operand):
 class ImmediateOperand(Operand):
     def __init__(self, number: str | int):
         if isinstance(number, str):
-            number = int(number, base=0)
+            try:
+                number = int(number, base=0)
+            except ValueError:
+                raise ParseError("Invalid immediate value: " + number)
         self.number = number
 
     def hexify(self, target: Operand):
@@ -154,7 +161,8 @@ class MemoryOperand(Operand):
 
         self.index_register = index_register if isinstance(index_register, RegisterOperand) else RegisterOperand(index_register) if index_register is not None else None
 
-        assert size in [1, 2, 4, 8]
+        if size not in [1, 2, 4, 8, None]:
+            raise ParseError("Invalid size: " + str(size))
         self._size = size
 
     def size(self):
@@ -207,9 +215,13 @@ class MemoryOperand(Operand):
             size = 8
             argument = argument[9:]
         elif argument.startswith("ptr"):
+            if other_operand is None:
+                raise ParseError("Cannot parse memory operand: " + original_argument)
             size = other_operand.size()
             argument = argument[3:]
         else:
+            if other_operand is None:
+                raise ParseError("Cannot parse memory operand: " + original_argument)
             size = other_operand.size()
 
         argument = argument.strip()
@@ -272,7 +284,7 @@ class MemoryOperand(Operand):
             index_register = None
 
         if len(argument) > 0:
-            raise ValueError(f"Could not parse memory argument: {original_argument}(rest is {argument})\n"
+            raise ParseError(f"Could not parse memory argument: {original_argument}(rest is {argument})\n"
                              "Note that the parser is very basic and cares about order")
 
         return MemoryOperand(base_register, offset, scale, index_register, size)
@@ -304,22 +316,22 @@ class Instruction:
         # try to parse as register
         try:
             return RegisterOperand(argument)
-        except:
+        except ParseError:
             pass
 
         # try to parse as immediate
         try:
             return ImmediateOperand(argument)
-        except:
+        except ParseError:
             pass
 
         # try to parse as memory
         try:
             return MemoryOperand.parse(argument, other_operand)
-        except:
+        except ParseError:
             pass
 
-        raise ValueError("Could not parse operand: " + argument)
+        raise ParseError("Could not parse operand: " + argument)
 
     @staticmethod
     def parse(argument: str) -> Instruction:
@@ -363,7 +375,7 @@ class Instruction:
             try:
                 first_operand = Instruction.parse_operand(operands[0], None)
                 second_operand = Instruction.parse_operand(operands[1], first_operand)
-            except:
+            except ParseError:
                 second_operand = Instruction.parse_operand(operands[1], None)
                 first_operand = Instruction.parse_operand(operands[0], second_operand)
 
@@ -373,7 +385,7 @@ class Instruction:
             try:
                 first_operand = Instruction.parse_operand(operands[0], None)
                 second_operand = Instruction.parse_operand(operands[1], first_operand)
-            except:
+            except ParseError:
                 second_operand = Instruction.parse_operand(operands[1], None)
                 first_operand = Instruction.parse_operand(operands[0], second_operand)
 
@@ -668,7 +680,6 @@ class TestCase:
         if dynamic_operands == 0:
             return [[]]
         elif dynamic_operands == 1:
-            # TODO: changed to [i] but was i
             return [[v] for v in TestCase.GOOD_TEST_VALUES] + \
                 [[i] for i in range(0, 1024)] + \
                 [[random.randint(0, 2 ** 64)] for _ in range(50)]
