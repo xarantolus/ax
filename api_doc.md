@@ -279,6 +279,7 @@ export enum Mnemonic {
   And,
   Call,
   Cdq,
+  Cld,
   Cmovae,
   Cmove,
   Cmovne,
