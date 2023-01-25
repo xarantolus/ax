@@ -21,6 +21,7 @@ pub enum SupportedSegmentRegister {
     ES,
     SS,
     FS,
+    GS,
 }
 
 impl TryFrom<iced_x86::Register> for SupportedSegmentRegister {
@@ -32,6 +33,7 @@ impl TryFrom<iced_x86::Register> for SupportedSegmentRegister {
             iced_x86::Register::ES => Ok(SupportedSegmentRegister::ES),
             iced_x86::Register::SS => Ok(SupportedSegmentRegister::SS),
             iced_x86::Register::FS => Ok(SupportedSegmentRegister::FS),
+            iced_x86::Register::GS => Ok(SupportedSegmentRegister::GS),
             _ => Err(AxError::from(format!(
                 "Unsupported segment register: {:?}",
                 value
@@ -146,13 +148,26 @@ impl Axecutor {
         addr = addr.wrapping_add(displacement);
 
         if let Some(reg) = segment {
-            if reg == SupportedSegmentRegister::FS {
-                debug_log!(
-                    "Adding FS segment offset {:#x} to memory address: {:#x}",
-                    self.state.fs,
-                    addr
-                );
-                addr = addr.wrapping_add(self.state.fs);
+            match reg {
+                SupportedSegmentRegister::FS => {
+                    debug_log!(
+                        "Adding FS segment offset {:#x} to memory address: {:#x}",
+                        self.state.fs,
+                        addr
+                    );
+                    addr = addr.wrapping_add(self.state.fs);
+                }
+                SupportedSegmentRegister::GS => {
+                    debug_log!(
+                        "Adding GS segment offset {:#x} to memory address: {:#x}",
+                        self.state.gs,
+                        addr
+                    );
+                    addr = addr.wrapping_add(self.state.gs);
+                }
+                _ => {
+                    // Others are always zero
+                }
             }
         }
 

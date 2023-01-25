@@ -87,6 +87,14 @@ Reads the value of the FS segment register.
 Writes a value to the FS segment register.
 
 
+##### `Axecutor.read_gs() => bigint`
+Reads the value of the GS segment register.
+
+
+##### `Axecutor.write_gs(value: bigint) => void`
+Writes a value to the GS segment register.
+
+
 #### Memory
 The following methods are available for interacting with memory.
 
@@ -225,6 +233,7 @@ Syscalls that can be registered for automatic handling
 export enum Syscall {
   Brk,
   Exit,
+  ArchPrctl,
 }
 ```
 

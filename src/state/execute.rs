@@ -69,7 +69,8 @@ impl Axecutor {
             .map_err(|e| AxError::from(format!("decoding instruction: {}", e)))?;
         debug_log!("Fetched instruction {}", instr);
 
-        self.reg_write_64(SupportedRegister::RIP, instr.next_ip())?;
+        let rip = instr.next_ip();
+        self.reg_write_64(SupportedRegister::RIP, rip)?;
 
         let mnem: SupportedMnemonic = instr.mnemonic().try_into()?;
 
@@ -82,7 +83,12 @@ impl Axecutor {
             debug_log!("Finished running before hooks for mnemonic {:?}", mnem);
         }
 
-        debug_log!("Executing instruction {} ({:?})", instr, instr.code());
+        debug_log!(
+            "Executing instruction {} ({:?}) @ {:#x}",
+            instr,
+            instr.code(),
+            rip
+        );
         if let Err(e) = self.switch_instruction_mnemonic(instr) {
             // This is so e.g. the ret instruction can end execution
             if e.signals_normal_finish {

@@ -19,6 +19,7 @@ use super::{debug::debug_log, errors::AxError};
 pub enum Syscall {
     Brk = 12,
     Exit = 60,
+    ArchPrctl = 158,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -34,7 +35,9 @@ impl TryFrom<isize> for Syscall {
 
     fn try_from(value: isize) -> Result<Self, Self::Error> {
         Ok(match value {
+            12 => Syscall::Brk,
             60 => Syscall::Exit,
+            158 => Syscall::ArchPrctl,
             _ => {
                 return Err(AxError::from(
                     format!("Unknown syscall: {}", value).as_str(),
@@ -98,6 +101,7 @@ impl Axecutor {
             match syscall {
                 Syscall::Exit => self.register_exit()?,
                 Syscall::Brk => self.register_brk()?,
+                Syscall::ArchPrctl => self.register_arch_prctl()?,
             }
 
             self.state.syscalls.registered.push(syscall);
@@ -166,4 +170,76 @@ impl Axecutor {
             Ok(())
         })
     }
+
+    fn register_arch_prctl(&mut self) -> Result<(), AxError> {
+        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
+            if ax.reg_read_64(RAX)? != Syscall::ArchPrctl as u64 {
+                return Ok(());
+            }
+
+            // TODO: Make sure this implements the syscall to spec when the memory implementation has been overhauled
+
+            let code = ax.reg_read_64(RDI)?;
+            let addr = ax.reg_read_64(RSI)?;
+
+            debug_log!(
+                "Running native arch_prctl syscall with code {:#x} and addr {:#x}",
+                code,
+                addr
+            );
+
+            if ax.mem_read_8(addr).is_err() {
+                // return EFAULT -- invalid address
+                ax.reg_write_64(RAX, 14)?;
+                return Ok(());
+            }
+
+            match code {
+                0x1002 => {
+                    // ARCH_SET_FS
+                    ax.write_fs(addr);
+                }
+                0x1003 => {
+                    // ARCH_SET_GS
+                    ax.write_gs(addr);
+                }
+                0x1001 => {
+                    // ARCH_GET_FS
+                    ax.reg_write_64(RAX, ax.read_fs())?;
+                }
+                0x1004 => {
+                    // ARCH_GET_GS
+                    ax.reg_write_64(RAX, ax.read_gs())?;
+                }
+                _ => {
+                    // return EINVAL -- invalid code
+                    ax.reg_write_64(RAX, 22)?;
+                }
+            }
+
+            Ok(())
+        })
+    }
 }
+
+/*
+// TODO: Make this test pass
+#[cfg(test)]
+mod tests {
+    use crate::helpers::tests::test_async;
+
+    use super::*;
+
+    test_async![test_syscall; async {
+        let mut ax = Axecutor::from_binary(include_bytes!("../../testdata/exit_c.bin"))
+        .expect("Failed to load binary");
+
+        ax.init_stack_program_start(0x1000, vec!["/bin/my_binary".to_string()], vec!["USER=test".to_string()]).expect("Failed to init stack");
+
+        ax.handle_syscalls(vec![Syscall::Exit, Syscall::Brk, Syscall::ArchPrctl])
+        .expect("Failed to register syscalls");
+
+        ax.execute().await.expect("Failed to run binary");
+    }];
+}
+*/

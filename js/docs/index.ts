@@ -169,7 +169,7 @@ let registers = axecutor.methods!.filter(m => m.name.startsWith('reg_')).sort(
 	}
 );
 
-assert.ok(registers.length > 0, 'Could not find any reg_ or _fs methods');
+assert.ok(registers.length > 0, 'Could not find any reg_ or methods');
 generateMethods(registers, 'Axecutor.', 5);
 
 markdown += `#### Segment registers
@@ -177,7 +177,7 @@ The following methods are available for interacting with segment registers.
 
 `;
 
-let segments = axecutor.methods!.filter(m => m.name.endsWith('_fs'));
+let segments = axecutor.methods!.filter(m => m.name.endsWith('_fs') || m.name.endsWith('_gs'));
 assert.ok(segments.length > 0, 'Could not find any _fs methods');
 generateMethods(segments, 'Axecutor.', 5);
 
