@@ -52,6 +52,7 @@ pub(crate) struct MachineState {
     pub(crate) registers: HashMap<SupportedRegister, u64>,
     pub(crate) rflags: u64,
     pub(crate) fs: u64,
+    pub(crate) gs: u64,
     // finished is true if the execution has finished. State may be mutated or read after execution, but no further step-calls must be made
     pub(crate) finished: bool,
     // executed_instructions_count is the number of instructions that have been executed so far
@@ -162,6 +163,7 @@ impl Axecutor {
                 // Also the initial value shouldn't matter much
                 rflags: 0,
                 fs: 0,
+                gs: 0,
                 syscalls: SyscallState::default(),
             },
         })

@@ -583,4 +583,20 @@ impl Axecutor {
 
         debug_log!("Wrote FS value {:#x}", value);
     }
+
+    /// Reads the value of the GS segment register.
+    pub fn read_gs(&self) -> u64 {
+        let value = self.state.gs;
+
+        debug_log!("Read GS value {:#x}", value);
+
+        value
+    }
+
+    /// Writes a value to the GS segment register.
+    pub fn write_gs(&mut self, value: u64) {
+        self.state.gs = value;
+
+        debug_log!("Wrote GS value {:#x}", value);
+    }
 }
