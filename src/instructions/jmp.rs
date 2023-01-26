@@ -9,6 +9,8 @@ use crate::helpers::errors::AxError;
 
 use crate::helpers::macros::fatal_error;
 use crate::helpers::macros::opcode_unimplemented;
+use crate::helpers::operand::Operand;
+use crate::state::registers::SupportedRegister;
 
 impl Axecutor {
     pub fn mnemonic_jmp(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -147,9 +149,15 @@ impl Axecutor {
     fn instr_jmp_rm64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Jmp_rm64);
 
-        print!("JMP r/m64: {:#?}", i);
+        let addr = match self.instruction_operand(i, 0)? {
+            Operand::Memory(m) => self.mem_read_64(self.mem_addr(m))?,
+            Operand::Register(r) => self.reg_read_64(r)?,
+            _ => fatal_error!("Invalid operand for JMP r/m64"),
+        };
 
-        opcode_unimplemented!("instr_jmp_rm64 for Jmp")
+        self.reg_write_64(SupportedRegister::RIP, addr)?;
+
+        Ok(())
     }
 
     /// JMP m16:16
