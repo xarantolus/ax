@@ -7,7 +7,7 @@ use std::{
 use js_sys::Reflect;
 use wasm_bindgen::{JsError, JsValue};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct AxError {
     detail: Option<String>,
     message: Option<String>,
@@ -148,6 +148,13 @@ impl From<AxError> for JsValue {
 }
 
 impl fmt::Display for AxError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = String::from(self.clone());
+        write!(f, "{}", s)
+    }
+}
+
+impl fmt::Debug for AxError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = String::from(self.clone());
         write!(f, "{}", s)
