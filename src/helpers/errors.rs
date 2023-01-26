@@ -33,11 +33,19 @@ impl AxError {
 
     pub(crate) fn add_detail(&self, s: String, trace: String) -> AxError {
         AxError {
-            detail: Some(s),
+            detail: if !s.is_empty() {
+                Some(s)
+            } else {
+                self.detail.clone()
+            },
             message: self.message.clone(),
             js: self.js.clone(),
             signals_normal_finish: self.signals_normal_finish,
-            call_trace: Some(trace),
+            call_trace: if !trace.is_empty() {
+                Some(trace)
+            } else {
+                self.call_trace.clone()
+            },
         }
     }
 }
