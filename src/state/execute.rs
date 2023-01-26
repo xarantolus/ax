@@ -105,12 +105,15 @@ impl Axecutor {
                     e
                 );
 
-                let err_info = e.add_detail(format!(
-                    "executing instruction {} ({:?}) after executing {} instructions: ",
-                    instr,
-                    instr.code(),
-                    self.state.executed_instructions_count
-                ));
+                let err_info = e.add_detail(
+                    format!(
+                        "executing instruction {} ({:?}) after executing {} instructions: ",
+                        instr,
+                        instr.code(),
+                        self.state.executed_instructions_count
+                    ),
+                    self.call_trace().unwrap_or_else(|e| e.to_string()),
+                );
 
                 debug_log!("Throwing error: {}", err_info);
 

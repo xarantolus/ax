@@ -160,7 +160,11 @@ impl Axecutor {
             code: code.to_vec(),
             stack_top: 0,
             hooks: HookProcessor::default(),
-            symbol_table: HashMap::new(),
+            // Just assume everything has "_start" as entrypoint
+            symbol_table: [(initial_rip, "_start".to_string())]
+                .iter()
+                .cloned()
+                .collect(),
             state: MachineState {
                 finished: false,
                 executed_instructions_count: 0,
@@ -172,7 +176,7 @@ impl Axecutor {
                 fs: 0,
                 gs: 0,
                 syscalls: SyscallState::default(),
-                call_stack: Vec::new(),
+                call_stack: vec![initial_rip],
             },
         })
     }

@@ -237,6 +237,7 @@ mod tests {
 
     test_async![binary_without_symbols; async {
         let bin = Axecutor::from_binary(include_bytes!("../../testdata/exit_c_no_symbols.bin")).expect("Failed to parse binary");
-        assert_eq!(bin.symbol_table.len(), 0);
+        // Should only include the _start symbol
+        assert_eq!(bin.symbol_table.len(), 1);
     }];
 }
