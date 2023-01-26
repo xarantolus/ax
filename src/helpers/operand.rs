@@ -133,15 +133,17 @@ impl Axecutor {
         } = o;
         let mut addr: u64 = 0;
         if let Some(base) = base {
-            addr += self
-                .reg_read_64(base)
-                .expect("reading memory operand base register") as u64;
+            addr = addr.wrapping_add(
+                self.reg_read_64(base)
+                    .expect("reading memory operand base register"),
+            );
         }
         if let Some(index) = index {
-            addr += self
-                .reg_read_64(index)
-                .expect("reading memory operand index register")
-                * (scale as u64);
+            addr = addr.wrapping_add(
+                self.reg_read_64(index)
+                    .expect("reading memory operand index register")
+                    .wrapping_mul(scale as u64),
+            );
         }
 
         // This overflow is explicitly allowed, as x86-64 encodes negative values as signed integers
@@ -278,6 +280,8 @@ mod tests {
     use iced_x86::Register;
 
     use crate::helpers::operand::{MemOperand, SupportedSegmentRegister};
+    use crate::helpers::tests::{assert_reg_value, ax_test, write_reg_value};
+    use iced_x86::Register::*;
 
     use super::{Axecutor, Operand, Operand::*};
 
@@ -332,8 +336,8 @@ mod tests {
         0xc6, 0x4, 0x25, 0x0, 0x0, 0x0, 0x0, 0x1;
         vec![
             Memory (MemOperand {
-                base: None,
-                index: None,
+                base: Option::None,
+                index: Option::None,
                 scale: 1,
                 displacement: 0,
                 segment: Some(SupportedSegmentRegister::DS),
@@ -348,7 +352,7 @@ mod tests {
         vec![
             (Memory (MemOperand{
                 base: Some(Register::RSP.into()),
-                index: None,
+                index: Option::None,
                 scale: 1,
                 displacement: 0,
                 segment: Some(SupportedSegmentRegister::SS),
@@ -370,7 +374,7 @@ mod tests {
         vec![
             Memory (MemOperand{
                 base: Some(Register::RSP.into()),
-                index: None,
+                index: Option::None,
                 scale: 1,
                 displacement: 0,
                 segment: Some(SupportedSegmentRegister::SS),
@@ -392,7 +396,7 @@ mod tests {
         vec![
             Memory(MemOperand {
                 base: Some(Register::RSP.into()),
-                index: None,
+                index: Option::None,
                 scale: 1,
                 displacement: 1,
                 segment: Some(SupportedSegmentRegister::SS),
@@ -415,7 +419,7 @@ mod tests {
         vec![
             Memory(MemOperand{
                 base: Some(Register::RSP.into()),
-                index: None,
+                index: Option::None,
                 scale: 1,
                 displacement: u64::MAX,
                 segment: Some(SupportedSegmentRegister::SS),
@@ -459,8 +463,8 @@ mod tests {
         0x48, 0x31, 0x1d, 0x5, 0x0, 0x0, 0x0;
         vec![
             Memory(MemOperand {
-                base: None, // RIP is ignored
-                index: None,
+                base: Option::None, // RIP is ignored
+                index: Option::None,
                 scale: 1,
                 // RIP + Instruction size + Displacement
                 displacement: TEST_RIP_VALUE + 0x7 + 0x5,
@@ -481,8 +485,8 @@ mod tests {
         0x80, 0x35, 0xe0, 0xff, 0xff, 0xff, 0x5;
         vec![
             Memory(MemOperand{
-                base: None,
-                index: None,
+                base: Option::None,
+                index: Option::None,
                 scale: 1,
                 displacement: TEST_RIP_VALUE + 0x7 - 0x20,
                 segment: Some(SupportedSegmentRegister::DS),
@@ -493,5 +497,19 @@ mod tests {
         vec![
             TEST_RIP_VALUE + 0x7 - 0x20
         ]
+    ];
+
+    // lea rcx, [rbp+rax-1]
+    ax_test![lea_rcx_rbp_rax_1; 0x48, 0x8d, 0x4c, 0x5, 0xff;
+        |a: &mut Axecutor| {
+            write_reg_value!(q; a; RBP; 0x8);
+            write_reg_value!(q; a; RAX; 0xffffffffffffffffu64);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RCX; 0x6);
+            assert_reg_value!(q; a; RBP; 0x8);
+            assert_reg_value!(q; a; RAX; 0xffffffffffffffffu64);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
     ];
 }
