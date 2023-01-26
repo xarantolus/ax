@@ -111,8 +111,7 @@ export default defineComponent({
         binary: "hello_world_c_nostdlib.bin",
         source_name: "hello_world_c_nostdlib/hello_world_c_nostdlib.c",
         description: "Prints \"Hello World!\" to stdout",
-      }
-      /*
+      },
       {
         name: "Exit Code (C)",
         binary: "exit_c.bin",
@@ -128,7 +127,6 @@ export default defineComponent({
         binary: "thread_local.bin",
         source_name: "thread_local_c/thread_local.c",
       }
-      */
     ]
 
     await init();

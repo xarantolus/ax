@@ -35,17 +35,58 @@ impl Axecutor {
             None => return Err(AxError::from("ELF: No .text section")),
         };
 
-        let text_section_content = match file.section_data(&text_section)? {
+        let mut initial_addr = text_section.sh_addr;
+        let mut code = Vec::from(match file.section_data(&text_section)? {
             (data, None) => data,
             (_, Some(_)) => {
                 return Err(AxError::from("ELF: Compressed .text section not supported"))
             }
-        };
+        });
+
+        // Usually in binaries, we have a `.init` section, then the `.plt` section and then `.text`
+        // We try to load the `.init` section into memory and then set the code section initial address
+        if let Some(plt_section) = file.section_header_by_name(".plt")? {
+            // Now if the .plt section is exactly before the .text section, let the overlap work out
+            if plt_section.sh_addr + plt_section.sh_size == initial_addr {
+                // We have a .plt section, let's load it into memory
+                let plt_data = match file.section_data(&plt_section)? {
+                    (data, None) => data,
+                    (_, Some(_)) => {
+                        return Err(AxError::from("ELF: Compressed .plt section not supported"))
+                    }
+                };
+
+                initial_addr = plt_section.sh_addr;
+
+                // Prepend to code
+                code = [plt_data, &code].concat();
+
+                debug_log!("ELF: Found .plt section and prepended it before .text");
+            }
+        }
+        // Now the same for .init section
+        if let Some(init_section) = file.section_header_by_name(".init")? {
+            if init_section.sh_addr + init_section.sh_size == initial_addr {
+                let init_data = match file.section_data(&init_section)? {
+                    (data, None) => data,
+                    (_, Some(_)) => {
+                        return Err(AxError::from("ELF: Compressed .init section not supported"))
+                    }
+                };
+
+                initial_addr = init_section.sh_addr;
+
+                // Prepend to code
+                code = [init_data, &code].concat();
+
+                debug_log!("ELF: Found .init section and prepended it before .text");
+            }
+        }
 
         let entrypoint = file.ehdr.e_entry;
         let mut axecutor = Axecutor::new(
-            text_section_content,
-            text_section.sh_addr,
+            &code,
+            initial_addr,
             if entrypoint == 0 {
                 text_section.sh_addr
             } else {
@@ -59,9 +100,9 @@ impl Axecutor {
         };
 
         for header in headers {
-            if header.p_vaddr == text_section.sh_addr {
-                // skip .text section -- we already loaded it
-                // Aspirationally this should go away once the memory implementation also holds the code
+            if header.p_vaddr >= initial_addr && header.p_vaddr < initial_addr + code.len() as u64 {
+                // skip .text, .init and .plt section -- we already them
+                // Aspirationally this should go away once the memory implementation also handles the code section
                 continue;
             }
 
