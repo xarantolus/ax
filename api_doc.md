@@ -232,6 +232,7 @@ Syscalls that can be registered for automatic handling
 ```ts
 export enum Syscall {
   Brk,
+  Pipe,
   Exit,
   ArchPrctl,
 }

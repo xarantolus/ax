@@ -3,8 +3,10 @@
 use std::println;
 
 use ax_x86::{
-    axecutor::Axecutor, helpers::errors::AxError,
-    instructions::generated::SupportedMnemonic::Syscall, state::registers::SupportedRegister,
+    axecutor::Axecutor,
+    helpers::errors::AxError,
+    instructions::generated::SupportedMnemonic::Syscall,
+    state::{hooks::HookResult, registers::SupportedRegister},
 };
 
 #[async_std::main]
@@ -79,7 +81,7 @@ async fn main_impl() -> Result<i32, AxError> {
             }
         }
 
-        Ok(())
+        Ok(HookResult::Handled)
     })?;
 
     // add axecutor string to error message

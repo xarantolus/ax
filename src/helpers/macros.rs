@@ -1718,7 +1718,7 @@ macro_rules! fatal_error {
         #[cfg(all(target_arch = "wasm32", not(test)))]
         {
             // In WASM we don't panic, as it's not possible to catch panics from JS
-            return Err(AxError::from(format!($message, $($arg)*)));
+            return Err(AxError::from(format!($message, $($arg)*)).into());
         }
 
         #[cfg(not(all(target_arch = "wasm32", not(test))))]
@@ -1730,7 +1730,7 @@ macro_rules! fatal_error {
         #[cfg(all(target_arch = "wasm32", not(test)))]
         {
             // In WASM we don't panic, as it's not possible to catch panics from JS
-            return Err(AxError::from($message));
+            return Err(AxError::from($message).into());
         }
 
         #[cfg(not(all(target_arch = "wasm32", not(test))))]

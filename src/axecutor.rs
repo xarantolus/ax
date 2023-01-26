@@ -333,8 +333,9 @@ impl Axecutor {
         let rip = self.reg_read_64(SupportedRegister::RIP)?;
         if let Ok(instr) = self.decode_at(rip) {
             trace.push_str(&format!(
-                "{} rip is at {} ({:#?})",
+                "{} rip@{:#x} is at {} ({:#?})",
                 "  ".repeat(self.state.call_stack.len()),
+                rip,
                 instr,
                 instr.code()
             ));
