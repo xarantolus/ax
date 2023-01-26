@@ -71,7 +71,6 @@ impl Axecutor {
                 0 => continue, // ignored
                 1 => {
                     // LOAD
-
                     debug_log!(
                         "ELF: Loading header at {:#x} with size {:#x} and offset {:#x}",
                         header.p_vaddr,
@@ -107,6 +106,36 @@ impl Axecutor {
                 }
                 2 => {
                     return Err(AxError::from("ELF: Dynamic linking not supported"));
+                }
+                7 => {
+                    // Thread-local storage
+                    debug_log!(
+                        "ELF: Loading TLS header at {:#x} with size {:#x} and offset {:#x}",
+                        header.p_vaddr,
+                        header.p_memsz,
+                        header.p_offset
+                    );
+
+                    if header.p_memsz == header.p_filesz {
+                        let addr = axecutor.mem_init_anywhere(
+                            content.to_vec(),
+                            Some(format!("elf_tls_header_{:#x}", header.p_vaddr)),
+                        )?;
+                        axecutor.write_fs(addr + content.len() as u64);
+                    } else {
+                        // Make sure we create the memory at full size and then write the first bytes, rest should be zeroed
+                        let addr = axecutor.mem_init_anywhere(
+                            vec![0; header.p_memsz as usize],
+                            Some(format!("elf_tls_zeroed_header_{:#x}", header.p_vaddr)),
+                        )?;
+
+                        axecutor.mem_write_bytes(
+                            header.p_vaddr,
+                            &content[..header.p_filesz as usize],
+                        )?;
+
+                        axecutor.write_fs(addr + header.p_memsz as u64);
+                    }
                 }
                 _v => {
                     debug_log!("ELF: Ignoring section type {:#x}", _v);
