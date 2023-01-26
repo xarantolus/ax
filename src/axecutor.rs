@@ -123,6 +123,11 @@ impl MachineState {
             self.fs
         ));
         s.push_str(&format!(
+            "{}    gs: {:#018x},\n",
+            " ".repeat(i * 4),
+            self.gs
+        ));
+        s.push_str(&format!(
             "{}    finished: {},\n",
             " ".repeat(i * 4),
             self.finished
