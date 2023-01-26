@@ -324,7 +324,11 @@ impl Axecutor {
             };
 
             if i == self.state.call_stack.len() - 1 {
-                trace.push_str(&format!("{}=> {}\n", "  ".repeat(i), formatted));
+                trace.push_str(&format!(
+                    "{}=> {}            <------------ in this function\n",
+                    "  ".repeat(i),
+                    formatted
+                ));
             } else {
                 trace.push_str(&format!("{}-> {}\n", "  ".repeat(i), formatted));
             }
@@ -333,9 +337,10 @@ impl Axecutor {
         let rip = self.reg_read_64(SupportedRegister::RIP)?;
         if let Ok(instr) = self.decode_at(rip) {
             trace.push_str(&format!(
-                "{} rip@{:#x} is at {} ({:#?})",
+                "{}  rip@{:#x}            <------------ at or before this instruction pointer\n{}  {} ({:#?})            <------------ at this or the previous instruction",
                 "  ".repeat(self.state.call_stack.len()),
                 rip,
+                "  ".repeat(self.state.call_stack.len()),
                 instr,
                 instr.code()
             ));
