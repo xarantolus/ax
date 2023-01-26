@@ -1,7 +1,7 @@
 PROGRAM_NAME=printf
 
 $(PROGRAM_NAME).bin: $(PROGRAM_NAME).c
-	gcc $^ -m64 -Os -o $@ -static
+	gcc $^ -m64 -Os -o $@ -static -g
 
 run: $(PROGRAM_NAME).bin
 	./$(PROGRAM_NAME).bin
