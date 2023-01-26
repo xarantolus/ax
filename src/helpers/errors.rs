@@ -12,6 +12,7 @@ pub struct AxError {
     detail: Option<String>,
     message: Option<String>,
     js: Option<JsValue>,
+    call_trace: Option<String>,
 
     pub(crate) signals_normal_finish: bool,
 }
@@ -26,15 +27,17 @@ impl AxError {
             js: self.js.clone(),
             signals_normal_finish: true,
             detail: self.detail.clone(),
+            call_trace: self.call_trace.clone(),
         }
     }
 
-    pub(crate) fn add_detail(&self, s: String) -> AxError {
+    pub(crate) fn add_detail(&self, s: String, trace: String) -> AxError {
         AxError {
             detail: Some(s),
             message: self.message.clone(),
             js: self.js.clone(),
             signals_normal_finish: self.signals_normal_finish,
+            call_trace: Some(trace),
         }
     }
 }
@@ -49,6 +52,7 @@ impl From<&str> for AxError {
             message: Some(message.to_string()),
             js: None,
             signals_normal_finish: false,
+            call_trace: None,
         }
     }
 }
@@ -59,6 +63,7 @@ impl From<String> for AxError {
             message: Some(message),
             js: None,
             signals_normal_finish: false,
+            call_trace: None,
         }
     }
 }
@@ -69,6 +74,7 @@ impl From<JsError> for AxError {
             message: None,
             js: Some(JsValue::from(err)),
             signals_normal_finish: false,
+            call_trace: None,
         }
     }
 }
@@ -79,6 +85,7 @@ impl From<JsValue> for AxError {
             message: None,
             js: Some(err),
             signals_normal_finish: false,
+            call_trace: None,
         }
     }
 }
@@ -89,6 +96,7 @@ impl From<Box<dyn std::error::Error>> for AxError {
             message: Some(err.to_string()),
             js: None,
             signals_normal_finish: false,
+            call_trace: None,
         }
     }
 }
@@ -118,18 +126,27 @@ impl From<AxError> for String {
         let js = err.js.map(stringify_js_value);
         let msg = err.message;
         let detail = err.detail;
+        let trace = err.call_trace;
 
         let mut s = String::new();
         if let Some(d) = detail {
             s.push_str(&d);
+            s.push('\n');
         }
 
         if let Some(m) = msg {
             s.push_str(&m);
+            s.push('\n');
         }
 
         if let Some(j) = js {
             s.push_str(&j);
+            s.push('\n');
+        }
+
+        if let Some(t) = trace {
+            s.push_str("Call trace: \n");
+            s.push_str(&t);
         }
 
         if s.is_empty() {
