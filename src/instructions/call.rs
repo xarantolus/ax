@@ -87,6 +87,7 @@ impl Axecutor {
                 push_rip!(self);
                 let offset = i.near_branch64() as i64 as u64;
                 self.reg_write_64(RIP, offset)?;
+                self.state.call_stack.push(offset);
                 Ok(())
             }
             _ => fatal_error!("Invalid op0_kind for CALL rel32: {:?}", i.op0_kind()),
@@ -128,6 +129,7 @@ impl Axecutor {
 
         push_rip!(self);
         self.reg_write_64(RIP, target)?;
+        self.state.call_stack.push(target);
 
         Ok(())
     }

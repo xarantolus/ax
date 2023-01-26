@@ -11,9 +11,7 @@ use crate::{axecutor::Axecutor, helpers::errors::AxError};
 
 #[wasm_bindgen]
 impl Axecutor {
-    pub(crate) fn decode_next(&self) -> Result<Instruction, AxError> {
-        let rip = self.reg_read_64(SupportedRegister::RIP)?;
-
+    pub(crate) fn decode_at(&self, rip: u64) -> Result<Instruction, AxError> {
         if rip < self.code_start_address || rip >= self.code_start_address + self.code.len() as u64
         {
             return Err(AxError::from(format!(
@@ -47,6 +45,11 @@ impl Axecutor {
         }
 
         Ok(instr)
+    }
+
+    pub(crate) fn decode_next(&self) -> Result<Instruction, AxError> {
+        let rip = self.reg_read_64(Register::RIP.into())?;
+        self.decode_at(rip)
     }
 
     /// Execute the next instruction (including all registered hooks), returning if execution has stopped
@@ -101,6 +104,7 @@ impl Axecutor {
                     self.state.executed_instructions_count,
                     e
                 );
+
                 let err_info = e.add_detail(format!(
                     "executing instruction {} ({:?}) after executing {} instructions: ",
                     instr,

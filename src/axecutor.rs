@@ -43,6 +43,9 @@ pub struct Axecutor {
 
     #[serde(skip)]
     pub(crate) hooks: HookProcessor,
+
+    #[serde(skip)]
+    pub(crate) symbol_table: HashMap<u64, String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -60,6 +63,9 @@ pub(crate) struct MachineState {
 
     // syscalls holds state for syscalls, e.g. the program break for brk
     pub(crate) syscalls: SyscallState,
+
+    // call_stack holds u64 values that are the target addresses of calls. This is used to provide stack traces using the symbol table
+    pub(crate) call_stack: Vec<u64>,
 }
 
 #[wasm_bindgen]
@@ -154,6 +160,7 @@ impl Axecutor {
             code: code.to_vec(),
             stack_top: 0,
             hooks: HookProcessor::default(),
+            symbol_table: HashMap::new(),
             state: MachineState {
                 finished: false,
                 executed_instructions_count: 0,
@@ -165,6 +172,7 @@ impl Axecutor {
                 fs: 0,
                 gs: 0,
                 syscalls: SyscallState::default(),
+                call_stack: Vec::new(),
             },
         })
     }
@@ -180,11 +188,16 @@ impl Axecutor {
     code_length: {:#x},
     hooks: {},
     state: {},
+    call_trace: {:#?}
 }}",
             self.code_start_address,
             self.code_length,
             self.prefix_each_line(self.hooks.to_string().as_str(), "    "),
             self.state.to_string_ident(1),
+            self.prefix_each_line(
+                self.call_trace().unwrap_or_else(|e| e.to_string()).as_str(),
+                "    "
+            )
         )
     }
 
@@ -293,6 +306,37 @@ impl Axecutor {
 
         self.state = state;
         Ok(())
+    }
+
+    /// Generate a call trace of the current execution state.
+    /// This only works if a symbol table has been provided, which is currently only the case for ELF binaries.
+    pub fn call_trace(&self) -> Result<String, AxError> {
+        let mut trace = String::new();
+
+        for (i, addr) in self.state.call_stack.iter().enumerate() {
+            let formatted = match self.symbol_table.get(addr) {
+                Some(sym) => format!("{}@{:#x}", sym, addr),
+                None => format!("(unknown){:#x}", addr),
+            };
+
+            if i == self.state.call_stack.len() - 1 {
+                trace.push_str(&format!("{}=> {}\n", "  ".repeat(i), formatted));
+            } else {
+                trace.push_str(&format!("{}-> {}\n", "  ".repeat(i), formatted));
+            }
+        }
+
+        let rip = self.reg_read_64(SupportedRegister::RIP)?;
+        if let Ok(instr) = self.decode_at(rip) {
+            trace.push_str(&format!(
+                "{} rip is at {} ({:#?})",
+                "  ".repeat(self.state.call_stack.len()),
+                instr,
+                instr.code()
+            ));
+        }
+
+        Ok(trace)
     }
 }
 
