@@ -334,6 +334,7 @@ export enum Mnemonic {
   Movsxd,
   Movzx,
   Mul,
+  Neg,
   Nop,
   Not,
   Pop,

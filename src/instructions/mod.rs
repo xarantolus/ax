@@ -46,6 +46,7 @@ pub mod mov;
 pub mod movsxd;
 pub mod movzx;
 pub mod mul;
+pub mod neg;
 pub mod nop;
 pub mod not;
 pub mod pop;
