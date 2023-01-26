@@ -106,6 +106,12 @@ export default defineComponent({
         source_name: "args/args.S",
         description: "Prints all command-line arguments and environment variables",
       },
+      {
+        name: "Hello World (C, -nostdlib)",
+        binary: "hello_world_c_nostdlib.bin",
+        source_name: "hello_world_c_nostdlib/hello_world_c_nostdlib.c",
+        description: "Prints \"Hello World!\" to stdout",
+      }
       /*
       {
         name: "Exit Code (C)",
