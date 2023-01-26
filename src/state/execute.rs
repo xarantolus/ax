@@ -75,8 +75,8 @@ impl Axecutor {
         let rip = instr.next_ip();
         self.reg_write_64(SupportedRegister::RIP, rip)?;
 
-        let mnem: SupportedMnemonic = instr.mnemonic().try_into().map_err(|e| {
-            AxError::from(e).add_detail(
+        let mnem: SupportedMnemonic = instr.mnemonic().try_into().map_err(|e: AxError| {
+            e.add_detail(
                 "".to_string(),
                 self.call_trace().unwrap_or_else(|e| e.to_string()),
             )
