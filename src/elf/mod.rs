@@ -151,6 +151,7 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use crate::helpers::tests::test_async;
+    use crate::state::hooks::HookResult;
 
     // This macro is very limited as it only allows checking the first write call and exit code
     macro_rules! test_binary {
@@ -205,7 +206,7 @@ mod tests {
                         }
                     }
 
-                    Ok(())
+                    Ok(HookResult::Handled)
                 };
 
                 ax.hook_before_mnemonic_native(SupportedMnemonic::Syscall, cb).expect("Failed add hook before Syscall");

@@ -197,64 +197,6 @@ export default defineComponent({
 
           return ax.unchanged();
         }
-        case 12n: {
-          // brk syscall
-
-          console.log("brk syscall: called with rdi = " + rdi.toString(16));
-
-          // if called with 0 rdi for the first time, we should make up some memory, probably a 4k page
-          if (rdi == 0n) {
-            if (this.brk_start == 0n) {
-              const len = 0x1000n;
-              let start_addr = ax.mem_init_zero_anywhere(len);
-              this.brk_start = start_addr;
-              this.brk_len = len;
-
-              console.log("brk syscall: initialized memory at " + start_addr.toString(16) + " with length " + len.toString(16));
-            }
-
-            console.log("brk syscall: returning " + this.brk_start.toString(16) + " as brk start");
-          } else {
-            // called with a non-zero rdi, we should resize the memory
-            let new_length = rdi - this.brk_start;
-            if (new_length < 0n) {
-              throw new Error("brk syscall: cannot resize memory to a negative length");
-            }
-
-            if (new_length < this.brk_len) {
-              throw new Error("brk syscall: cannot resize memory to a smaller length");
-            }
-
-            console.log("brk syscall: resizing memory from " + this.brk_len.toString(16) + " to " + new_length.toString(16));
-
-            ax.mem_resize_section(this.brk_start, new_length);
-
-            this.brk_len = new_length;
-          }
-
-          ax.reg_write_64(Register.RAX, this.brk_start + this.brk_len);
-
-          return ax.commit();
-        }
-        case 158n: { // arch_prctl
-          console.log("FS arch_prctl: operation 0x" + rdi.toString(16) + ", addr 0x" + rsi.toString(16))
-          if (rdi === 0x1002n) {
-            // ARCH_SET_FS
-            console.log("Setting FS to " + rsi.toString(16));
-            ax.write_fs(rsi);
-
-            if (ax.read_fs() !== rsi) {
-              throw new Error("arch_prctl: failed to set FS");
-            }
-
-            console.log("Set FS to " + ax.read_fs().toString(16));
-            ax.reg_write_64(Register.RAX, 0n);
-            return ax.commit();
-          }
-
-          ax.reg_write_64(Register.RAX, this.toTwosComplement(-1n));
-          return ax.commit();
-        }
         // TODO: make sure that all syscalls return something sensible, the following might not
         case 102n: // getuid
         case 104n: // getgid
@@ -329,7 +271,7 @@ export default defineComponent({
           "COLORTERM=truecolor",
           "TERM=xterm-256color",
         ]);
-        ax.handle_syscalls(Syscall.Exit);
+        ax.handle_syscalls(Syscall.Exit, Syscall.Brk, Syscall.ArchPrctl, Syscall.Pipe);
         ax.hook_before_mnemonic(Mnemonic.Syscall, this.syscallHandler);
       }
       catch (e) {

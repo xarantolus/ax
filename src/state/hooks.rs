@@ -22,7 +22,13 @@ use std::fmt::Debug;
 
 // (possible asynchronous) callback function (closure) taking an Axecutor and Mnemonic, returning a result
 pub type RustCallbackFunction =
-    dyn Fn(&mut Axecutor, SupportedMnemonic) -> Result<(), Box<dyn Error>>;
+    dyn Fn(&mut Axecutor, SupportedMnemonic) -> Result<HookResult, Box<dyn Error>>;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HookResult {
+    Handled,
+    Unhandled,
+}
 
 #[derive(Clone)]
 pub(crate) struct Hook {
@@ -62,8 +68,8 @@ impl Hook {
         };
 
         for function in functions {
-            function(ax, mnemonic)?;
-            if ax.state.finished {
+            let res = function(ax, mnemonic)?;
+            if ax.state.finished || res == HookResult::Handled {
                 ax.hooks.running = false;
                 return Ok(());
             }
@@ -478,7 +484,7 @@ mod tests {
             assert_reg_value!(q; ax; RAX; 5);
             write_reg_value!(q; ax; RAX; 10);
 
-            Ok(())
+            Ok(HookResult::Handled)
         };
 
         ax.hook_before_mnemonic_native(SupportedMnemonic::Syscall, fnt)
@@ -506,7 +512,7 @@ mod tests {
             assert_reg_value!(q; ax; RAX; 5);
             write_reg_value!(q; ax; RAX; 10);
 
-            Ok(())
+            Ok(HookResult::Handled)
         };
 
         ax.hook_after_mnemonic_native(SupportedMnemonic::Syscall, fnt)
@@ -532,7 +538,7 @@ mod tests {
 
             ax.stop();
 
-            Ok(())
+            Ok(HookResult::Handled)
         }).expect("Failed to add hook");
 
         ax.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|_: &mut Axecutor, _: SupportedMnemonic| {
@@ -566,7 +572,7 @@ mod tests {
                 outside_var = 10;
             }
 
-            Ok(())
+            Ok(HookResult::Handled)
         }).expect("Failed to add hook");
 
         ax.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|_: &mut Axecutor, _: SupportedMnemonic| {
@@ -574,7 +580,7 @@ mod tests {
                 assert_eq!(outside_var, 10, "Outside variable was not modified");
             }
 
-            Ok(())
+            Ok(HookResult::Handled)
         }).expect("Failed to add hook");
 
         ax.execute().await.expect("Failed to execute");
