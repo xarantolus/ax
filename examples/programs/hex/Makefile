@@ -1,7 +1,7 @@
 PROGRAM_NAME=hex_naive
 
 $(PROGRAM_NAME).bin: $(PROGRAM_NAME).s
-	gcc $^ -m64 -o $@ -nostdlib -static
+	gcc $^ -m64 -o $@ -nostdlib -static -g
 
 run: $(PROGRAM_NAME).bin
 	echo "This text should result in the same output when put through different programs." | xxd -c 800 -p -
