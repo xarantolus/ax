@@ -253,6 +253,11 @@ No documentation available.
 Returns a string representation of the Axecutor instance that can be useful for debugging.
 
 
+#### `Axecutor.call_trace() => string`
+Generate a call trace of the current execution state.
+This only works if a symbol table has been provided, which is currently only the case for ELF binaries.
+
+
 ## Functions
 The following functions are available after the `init` function has been called.
 

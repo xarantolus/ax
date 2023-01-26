@@ -5,6 +5,7 @@ use iced_x86::Mnemonic::Ret;
 use crate::axecutor::Axecutor;
 use crate::helpers::errors::AxError;
 
+use crate::helpers::debug::debug_log;
 use crate::helpers::macros::fatal_error;
 use crate::helpers::macros::opcode_unimplemented;
 use crate::state::registers::SupportedRegister::*;
@@ -16,6 +17,11 @@ macro_rules! pop_rip {
             return Err(AxError::from("Cannot pop from empty stack").end_execution());
         }
         let rip = $self.mem_read_64(rsp)?;
+        if let None = $self.state.call_stack.pop() {
+            debug_log!(
+                "Warning: Call stack is empty, so ret is jumping somewhere we didn't call from"
+            );
+        }
         $self.reg_write_64(RIP, rip)?;
         $self.reg_write_64(RSP, rsp)?;
     }};

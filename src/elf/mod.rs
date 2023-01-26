@@ -108,9 +108,39 @@ impl Axecutor {
                 2 => {
                     return Err(AxError::from("ELF: Dynamic linking not supported"));
                 }
-                v => {
-                    debug_log!("ELF: Ignoring section type {:#x}", v);
+                _v => {
+                    debug_log!("ELF: Ignoring section type {:#x}", _v);
                 }
+            }
+        }
+
+        match file.symbol_table() {
+            Ok(Some((symbol_table, str_table))) => {
+                for symbol in symbol_table.iter() {
+                    let name = match str_table.get(symbol.st_name as usize) {
+                        Ok(name) => name,
+                        Err(_) => {
+                            debug_log!("ELF: Invalid symbol name (wrong string table index)");
+                            continue;
+                        }
+                    };
+                    if symbol.is_undefined() {
+                        debug_log!("ELF: Ignoring undefined symbol {}", name);
+                        continue;
+                    }
+
+                    debug_log!("ELF: Found symbol {} at {:#x}", name, symbol.st_value);
+
+                    axecutor
+                        .symbol_table
+                        .insert(symbol.st_value, name.to_string());
+                }
+            }
+            Ok(None) => {
+                debug_log!("ELF: No symbol table");
+            }
+            Err(_) => {
+                debug_log!("ELF: No symbol table");
             }
         }
 
@@ -204,4 +234,9 @@ mod tests {
                                                         --------------------------------------------------\n\
                                                         env1=val1\n\
                                                         env2=val2\n"; 2];
+
+    test_async![binary_without_symbols; async {
+        let bin = Axecutor::from_binary(include_bytes!("../../testdata/exit_c_no_symbols.bin")).expect("Failed to parse binary");
+        assert_eq!(bin.symbol_table.len(), 0);
+    }];
 }
