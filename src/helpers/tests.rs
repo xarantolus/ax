@@ -168,6 +168,16 @@ macro_rules! assert_reg_value {
             $reg, $value, val
         );
     };
+    [x; $axecutor:expr; $reg:expr; $value:expr] => {
+        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        assert!(iced_x86::Register::from($reg).is_xmm(), "Register must be 128 bit wide");
+        let val = $axecutor.reg_read_128(wrap).expect("could not read 128-bit register");
+        assert_eq!(
+            val, $value as u128,
+            "expected register {:?} to have value {:?}, but got {}",
+            $reg, $value, val
+        );
+    };
 }
 
 #[cfg(test)]
@@ -203,6 +213,14 @@ macro_rules! assert_mem_value {
         let val = $axecutor.mem_read_64($addr).expect("could not read 64-bit memory");
         assert_eq!(
             val, $value as u64,
+            "expected memory at {:#x} to have value {:#x}, but got {:#x}",
+            $addr, $value, val
+        );
+    };
+    [x; $axecutor:expr; $addr:expr; $value:expr] => {
+        let val : u128 = $axecutor.mem_read_128($addr).expect("could not read 128-bit memory");
+        assert_eq!(
+            val, $value as u128,
             "expected memory at {:#x} to have value {:#x}, but got {:#x}",
             $addr, $value, val
         );
@@ -253,6 +271,16 @@ macro_rules! write_reg_value {
         $axecutor
             .reg_write_64(wrap, $value as u64)
             .expect("could not write 64-bit register");
+    };
+    (x; $axecutor:expr; $reg:expr; $value:expr) => {
+        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        assert!(
+            iced_x86::Register::from($reg).is_xmm(),
+            "Register must be 128 bit wide"
+        );
+        $axecutor
+            .reg_write_128(wrap, $value)
+            .expect("could not write 128-bit register");
     };
 }
 

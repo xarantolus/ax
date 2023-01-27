@@ -76,6 +76,14 @@ Reads a 64-bit value from a 64-bit wide register. Invalid registers lead to exce
 Writes a 64-bit value to a 64-bit wide register. Out-of-range values or invalid registers lead to exceptions.
 
 
+##### `Axecutor.reg_read_128(reg: number) => bigint`
+Reads an 128-bit value from an 128-bit wide register. Invalid registers lead to exceptions.
+
+
+##### `Axecutor.reg_write_128(reg: number, value: bigint) => void`
+Writes an 128-bit value to an 128-bit wide register. Out-of-range values or invalid registers lead to exceptions.
+
+
 #### Segment registers
 The following methods are available for interacting with segment registers.
 
@@ -169,6 +177,14 @@ Reads a 64-bit value from memory at `address`.
 
 ##### `Axecutor.mem_write_64(address: bigint, data: bigint) => void`
 Writes a 64-bit value to memory at `address`.
+
+
+##### `Axecutor.mem_read_128(address: bigint) => bigint`
+Reads an 128-bit value from memory at `address`.
+
+
+##### `Axecutor.mem_write_128(address: bigint, data: bigint) => void`
+Writes an 128-bit value to memory at `address`.
 
 
 ##### `Axecutor.mem_read_bytes(address: bigint, length: bigint) => Uint8Array`
@@ -332,6 +348,7 @@ export enum Mnemonic {
   Lea,
   Mov,
   Movsxd,
+  Movups,
   Movzx,
   Mul,
   Neg,
@@ -429,6 +446,22 @@ export enum Register {
   R13L,
   R14L,
   R15L,
+  XMM0,
+  XMM1,
+  XMM2,
+  XMM3,
+  XMM4,
+  XMM5,
+  XMM6,
+  XMM7,
+  XMM8,
+  XMM9,
+  XMM10,
+  XMM11,
+  XMM12,
+  XMM13,
+  XMM14,
+  XMM15,
 }
 ```
 
