@@ -6,6 +6,7 @@ use lazy_static::lazy_static;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
+
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::helpers::debug::debug_log;
@@ -114,10 +115,7 @@ pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<SupportedRegist
 
     for register in GENERAL_PURPOSE_REGISTERS.iter() {
         let value = rng.gen::<u64>();
-        map.insert(
-            *register,
-            value & 0xffff_ffff,
-        );
+        map.insert(*register, value & 0xffff_ffff);
     }
 
     map.insert(SupportedRegister::RIP, rip_value);
@@ -669,5 +667,82 @@ impl Axecutor {
         self.state.gs = value;
 
         debug_log!("Wrote GS value {:#x}", value);
+    }
+}
+
+#[wasm_bindgen]
+#[cfg(all(target_arch = "wasm32", not(test)))]
+impl Axecutor {
+    /// Writes an 128-bit value to an 128-bit wide register. Out-of-range values or invalid registers lead to exceptions.
+    pub fn reg_write_128(
+        &mut self,
+        reg: SupportedRegister,
+        value: js_sys::BigInt,
+    ) -> Result<(), AxError> {
+        use std::convert::TryInto;
+        let value: u128 = value
+            .try_into()
+            .map_err(|e| AxError::from(format!("Could not convert value to u128: {}", e)))?;
+
+        self.internal_reg_write_128(reg, value)
+    }
+
+    /// Reads an 128-bit value from an 128-bit wide register. Invalid registers lead to exceptions.
+    pub fn reg_read_128(&self, reg: SupportedRegister) -> Result<js_sys::BigInt, AxError> {
+        let reg_value = self.internal_reg_read_128(reg)?;
+
+        Ok(js_sys::BigInt::from(reg_value))
+    }
+}
+
+#[cfg(not(all(target_arch = "wasm32", not(test))))]
+impl Axecutor {
+    /// Writes an 128-bit value to an 128-bit wide register. Out-of-range values or invalid registers lead to exceptions.
+    pub fn reg_write_128(&mut self, reg: SupportedRegister, value: u128) -> Result<(), AxError> {
+        self.internal_reg_write_128(reg, value)
+    }
+
+    /// Reads an 128-bit value from an 128-bit wide register. Invalid registers lead to exceptions.
+    pub fn reg_read_128(&self, reg: SupportedRegister) -> Result<u128, AxError> {
+        self.internal_reg_read_128(reg)
+    }
+}
+
+impl Axecutor {
+    /// Writes an 128-bit value to an 128-bit wide register. Out-of-range values or invalid registers lead to exceptions.
+    pub(crate) fn internal_reg_write_128(
+        &mut self,
+        reg: SupportedRegister,
+        value: u128,
+    ) -> Result<(), AxError> {
+        let r: Register = reg.into();
+        assert_fatal!(r.is_xmm(), "{:?} is not a valid 128-bit XMM register", r);
+
+        #[allow(unused_variables)]
+        let old = self.state.xmm_registers.insert(reg, value);
+
+        debug_log!(
+            "Wrote {:#x} to {:?}{}",
+            value,
+            reg,
+            match old {
+                Some(o) => format!(" (previously {:#x})", o),
+                Option::None => "".to_string(),
+            }
+        );
+
+        Ok(())
+    }
+
+    /// Reads an 128-bit value from an 128-bit wide register. Invalid registers lead to exceptions.
+    pub(crate) fn internal_reg_read_128(&self, reg: SupportedRegister) -> Result<u128, AxError> {
+        let r: Register = reg.into();
+        assert_fatal!(r.is_xmm(), "{:?} is not a valid 128-bit XMM register", r);
+
+        let reg_value = *self.state.xmm_registers.get(&reg).unwrap();
+
+        debug_log!("Read value {:#x} from {:?}", reg_value, reg);
+
+        Ok(reg_value)
     }
 }

@@ -1,7 +1,7 @@
 # [ax](https://ax.010.one)
 This is a minimal x86-64 emulator for WebAssembly. It executes real machine code and can be used to emulate x86-64 user-space programs in the browser.
 
-Currently implemented are <!-- stats-count-marker -->301 opcodes for 61 mnemonics (34 complete, 27 partial)<!-- stats-count-marker -->, which is only a very small subset of the more than 981 available mnemonics with at least 3684 variants <sup>[Source](https://dl.acm.org/doi/pdf/10.1145/2908080.2908121)</sup>. More detailed stats can be found via the [`stats.py`](stats.py) script.
+Currently implemented are <!-- stats-count-marker -->303 opcodes for 62 mnemonics (35 complete, 27 partial)<!-- stats-count-marker -->, which is only a very small subset of the more than 981 available mnemonics with at least 3684 variants <sup>[Source](https://dl.acm.org/doi/pdf/10.1145/2908080.2908121)</sup>. More detailed stats can be found via the [`stats.py`](stats.py) script.
 
 Note that not all implemented instructions work exactly the same way as on real hardware, but the goal is to be as close as possible while staying reasonable. Notable exceptions are instructions that interact with the operating system (interrupts, syscalls) and the omission of all flags that are not used by jump instructions.
 
@@ -264,10 +264,8 @@ Here are some limitations that could be inspiration for future features:
 
 * Only the Signed, Carry, Overflow, Zero and Parity status flags are supported
 * Most instructions aren't implemented, especially
-  * Anything with SSE registers
   * Anything I found too legacy
   * Many instructions
-  * No support for anything related to segments
 * Syscall and Interrupts are not implemented to spec.
   * If you have registered hooks using `hook_before_mnemonic` or `hook_after_mnemonic`) they are essentially a no-op with your handler executing
   * If no hooks are registered and a syscall/interrupt is executed, an exception is thrown

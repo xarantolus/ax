@@ -44,6 +44,7 @@ pub mod js;
 pub mod lea;
 pub mod mov;
 pub mod movsxd;
+pub mod movups;
 pub mod movzx;
 pub mod mul;
 pub mod neg;

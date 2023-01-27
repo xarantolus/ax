@@ -655,3 +655,55 @@ impl Axecutor {
         Ok(stack_start)
     }
 }
+
+// 128 bit reads/writes
+#[wasm_bindgen]
+#[cfg(all(target_arch = "wasm32", not(test)))]
+impl Axecutor {
+    /// Writes an 128-bit value to memory at `address`
+    pub fn mem_write_128(&mut self, address: u64, data: js_sys::BigInt) -> Result<(), AxError> {
+        let value: u128 = data
+            .try_into()
+            .map_err(|e| AxError::from(format!("Could not convert value to u128: {}", e)))?;
+
+        self.internal_mem_write_128(address, value)
+    }
+
+    /// Reads an 128-bit value from memory at `address`
+    pub fn mem_read_128(&self, address: u64) -> Result<js_sys::BigInt, AxError> {
+        let value = self.internal_mem_read_128(address)?;
+
+        Ok(js_sys::BigInt::from(value))
+    }
+}
+
+impl Axecutor {
+    /// Writes an 128-bit value to memory at `address`
+    pub(crate) fn internal_mem_write_128(
+        &mut self,
+        address: u64,
+        data: u128,
+    ) -> Result<(), AxError> {
+        self.mem_write_bytes(address, &data.to_le_bytes())
+    }
+
+    /// Reads an 128-bit value from memory at `address`
+    pub(crate) fn internal_mem_read_128(&self, address: u64) -> Result<u128, AxError> {
+        let bytes = self.mem_read_bytes(address, 16)?;
+
+        Ok(u128::from_le_bytes(bytes.try_into().unwrap()))
+    }
+}
+
+#[cfg(not(all(target_arch = "wasm32", not(test))))]
+impl Axecutor {
+    /// Writes an 128-bit value to memory at `address`
+    pub fn mem_write_128(&mut self, address: u64, data: u128) -> Result<(), AxError> {
+        self.internal_mem_write_128(address, data)
+    }
+
+    /// Reads an 128-bit value from memory at `address`
+    pub fn mem_read_128(&self, address: u64) -> Result<u128, AxError> {
+        self.internal_mem_read_128(address)
+    }
+}
