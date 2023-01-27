@@ -69,82 +69,6 @@ pub(crate) struct MachineState {
 }
 
 #[wasm_bindgen]
-impl MachineState {
-    pub(crate) fn to_string_ident(&self, i: usize) -> String {
-        let mut s = String::new();
-
-        s.push_str("MachineState {\n");
-        s.push_str(&format!("{}    memory: [\n", " ".repeat(i * 4)));
-        for area in &self.memory {
-            s.push_str(&format!(
-                "{}        {},\n",
-                " ".repeat(i * 4),
-                area.to_string_ident(i + 2)
-            ));
-        }
-
-        s.push_str(&format!("{}    ],\n", " ".repeat(i * 4)));
-        s.push_str(&format!("{}    registers: {{\n", " ".repeat(i * 4)));
-
-        // Iterate over all registers, sorted by the order i like
-        for register in crate::state::registers::NATURAL_REGISTER_ORDER.iter() {
-            if let Some(value) = self.registers.get(register) {
-                s.push_str(&format!(
-                    "{}        {}: {}{:#018x},\n",
-                    " ".repeat(i * 4),
-                    register.name(),
-                    if register.name().len() == 2 { " " } else { "" },
-                    value
-                ));
-            }
-        }
-
-        s.push_str(&format!("{}    }},\n", " ".repeat(i * 4)));
-
-        // Write rflags as 64-bit hex value with leading 0x AND also stringify them using the FLAG_TO_NAMES hashmap
-        s.push_str(&format!(
-            "{}    rflags_raw: 0x{:#016x},\n",
-            " ".repeat(i * 4),
-            self.rflags
-        ));
-
-        s.push_str(&format!("{}    rflags: [\n", " ".repeat(i * 4)));
-        for (flag, name) in FLAG_TO_NAMES.iter() {
-            if self.rflags & flag != 0 {
-                s.push_str(&format!("{}        {},\n", " ".repeat(i * 4), name));
-            }
-        }
-
-        s.push_str(&format!("{}    ],\n", " ".repeat(i * 4)));
-
-        s.push_str(&format!(
-            "{}    fs: {:#018x},\n",
-            " ".repeat(i * 4),
-            self.fs
-        ));
-        s.push_str(&format!(
-            "{}    gs: {:#018x},\n",
-            " ".repeat(i * 4),
-            self.gs
-        ));
-        s.push_str(&format!(
-            "{}    finished: {},\n",
-            " ".repeat(i * 4),
-            self.finished
-        ));
-        s.push_str(&format!(
-            "{}    executed_instructions_count: {},\n",
-            " ".repeat(i * 4),
-            self.executed_instructions_count
-        ));
-
-        s.push_str(&format!("{}}}", " ".repeat(i * 4)));
-
-        s
-    }
-}
-
-#[wasm_bindgen]
 impl Axecutor {
     #[wasm_bindgen(constructor)]
     /// Creates a new Axecutor instance from the given x86-64 instruction bytes, writing the code to memory at `code_start_addr` and setting the initial RIP to `initial_rip`.
@@ -352,6 +276,82 @@ impl Axecutor {
         }
 
         Ok(trace)
+    }
+}
+
+#[wasm_bindgen]
+impl MachineState {
+    pub(crate) fn to_string_ident(&self, i: usize) -> String {
+        let mut s = String::new();
+
+        s.push_str("MachineState {\n");
+        s.push_str(&format!("{}    memory: [\n", " ".repeat(i * 4)));
+        for area in &self.memory {
+            s.push_str(&format!(
+                "{}        {},\n",
+                " ".repeat(i * 4),
+                area.to_string_ident(i + 2)
+            ));
+        }
+
+        s.push_str(&format!("{}    ],\n", " ".repeat(i * 4)));
+        s.push_str(&format!("{}    registers: {{\n", " ".repeat(i * 4)));
+
+        // Iterate over all registers, sorted by the order i like
+        for register in crate::state::registers::NATURAL_REGISTER_ORDER.iter() {
+            if let Some(value) = self.registers.get(register) {
+                s.push_str(&format!(
+                    "{}        {}: {}{:#018x},\n",
+                    " ".repeat(i * 4),
+                    register.name(),
+                    if register.name().len() == 2 { " " } else { "" },
+                    value
+                ));
+            }
+        }
+
+        s.push_str(&format!("{}    }},\n", " ".repeat(i * 4)));
+
+        // Write rflags as 64-bit hex value with leading 0x AND also stringify them using the FLAG_TO_NAMES hashmap
+        s.push_str(&format!(
+            "{}    rflags_raw: 0x{:#016x},\n",
+            " ".repeat(i * 4),
+            self.rflags
+        ));
+
+        s.push_str(&format!("{}    rflags: [\n", " ".repeat(i * 4)));
+        for (flag, name) in FLAG_TO_NAMES.iter() {
+            if self.rflags & flag != 0 {
+                s.push_str(&format!("{}        {},\n", " ".repeat(i * 4), name));
+            }
+        }
+
+        s.push_str(&format!("{}    ],\n", " ".repeat(i * 4)));
+
+        s.push_str(&format!(
+            "{}    fs: {:#018x},\n",
+            " ".repeat(i * 4),
+            self.fs
+        ));
+        s.push_str(&format!(
+            "{}    gs: {:#018x},\n",
+            " ".repeat(i * 4),
+            self.gs
+        ));
+        s.push_str(&format!(
+            "{}    finished: {},\n",
+            " ".repeat(i * 4),
+            self.finished
+        ));
+        s.push_str(&format!(
+            "{}    executed_instructions_count: {},\n",
+            " ".repeat(i * 4),
+            self.executed_instructions_count
+        ));
+
+        s.push_str(&format!("{}}}", " ".repeat(i * 4)));
+
+        s
     }
 }
 
