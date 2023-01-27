@@ -10,7 +10,7 @@ use crate::state::flags::FLAG_TO_NAMES;
 use crate::helpers::errors::AxError;
 use crate::state::hooks::HookProcessor;
 use crate::state::memory::MemoryArea;
-use crate::state::registers::{randomized_register_set, SupportedRegister};
+use crate::state::registers::{randomized_register_set, randomized_xmm_set, SupportedRegister};
 
 extern crate console_error_panic_hook;
 
@@ -53,6 +53,7 @@ pub(crate) struct MachineState {
     // TODO: memory could better be modeled with some kind of interval tree that allows storing additional data with each interval
     pub(crate) memory: Vec<MemoryArea>,
     pub(crate) registers: HashMap<SupportedRegister, u64>,
+    pub(crate) xmm_registers: HashMap<SupportedRegister, u128>,
     pub(crate) rflags: u64,
     pub(crate) fs: u64,
     pub(crate) gs: u64,
@@ -99,6 +100,7 @@ impl Axecutor {
                 executed_instructions_count: 0,
                 memory: Vec::new(),
                 registers: randomized_register_set(initial_rip),
+                xmm_registers: randomized_xmm_set(),
                 // Intel SDM 3.4.3 EFLAGS Register mentions "0x00000002" as default value, but this conflicts with some test cases.
                 // Also the initial value shouldn't matter much
                 rflags: 0,
@@ -305,6 +307,22 @@ impl MachineState {
                     " ".repeat(i * 4),
                     register.name(),
                     if register.name().len() == 2 { " " } else { "" },
+                    value
+                ));
+            }
+        }
+
+        s.push_str(&format!("{}    }},\n", " ".repeat(i * 4)));
+
+        // same for xmm registers
+        s.push_str(&format!("{}    xmm_registers: [\n", " ".repeat(i * 4)));
+        for register in crate::state::registers::XMM_REGISTERS.iter() {
+            if let Some(value) = self.xmm_registers.get(register) {
+                s.push_str(&format!(
+                    "{}        {}: {}{:#034x},\n",
+                    " ".repeat(i * 4),
+                    register.name(),
+                    if register.name().len() == 4 { " " } else { "" },
                     value
                 ));
             }
