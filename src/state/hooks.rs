@@ -190,7 +190,7 @@ impl Display for HookProcessor {
             {
                 write!(
                     f,
-                    "\n    {:?}: {{ js_before: {}, js_after: {}, native_before: {}, native_after: {} }}",
+                    "\n    {:?}: {{ js_before: {}, js_after: {}, native_before: {}, native_after: {} }},",
                     mnem,
                     hook.js_before.len(),
                     hook.js_after.len(),
@@ -203,7 +203,7 @@ impl Display for HookProcessor {
             {
                 write!(
                     f,
-                    "\n    {:?}: {{ native_before: {}, native_after: {} }}",
+                    "\n    {:?}: {{ native_before: {}, native_after: {} }},",
                     mnem,
                     hook.native_before.len(),
                     hook.native_after.len()
@@ -211,7 +211,7 @@ impl Display for HookProcessor {
             }
         }
 
-        write!(f, "}}")
+        write!(f, "\n}}")
     }
 }
 

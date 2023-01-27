@@ -90,12 +90,20 @@ lazy_static! {
             (R15, R15),
     ].iter().map(|(a,b)| (SupportedRegister::from(*a), SupportedRegister::from(*b))).collect();
 
+    pub(crate) static ref XMM_REGISTERS : Vec<SupportedRegister> = [
+        XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15
+    ].iter().map(|a| SupportedRegister::from(*a)).collect();
+
     pub(crate) static ref HIGHER_BYTE_REGISTERS: HashSet<SupportedRegister> = [
         AH, BH, CH, DH
     ].iter().map(|a| SupportedRegister::from(*a)).collect();
 
     pub(crate) static ref NATURAL_REGISTER_ORDER : Vec<SupportedRegister> = [
         RIP, RAX, RBX, RCX, RDX, RSI, RDI, RSP, RBP, R8, R9, R10, R11, R12, R13, R14, R15
+    ].iter().map(|a| SupportedRegister::from(*a)).collect();
+
+    pub(crate) static ref GENERAL_PURPOSE_REGISTERS: Vec<SupportedRegister> = [
+        RAX, RBX, RCX, RDX, RSI, RDI, RSP, RBP, R8, R9, R10, R11, R12, R13, R14, R15
     ].iter().map(|a| SupportedRegister::from(*a)).collect();
 }
 
@@ -104,16 +112,28 @@ pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<SupportedRegist
 
     let mut rng = rand::thread_rng();
 
-    let registers = vec![
-        RAX, RBX, RCX, RDX, RSI, RDI, RSP, RBP, R8, R9, R10, R11, R12, R13, R14, R15,
-    ];
-
-    for register in registers {
+    for register in GENERAL_PURPOSE_REGISTERS.iter() {
         let value = rng.gen::<u64>();
-        map.insert(SupportedRegister::from(register), value & 0xffff_ffff);
+        map.insert(
+            *register,
+            value & 0xffff_ffff,
+        );
     }
 
     map.insert(SupportedRegister::RIP, rip_value);
+
+    map
+}
+
+pub(crate) fn randomized_xmm_set() -> HashMap<SupportedRegister, u128> {
+    let mut map = HashMap::new();
+
+    let mut rng = rand::thread_rng();
+
+    for register in XMM_REGISTERS.iter() {
+        let value = rng.gen::<u128>();
+        map.insert(*register, value);
+    }
 
     map
 }
@@ -197,6 +217,24 @@ pub enum SupportedRegister {
     R13L,
     R14L,
     R15L,
+
+    // XMM registers
+    XMM0,
+    XMM1,
+    XMM2,
+    XMM3,
+    XMM4,
+    XMM5,
+    XMM6,
+    XMM7,
+    XMM8,
+    XMM9,
+    XMM10,
+    XMM11,
+    XMM12,
+    XMM13,
+    XMM14,
+    XMM15,
 }
 
 impl From<Register> for SupportedRegister {
@@ -276,6 +314,23 @@ impl From<Register> for SupportedRegister {
             Register::R14L => SupportedRegister::R14L,
             Register::R15L => SupportedRegister::R15L,
 
+            Register::XMM0 => SupportedRegister::XMM0,
+            Register::XMM1 => SupportedRegister::XMM1,
+            Register::XMM2 => SupportedRegister::XMM2,
+            Register::XMM3 => SupportedRegister::XMM3,
+            Register::XMM4 => SupportedRegister::XMM4,
+            Register::XMM5 => SupportedRegister::XMM5,
+            Register::XMM6 => SupportedRegister::XMM6,
+            Register::XMM7 => SupportedRegister::XMM7,
+            Register::XMM8 => SupportedRegister::XMM8,
+            Register::XMM9 => SupportedRegister::XMM9,
+            Register::XMM10 => SupportedRegister::XMM10,
+            Register::XMM11 => SupportedRegister::XMM11,
+            Register::XMM12 => SupportedRegister::XMM12,
+            Register::XMM13 => SupportedRegister::XMM13,
+            Register::XMM14 => SupportedRegister::XMM14,
+            Register::XMM15 => SupportedRegister::XMM15,
+
             _ => panic!("Unsupported register"),
         }
     }
@@ -353,6 +408,22 @@ impl From<SupportedRegister> for Register {
             SupportedRegister::BL => Register::BL,
             SupportedRegister::CL => Register::CL,
             SupportedRegister::DL => Register::DL,
+            SupportedRegister::XMM0 => Register::XMM0,
+            SupportedRegister::XMM1 => Register::XMM1,
+            SupportedRegister::XMM2 => Register::XMM2,
+            SupportedRegister::XMM3 => Register::XMM3,
+            SupportedRegister::XMM4 => Register::XMM4,
+            SupportedRegister::XMM5 => Register::XMM5,
+            SupportedRegister::XMM6 => Register::XMM6,
+            SupportedRegister::XMM7 => Register::XMM7,
+            SupportedRegister::XMM8 => Register::XMM8,
+            SupportedRegister::XMM9 => Register::XMM9,
+            SupportedRegister::XMM10 => Register::XMM10,
+            SupportedRegister::XMM11 => Register::XMM11,
+            SupportedRegister::XMM12 => Register::XMM12,
+            SupportedRegister::XMM13 => Register::XMM13,
+            SupportedRegister::XMM14 => Register::XMM14,
+            SupportedRegister::XMM15 => Register::XMM15,
             _ => panic!("Unsupported register"),
         }
     }
