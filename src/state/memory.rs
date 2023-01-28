@@ -20,6 +20,10 @@ pub(crate) struct MemoryArea {
 }
 
 impl MemoryArea {
+    pub fn len(&self) -> u64 {
+        self.length
+    }
+
     pub fn to_string_ident(&self, i: usize) -> String {
         let mut s = String::new();
 
@@ -380,6 +384,16 @@ impl Axecutor {
             "No section has start address {:#x}",
             start_addr
         )))
+    }
+
+    pub(crate) fn mem_get_area(&self, start_addr: u64) -> Option<MemoryArea> {
+        for area in &self.state.memory {
+            if start_addr == area.start {
+                return Some(area.clone());
+            }
+        }
+
+        None
     }
 
     /// Initialize a memory area with the given data and name.
