@@ -20,6 +20,18 @@ macro_rules! push_rip {
     }};
 }
 
+macro_rules! log_call {
+    ($self:ident, $target:expr) => {{
+        $crate::helpers::debug::debug_log!(
+            "CALL function {}@{:#x}",
+            $self
+                .resolve_symbol($target)
+                .unwrap_or_else(|| "<unknown>".to_string()),
+            $target
+        );
+    }};
+}
+
 impl Axecutor {
     pub fn mnemonic_call(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Call);
@@ -88,6 +100,7 @@ impl Axecutor {
                 let offset = i.near_branch64() as i64 as u64;
                 self.reg_write_64(RIP, offset)?;
                 self.state.call_stack.push(offset);
+                log_call!(self, offset);
                 Ok(())
             }
             _ => fatal_error!("Invalid op0_kind for CALL rel32: {:?}", i.op0_kind()),
@@ -130,6 +143,7 @@ impl Axecutor {
         push_rip!(self);
         self.reg_write_64(RIP, target)?;
         self.state.call_stack.push(target);
+        log_call!(self, target);
 
         Ok(())
     }

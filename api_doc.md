@@ -275,6 +275,10 @@ Generate a call trace of the current execution state.
 This only works if a symbol table has been provided, which is currently only the case for ELF binaries.
 
 
+#### `Axecutor.resolve_symbol(addr: bigint) => string`
+Get the symbol name for a given address. This only works if the ELF binary contains a symbol table.
+
+
 ## Functions
 The following functions are available after the `init` function has been called.
 
