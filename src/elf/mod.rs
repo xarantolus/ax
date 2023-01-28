@@ -1,12 +1,14 @@
 extern crate elf;
+use elf::abi::*;
 use elf::endian::AnyEndian;
+use elf::to_str::p_type_to_str;
 use elf::{ElfBytes, ParseError};
 
 use std::string::FromUtf8Error;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::helpers::debug::debug_log;
-use crate::helpers::macros::assert_fatal;
+use crate::helpers::macros::{assert_fatal, fatal_error};
 use crate::{axecutor::Axecutor, helpers::errors::AxError};
 
 impl From<ParseError> for AxError {
@@ -96,116 +98,140 @@ impl Axecutor {
             },
         )?;
 
-        let headers = match file.segments() {
+        // Load relocation sections
+
+        let segments = match file.segments() {
             Some(headers) => headers,
             None => return Err(AxError::from("ELF: No program headers")),
         };
 
-        for header in headers {
-            if header.p_vaddr >= initial_addr && header.p_vaddr < initial_addr + code.len() as u64 {
+        for segment in segments {
+            if segment.p_vaddr == 0 {
+                debug_log!("ELF: Skip loading segment with p_vaddr == 0");
+                continue;
+            }
+
+            if segment.p_vaddr >= initial_addr && segment.p_vaddr < initial_addr + code.len() as u64
+            {
                 // skip .text, .init and .plt section -- we already them
                 // Aspirationally this should go away once the memory implementation also handles the code section
                 continue;
             }
 
-            let content = file.segment_data(&header)?;
+            let content = file.segment_data(&segment)?;
 
-            match header.p_type {
-                1 => {
-                    // LOAD
+            match segment.p_type {
+                // Skippable
+                PT_NULL | PT_NOTE | PT_SHLIB | PT_PHDR => {
                     debug_log!(
-                        "ELF: Loading header at {:#x} with size {:#x} and offset {:#x}",
-                        header.p_vaddr,
-                        header.p_memsz,
-                        header.p_offset,
+                        "ELF: Skip loading segment of type {} ({:#x})",
+                        p_type_to_str(segment.p_type).expect("Unknown segment type"),
+                        segment.p_type
                     );
-
-                    if header.p_memsz == header.p_filesz {
-                        axecutor.mem_init_area_named(
-                            header.p_vaddr,
-                            content.to_vec(),
-                            Some(format!("elf_header_{:#x}", header.p_vaddr)),
-                        )?;
-                    } else {
-                        // Make sure we create the memory at full size and then write the first bytes, rest should be zeroed
-                        axecutor.mem_init_zero_named(
-                            header.p_vaddr,
-                            header.p_memsz,
-                            format!("elf_zeroed_header_{:#x}", header.p_vaddr),
-                        )?;
-
-                        if content.len() > header.p_filesz as usize {
-                            return Err(AxError::from(
-                                "ELF: Content is larger than specified in header".to_string(),
-                            ));
-                        }
-
-                        axecutor.mem_write_bytes(
-                            header.p_vaddr,
-                            &content[..header.p_filesz as usize],
-                        )?;
-                    }
                 }
-                2 => {
+                // Skippable, but we should warn and probably implement them in the future
+                PT_GNU_EH_FRAME | PT_GNU_STACK | PT_GNU_RELRO => {
+                    debug_log!(
+                        "ELF: Skip loading segment of type {} ({:#x})",
+                        p_type_to_str(segment.p_type).unwrap_or("unknown"),
+                        segment.p_type
+                    );
+                }
+                // Unsupported segment types
+                PT_DYNAMIC => {
                     return Err(AxError::from("ELF: Dynamic linking not supported"));
                 }
-                7 => {
+                PT_TLS => {
                     // Thread-local storage
                     debug_log!(
-                        "ELF: Loading TLS header at {:#x} with size {:#x} and offset {:#x}",
-                        header.p_vaddr,
-                        header.p_memsz,
-                        header.p_offset
+                        "ELF: Loading TLS segment at {:#x} with size {:#x} and offset {:#x}",
+                        segment.p_vaddr,
+                        segment.p_memsz,
+                        segment.p_offset
                     );
 
                     assert_fatal!(axecutor.read_fs() == 0, "ELF: TLS already initialized");
 
                     // See if we already have a memory area with that address
-                    let end_addr = match axecutor.mem_get_area(header.p_vaddr) {
+                    let end_addr = match axecutor.mem_get_area(segment.p_vaddr) {
                         Some(a) => {
                             // We already have an area, let's make sure it's big enough
                             assert_fatal!(
-                                a.len() >= header.p_memsz,
+                                a.len() >= segment.p_memsz,
                                 "ELF: preexisting TLS area is too small"
                             );
                             debug_log!("ELF: TLS area already exists, reusing it");
-                            header.p_vaddr + a.len() as u64
+                            segment.p_vaddr + a.len() as u64
                         }
                         None => {
                             // We don't have an area, let's create one
                             debug_log!("ELF: TLS area doesn't exist, creating it");
 
-                            if header.p_memsz == header.p_filesz {
+                            if segment.p_memsz == segment.p_filesz {
                                 let addr = axecutor.mem_init_anywhere(
                                     content.to_vec(),
-                                    Some(format!("elf_tls_header_{:#x}", header.p_vaddr)),
+                                    Some(format!("elf_tls_header_{:#x}", segment.p_vaddr)),
                                 )?;
                                 addr + content.len() as u64
                             } else {
                                 // Make sure we create the memory at full size and then write the first bytes, rest should be zeroed
                                 let addr = axecutor.mem_init_anywhere(
-                                    vec![0; header.p_memsz as usize],
-                                    Some(format!("elf_tls_zeroed_header_{:#x}", header.p_vaddr)),
+                                    vec![0; segment.p_memsz as usize],
+                                    Some(format!("elf_tls_zeroed_header_{:#x}", segment.p_vaddr)),
                                 )?;
 
                                 axecutor.mem_write_bytes(
-                                    header.p_vaddr,
-                                    &content[..header.p_filesz as usize],
+                                    segment.p_vaddr,
+                                    &content[..segment.p_filesz as usize],
                                 )?;
 
-                                addr + header.p_memsz as u64
+                                addr + segment.p_memsz as u64
                             }
                         }
                     };
 
                     axecutor.write_fs(end_addr);
                 }
-                _v => {
+                PT_LOAD => {
                     debug_log!(
-                        "ELF: Ignoring section of type {:#x} at address {:#x}, len={}",
-                        _v,
-                        header.p_vaddr,
-                        header.p_memsz
+                        "ELF: Loading segment at {:#x} with size {:#x} and offset {:#x}",
+                        segment.p_vaddr,
+                        segment.p_memsz,
+                        segment.p_offset,
+                    );
+
+                    if segment.p_memsz == segment.p_filesz {
+                        axecutor.mem_init_area_named(
+                            segment.p_vaddr,
+                            content.to_vec(),
+                            Some(format!("elf_header_{:#x}", segment.p_vaddr)),
+                        )?;
+                    } else {
+                        // Make sure we create the memory at full size and then write the first bytes, rest should be zeroed
+                        axecutor.mem_init_zero_named(
+                            segment.p_vaddr,
+                            segment.p_memsz,
+                            format!("elf_zeroed_header_{:#x}", segment.p_vaddr),
+                        )?;
+
+                        if content.len() > segment.p_filesz as usize {
+                            return Err(AxError::from(
+                                "ELF: Content is larger than specified in segment header"
+                                    .to_string(),
+                            ));
+                        }
+
+                        axecutor.mem_write_bytes(
+                            segment.p_vaddr,
+                            &content[..segment.p_filesz as usize],
+                        )?;
+                    }
+                }
+                _ => {
+                    fatal_error!(
+                        "ELF: Unsupported segment type {} ({:#x})",
+                        p_type_to_str(segment.p_type).unwrap_or("unknown"),
+                        segment.p_type
                     );
                 }
             }
