@@ -171,14 +171,26 @@ let syscallHandler = async function (ax: Axecutor) {
   throw `Unhandled syscall ${syscall_num}`;
 }
 
-// Register the syscall handler
+// Register the write syscall handler
 ax.hook_before_mnemonic(Mnemonic.Syscall, syscallHandler);
+
+// Log function calls
+ax.hook_after_mnemonic(Mnemonic.Call, function (ax: Axecutor) {
+  // After a call instruction, RIP points to the first instruction of the called function
+  let func_addr = ax.reg_read_64(Register.RIP);
+  // Resolve a name for that function - it might be undefined if no symbol is available
+  // Make sure to compile your binary with -g to include symbols
+  let name = ax.resolve_symbol(func_addr);
+
+  console.log("Calling function " + (name || "<unknown>") + " at " + func_addr.toString(16) + "\n");
+  return ax.unchanged();
+});
 
 // Execute the program
 await ax.execute();
 ```
 
-If your binaries need more syscalls, you can look at the [example site implementation](examples/web/src/components/Demo.vue) or get more details [here](https://syscalls.w3challs.com/?arch=x86_64).
+If your binaries need more system calls, you can look at the [example site implementation](examples/web/src/components/Demo.vue), see [the docs for pre-existing handler functions](api_doc.md#syscalls) or get more details for your own implementation [here](https://syscalls.w3challs.com/?arch=x86_64).
 
 </details>
 

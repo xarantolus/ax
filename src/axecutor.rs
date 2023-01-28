@@ -279,6 +279,12 @@ impl Axecutor {
 
         Ok(trace)
     }
+
+    /// Get the symbol name for a given address. This only works if the ELF binary contains a symbol table.
+    /// If no symbol is found, None or undefined is returned.
+    pub fn resolve_symbol(&self, addr: u64) -> Option<String> {
+        self.symbol_table.get(&addr).map(|s| s.to_string())
+    }
 }
 
 #[wasm_bindgen]
