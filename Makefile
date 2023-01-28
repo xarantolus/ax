@@ -1,4 +1,4 @@
-.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax generate docs
+.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax generate docs watch-programs watch-debug watch-tests precommit clean-programs
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -25,6 +25,9 @@ RM_TARGETS := *.out Cargo.lock target
 
 all: ax build build-cjs
 
+######################
+### WASM package builds
+######################
 build:
 	$(MOLD) wasm-pack build --target web --release
 RM_TARGETS += pkg
@@ -36,20 +39,32 @@ RM_TARGETS += pkg-cjs
 debug:
 	$(MOLD) wasm-pack build --target web --debug
 
+######################
+### Binary builds
+######################
 bin: ax
 ax:
 	$(MOLD) cargo build --release && cp target/release/ax$(EXE_SUFFIX) .
 RM_TARGETS += ax$(EXE_SUFFIX)
 
-# fmt will fail if switch or stats are not up to date
+
+######################
+### Web builds
+######################
+build-web: copy-programs build
+	cd examples/web && npm install && npm run build
+RM_TARGETS += examples/web/node_modules examples/web/dist .vite
+
+
+######################
+### Code generation and formatting
+######################
+
+# fmt will fail if switch or stats are not up to date, failing precommit
 precommit: generate fmt test test-scripts all
 
 # targets that might change files and thus prevent precommit from passing, especially when the version changes
 generate: build-web switch stats test-js docs
-
-test-scripts: python-dependencies
-	$(PY) t.py --test
-RM_TARGETS += __pycache__
 
 stats:
 	@$(PY) stats.py
@@ -57,38 +72,16 @@ stats:
 docs: build
 	cd js/docs && npm install && npm run build && npm run generate
 
-example-programs:
-	cd examples/programs && $(MAKE) build
+switch:
+	$(PY) generate.py switch
 
-watch:
-	$(MAKE) -j2 watch-debug web
-
-watch-debug:
-	$(MOLD) cargo watch -s "$(MAKE) debug"
-
-watch-tests:
-	$(MOLD) cargo watch --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
-RM_TARGETS += lcov.info
-
-web: copy-programs build
-	cd examples/web && npm install && npm run dev
-
-build-web: copy-programs build
-	cd examples/web && npm install && npm run build
-RM_TARGETS += examples/web/node_modules examples/web/dist .vite
-
-copy-programs: example-programs
-	mkdir -p examples/web/public/programs
-	cp -r $(shell find examples/programs -name "*.bin") examples/web/public/programs
-RM_TARGETS += examples/web/public/programs
-
+######################
+### Tests & other dev jobs
+######################
 fmt:
 	$(MOLD) cargo fix --allow-staged --all --all-features && \
 	$(MOLD) cargo fmt --all && \
 	$(MOLD) cargo clippy --all-targets --all-features --fix --allow-staged
-
-coverage:
-	$(MOLD) cargo tarpaulin --out Lcov --skip-clean
 
 test: test-local test-node test-js
 
@@ -106,9 +99,47 @@ test-js: build-cjs
 	@echo "Testing JS API"
 	cd js/test && npm install && npm test
 
-switch:
-	$(PY) generate.py switch
+watch:
+	$(MAKE) -j3 web watch-debug watch-programs
 
+watch-debug:
+	$(MOLD) cargo watch -w src -s "$(MAKE) debug"
+
+coverage:
+	$(MOLD) cargo tarpaulin --out Lcov --skip-clean
+
+watch-tests:
+	$(MOLD) cargo watch -w src --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
+RM_TARGETS += lcov.info
+
+web: copy-programs build
+	cd examples/web && npm install && npm run dev
+
+test-scripts: python-dependencies
+	$(PY) t.py --test
+RM_TARGETS += __pycache__
+
+######################
+### Examples
+######################
+example-programs:
+	cd examples/programs && $(MAKE) build
+
+copy-programs: example-programs
+	mkdir -p examples/web/public/programs
+	cp -r $(shell find examples/programs -name "*.bin") examples/web/public/programs
+RM_TARGETS += examples/web/public/programs
+
+clean-programs:
+	cd examples/programs && $(MAKE) clean
+
+watch-programs:
+	cd examples/programs && \
+		cargo watch -w examples/programs -s "$(MAKE) clean-programs copy-programs"
+
+######################
+### Utilities
+######################
 dependencies: python-dependencies
 	cargo install cargo-tarpaulin cargo-watch python-launcher
 
@@ -118,4 +149,3 @@ python-dependencies:
 clean:
 	rm -rf $(RM_TARGETS)
 	cd examples/programs && $(MAKE) clean
-
