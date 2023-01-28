@@ -6,6 +6,7 @@ use std::string::FromUtf8Error;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::helpers::debug::debug_log;
+use crate::helpers::macros::assert_fatal;
 use crate::{axecutor::Axecutor, helpers::errors::AxError};
 
 impl From<ParseError> for AxError {
@@ -109,14 +110,13 @@ impl Axecutor {
             let content = file.segment_data(&header)?;
 
             match header.p_type {
-                0 => continue, // ignored
                 1 => {
                     // LOAD
                     debug_log!(
                         "ELF: Loading header at {:#x} with size {:#x} and offset {:#x}",
                         header.p_vaddr,
                         header.p_memsz,
-                        header.p_offset
+                        header.p_offset,
                     );
 
                     if header.p_memsz == header.p_filesz {
@@ -157,29 +157,55 @@ impl Axecutor {
                         header.p_offset
                     );
 
-                    if header.p_memsz == header.p_filesz {
-                        let addr = axecutor.mem_init_anywhere(
-                            content.to_vec(),
-                            Some(format!("elf_tls_header_{:#x}", header.p_vaddr)),
-                        )?;
-                        axecutor.write_fs(addr + content.len() as u64);
-                    } else {
-                        // Make sure we create the memory at full size and then write the first bytes, rest should be zeroed
-                        let addr = axecutor.mem_init_anywhere(
-                            vec![0; header.p_memsz as usize],
-                            Some(format!("elf_tls_zeroed_header_{:#x}", header.p_vaddr)),
-                        )?;
+                    assert_fatal!(axecutor.read_fs() == 0, "ELF: TLS already initialized");
 
-                        axecutor.mem_write_bytes(
-                            header.p_vaddr,
-                            &content[..header.p_filesz as usize],
-                        )?;
+                    // See if we already have a memory area with that address
+                    let end_addr = match axecutor.mem_get_area(header.p_vaddr) {
+                        Some(a) => {
+                            // We already have an area, let's make sure it's big enough
+                            assert_fatal!(
+                                a.len() >= header.p_memsz,
+                                "ELF: preexisting TLS area is too small"
+                            );
+                            debug_log!("ELF: TLS area already exists, reusing it");
+                            header.p_vaddr + a.len() as u64
+                        }
+                        None => {
+                            // We don't have an area, let's create one
+                            debug_log!("ELF: TLS area doesn't exist, creating it");
 
-                        axecutor.write_fs(addr + header.p_memsz as u64);
-                    }
+                            if header.p_memsz == header.p_filesz {
+                                let addr = axecutor.mem_init_anywhere(
+                                    content.to_vec(),
+                                    Some(format!("elf_tls_header_{:#x}", header.p_vaddr)),
+                                )?;
+                                addr + content.len() as u64
+                            } else {
+                                // Make sure we create the memory at full size and then write the first bytes, rest should be zeroed
+                                let addr = axecutor.mem_init_anywhere(
+                                    vec![0; header.p_memsz as usize],
+                                    Some(format!("elf_tls_zeroed_header_{:#x}", header.p_vaddr)),
+                                )?;
+
+                                axecutor.mem_write_bytes(
+                                    header.p_vaddr,
+                                    &content[..header.p_filesz as usize],
+                                )?;
+
+                                addr + header.p_memsz as u64
+                            }
+                        }
+                    };
+
+                    axecutor.write_fs(end_addr);
                 }
                 _v => {
-                    debug_log!("ELF: Ignoring section type {:#x}", _v);
+                    debug_log!(
+                        "ELF: Ignoring section of type {:#x} at address {:#x}, len={}",
+                        _v,
+                        header.p_vaddr,
+                        header.p_memsz
+                    );
                 }
             }
         }
@@ -187,6 +213,11 @@ impl Axecutor {
         match file.symbol_table() {
             Ok(Some((symbol_table, str_table))) => {
                 for symbol in symbol_table.iter() {
+                    if symbol.is_undefined() {
+                        debug_log!("ELF: Ignoring undefined symbol in strtab");
+                        continue;
+                    }
+
                     let name = match str_table.get(symbol.st_name as usize) {
                         Ok(name) => name,
                         Err(_) => {
@@ -194,10 +225,6 @@ impl Axecutor {
                             continue;
                         }
                     };
-                    if symbol.is_undefined() {
-                        debug_log!("ELF: Ignoring undefined symbol {}", name);
-                        continue;
-                    }
 
                     debug_log!("ELF: Found symbol {} at {:#x}", name, symbol.st_value);
 
