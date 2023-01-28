@@ -45,6 +45,7 @@ impl Axecutor {
         });
 
         // Usually in binaries, we have a `.init` section, then the `.plt` section and then `.text`
+        // This order is also recommended in the System V ABI, see "4.2.3 Special Sections"
         // We try to load the `.init` section into memory and then set the code section initial address
         if let Some(plt_section) = file.section_header_by_name(".plt")? {
             // Now if the .plt section is exactly before the .text section, let the overlap work out
@@ -250,7 +251,7 @@ mod tests {
     use crate::helpers::tests::test_async;
     use crate::state::hooks::HookResult;
 
-    // This macro is very limited as it only allows checking the first write call and exit code
+    // This macro runs an executable and checks that the combined output of stdout and stderr as well as the exit code is as expected.
     macro_rules! test_binary {
         [$name:ident; $binary_path:expr; $expected_output:expr; $expected_exit_code:expr] => {
             test_async![$name; async {
