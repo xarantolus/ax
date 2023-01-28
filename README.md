@@ -191,6 +191,8 @@ The [`Makefile`](Makefile) has a lot of targets that can be useful for developme
 
 For any changes you want to make, you can branch off from the `develop` branch. Please format the code using `make fmt` before submitting a pull request and make sure that `make precommit` passes.
 
+If you want to work on something, I recommend having two terminals opened: one job for automatically running tests on changes (`make watch-tests`) and one for automatically rebuilding the module, serving the web server and rebuilding the example programs (`make watch`). This configuration is already included in the [`tasks.json`](.vscode/tasks.json) file, VSCode should offer to run them automatically.
+
 ### Development setup
 If you want to develop in a Docker container, there's a [Dev Container](https://containers.dev) configuration provided in the repository. I would however recommend setting up the development tools on your native machine:
 

@@ -4,11 +4,37 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Run tarpaulin cargo tests",
+            "label": "Tarpaulin test coverage",
             "isBackground": true,
             "type": "shell",
             "command": "make watch-tests",
             // Run in background: https://stackoverflow.com/a/54017304
+            "problemMatcher": [
+                {
+                    "pattern": [
+                        {
+                            "regexp": ".",
+                            "file": 1,
+                            "location": 2,
+                            "message": 3
+                        }
+                    ],
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": ".",
+                        "endsPattern": ".",
+                    }
+                }
+            ],
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+        },
+        {
+            "label": "Dev Webserver",
+            "isBackground": true,
+            "type": "shell",
+            "command": "make watch",
             "problemMatcher": [
                 {
                     "pattern": [
