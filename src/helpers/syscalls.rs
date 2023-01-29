@@ -18,6 +18,7 @@ use super::{debug::debug_log, errors::AxError};
 
 #[wasm_bindgen]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[repr(u16)]
 /// Syscalls that can be registered for automatic handling
 pub enum Syscall {
     Brk = 12,
@@ -43,10 +44,10 @@ pub(crate) struct SyscallState {
     pipe_contents: HashMap<u64, Vec<u8>>,
 }
 
-impl TryFrom<isize> for Syscall {
+impl TryFrom<u16> for Syscall {
     type Error = AxError;
 
-    fn try_from(value: isize) -> Result<Self, Self::Error> {
+    fn try_from(value: u16) -> Result<Self, Self::Error> {
         Ok(match value {
             12 => Syscall::Brk,
             22 => Syscall::Pipe,
@@ -85,7 +86,7 @@ fn get_js_list(vec: JsValue) -> Result<Vec<Syscall>, AxError> {
         let item = array.get(i);
 
         if let Some(n) = item.as_f64() {
-            result.push(Syscall::try_from(n.round() as isize)?);
+            result.push(Syscall::try_from(n.round() as u16)?);
         } else {
             return Err(AxError::from("Invalid syscall list"));
         }
