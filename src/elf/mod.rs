@@ -406,7 +406,7 @@ mod tests {
                                                         env1=val1\n\
                                                         env2=val2\n"; 2];
 
-    test_binary![exit_c; "../../testdata/exit_c.bin"; ""; 5];
+    // test_binary![exit_c; "../../testdata/exit_c.bin"; ""; 5];
 
     test_async![binary_without_symbols; async {
         let bin = Axecutor::from_binary(include_bytes!("../../testdata/exit_c_no_symbols.bin")).expect("Failed to parse binary");

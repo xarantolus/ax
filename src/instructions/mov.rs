@@ -210,7 +210,9 @@ impl Axecutor {
     fn instr_mov_al_moffs8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_AL_moffs8);
 
-        opcode_unimplemented!("instr_mov_al_moffs8 for Mov")
+        calculate_rm_r![u8; self; i; |_, s| {
+            s
+        }; (set: FLAGS_UNAFFECTED; clear: 0)]
     }
 
     /// MOV AX, moffs16
@@ -219,7 +221,9 @@ impl Axecutor {
     fn instr_mov_ax_moffs16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_AX_moffs16);
 
-        opcode_unimplemented!("instr_mov_ax_moffs16 for Mov")
+        calculate_rm_r![u16; self; i; |_, s| {
+            s
+        }; (set: FLAGS_UNAFFECTED; clear: 0)]
     }
 
     /// MOV EAX, moffs32
@@ -228,7 +232,9 @@ impl Axecutor {
     fn instr_mov_eax_moffs32(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_EAX_moffs32);
 
-        opcode_unimplemented!("instr_mov_eax_moffs32 for Mov")
+        calculate_rm_r![u32; self; i; |_, s| {
+            s
+        }; (set: FLAGS_UNAFFECTED; clear: 0)]
     }
 
     /// MOV RAX, moffs64
@@ -237,7 +243,9 @@ impl Axecutor {
     fn instr_mov_rax_moffs64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_RAX_moffs64);
 
-        opcode_unimplemented!("instr_mov_rax_moffs64 for Mov")
+        calculate_rm_r![u64; self; i; |_, s| {
+            s
+        }; (set: FLAGS_UNAFFECTED; clear: 0)]
     }
 
     /// MOV moffs8, AL
@@ -246,7 +254,9 @@ impl Axecutor {
     fn instr_mov_moffs8_al(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_moffs8_AL);
 
-        opcode_unimplemented!("instr_mov_moffs8_al for Mov")
+        calculate_r_rm![u8; self; i; |_, s| {
+            s
+        }; (set: FLAGS_UNAFFECTED; clear: 0)]
     }
 
     /// MOV moffs16, AX
@@ -255,7 +265,9 @@ impl Axecutor {
     fn instr_mov_moffs16_ax(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_moffs16_AX);
 
-        opcode_unimplemented!("instr_mov_moffs16_ax for Mov")
+        calculate_r_rm![u16; self; i; |_, s| {
+            s
+        }; (set: FLAGS_UNAFFECTED; clear: 0)]
     }
 
     /// MOV moffs32, EAX
@@ -264,7 +276,9 @@ impl Axecutor {
     fn instr_mov_moffs32_eax(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_moffs32_EAX);
 
-        opcode_unimplemented!("instr_mov_moffs32_eax for Mov")
+        calculate_r_rm![u32; self; i; |_, s| {
+            s
+        }; (set: FLAGS_UNAFFECTED; clear: 0)]
     }
 
     /// MOV moffs64, RAX
@@ -273,7 +287,9 @@ impl Axecutor {
     fn instr_mov_moffs64_rax(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Mov_moffs64_RAX);
 
-        opcode_unimplemented!("instr_mov_moffs64_rax for Mov")
+        calculate_r_rm![u64; self; i; |_, s| {
+            s
+        }; (set: FLAGS_UNAFFECTED; clear: 0)]
     }
 
     /// MOV r8, imm8
@@ -720,6 +736,44 @@ mod tests {
         };
         |a: Axecutor| {
             assert_mem_value!(q; a; 0x1000; 0xfffffffffffff135u64);
+        };
+        (0; FLAGS_UNAFFECTED)
+    ];
+
+    // mov al, BYTE PTR ds:0x10
+    ax_test![mov_al_ds_moffs; 0x8a, 0x4, 0x25, 0x10, 0, 0, 0;
+        |a: &mut Axecutor| {
+            a.mem_init_zero(0x10, 1).unwrap();
+            a.mem_write_8(0x10, 0x15).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x15);
+        };
+        (0; FLAGS_UNAFFECTED)
+    ];
+
+    // mov al, BYTE PTR fs:0x10
+    ax_test![mov_al_fs_moffs; 0x64, 0x8a, 0x4, 0x25, 0x10, 0, 0, 0;
+        |a: &mut Axecutor| {
+            a.write_fs(0x1000);
+            a.mem_init_zero(0x1010, 1).unwrap();
+            a.mem_write_8(0x1010, 0x15).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x15);
+        };
+        (0; FLAGS_UNAFFECTED)
+    ];
+
+    // mov al, BYTE PTR gs:0x10
+    ax_test![mov_al_gs_moffs; 0x65, 0x8a, 0x4, 0x25, 0x10, 0, 0, 0;
+        |a: &mut Axecutor| {
+            a.write_gs(0x1000);
+            a.mem_init_zero(0x1010, 1).unwrap();
+            a.mem_write_8(0x1010, 0x15).unwrap();
+        };
+        |a: Axecutor| {
+            assert_reg_value!(b; a; AL; 0x15);
         };
         (0; FLAGS_UNAFFECTED)
     ];
