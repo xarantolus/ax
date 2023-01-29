@@ -134,7 +134,7 @@ impl Axecutor {
     code_length: {:#x},
     hooks: {},
     state: {},
-    call_trace: {:#?}
+    call_stack: {:#?}
 }}",
             self.code_start_address,
             self.code_length,

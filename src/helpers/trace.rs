@@ -21,7 +21,7 @@ pub(crate) enum TraceVariant {
     Jump,
 }
 
-// This is for the full tracing functionality, not to be confused with call_trace
+// This is for the full tracing functionality, not to be confused with call_stack
 #[wasm_bindgen]
 impl Axecutor {
     fn add_trace(
@@ -205,7 +205,7 @@ mod tests {
     }];
 }
 
-// This is only the call trace, which uses different data than the full tracing functionality
+// This is only the call stack, which uses different data than the full tracing functionality
 #[wasm_bindgen]
 impl Axecutor {
     /// Give an overview of the current call stack.
