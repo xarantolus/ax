@@ -8,6 +8,7 @@ use crate::helpers::syscalls::SyscallState;
 use crate::state::flags::FLAG_TO_NAMES;
 
 use crate::helpers::errors::AxError;
+use crate::helpers::trace::{TraceEntry, TraceVariant};
 use crate::state::hooks::HookProcessor;
 use crate::state::memory::MemoryArea;
 use crate::state::registers::{randomized_register_set, randomized_xmm_set, SupportedRegister};
@@ -67,6 +68,9 @@ pub(crate) struct MachineState {
 
     // call_stack holds u64 values that are the target addresses of calls. This is used to provide stack traces using the symbol table
     pub(crate) call_stack: Vec<u64>,
+
+    // trace holds a list of all executed calls, returns and jumps
+    pub(crate) trace: Vec<TraceEntry>,
 }
 
 #[wasm_bindgen]
@@ -107,7 +111,14 @@ impl Axecutor {
                 fs: 0,
                 gs: 0,
                 syscalls: SyscallState::default(),
+                // Basically we pretend that we have a call to _start at the beginning
                 call_stack: vec![initial_rip],
+                trace: vec![TraceEntry {
+                    instr_ip: 0,
+                    target: initial_rip,
+                    variant: TraceVariant::Call,
+                    level: 0,
+                }],
             },
         })
     }
@@ -130,7 +141,7 @@ impl Axecutor {
             self.prefix_each_line(self.hooks.to_string().as_str(), "    "),
             self.state.to_string_ident(1),
             self.prefix_each_line(
-                self.call_trace().unwrap_or_else(|e| e.to_string()).as_str(),
+                self.call_stack().unwrap_or_else(|e| e.to_string()).as_str(),
                 "    "
             )
         )
@@ -241,43 +252,6 @@ impl Axecutor {
 
         self.state = state;
         Ok(())
-    }
-
-    /// Generate a call trace of the current execution state.
-    /// This only works if a symbol table has been provided, which is currently only the case for ELF binaries.
-    pub fn call_trace(&self) -> Result<String, AxError> {
-        let mut trace = String::new();
-
-        for (i, addr) in self.state.call_stack.iter().enumerate() {
-            let formatted = match self.symbol_table.get(addr) {
-                Some(sym) => format!("{}@{:#x}", sym, addr),
-                None => format!("(unknown){:#x}", addr),
-            };
-
-            if i == self.state.call_stack.len() - 1 {
-                trace.push_str(&format!(
-                    "{}=> {}            <------------ in this function\n",
-                    "  ".repeat(i),
-                    formatted
-                ));
-            } else {
-                trace.push_str(&format!("{}-> {}\n", "  ".repeat(i), formatted));
-            }
-        }
-
-        let rip = self.reg_read_64(SupportedRegister::RIP)?;
-        if let Ok(instr) = self.decode_at(rip) {
-            trace.push_str(&format!(
-                "{}  rip@{:#x}            <------------ at or before this instruction pointer\n{}  {} ({:#?})            <------------ at this or the previous instruction",
-                "  ".repeat(self.state.call_stack.len()),
-                rip,
-                "  ".repeat(self.state.call_stack.len()),
-                instr,
-                instr.code()
-            ));
-        }
-
-        Ok(trace)
     }
 
     /// Get the symbol name for a given address. This only works if the ELF binary contains a symbol table.

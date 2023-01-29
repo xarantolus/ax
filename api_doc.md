@@ -266,13 +266,18 @@ There are also some utility methods.
 No documentation available.
 
 
+#### `Axecutor.trace() => string`
+Generate a trace of the current execution state. This trace is a list of all executed jumps, calls and returns.
+This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
+
+
+#### `Axecutor.call_stack() => string`
+Give an overview of the current call stack.
+This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
+
+
 #### `Axecutor.toString() => string`
 Returns a string representation of the Axecutor instance that can be useful for debugging.
-
-
-#### `Axecutor.call_trace() => string`
-Generate a call trace of the current execution state.
-This only works if a symbol table has been provided, which is currently only the case for ELF binaries.
 
 
 #### `Axecutor.resolve_symbol(addr: bigint) => string`

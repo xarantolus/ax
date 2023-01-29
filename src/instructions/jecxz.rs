@@ -51,6 +51,7 @@ impl Axecutor {
             match i.op0_kind() {
                 OpKind::NearBranch64 => {
                     let offset = i.near_branch64() as i64 as u64;
+                    self.trace_jump(i, offset)?;
                     self.reg_write_64(SupportedRegister::RIP, offset)?;
 
                     return Ok(());

@@ -10,23 +10,6 @@ use crate::helpers::macros::fatal_error;
 use crate::helpers::macros::opcode_unimplemented;
 use crate::state::registers::SupportedRegister::*;
 
-macro_rules! pop_rip {
-    ($self:ident) => {{
-        let rsp = $self.reg_read_64(RSP)? + 8;
-        if rsp == $self.stack_top {
-            return Err(AxError::from("Cannot pop from empty stack").end_execution());
-        }
-        let rip = $self.mem_read_64(rsp)?;
-        if let None = $self.state.call_stack.pop() {
-            debug_log!(
-                "Warning: Call stack is empty, so ret is jumping somewhere we didn't call from"
-            );
-        }
-        $self.reg_write_64(RIP, rip)?;
-        $self.reg_write_64(RSP, rsp)?;
-    }};
-}
-
 impl Axecutor {
     pub fn mnemonic_ret(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Ret);
@@ -99,7 +82,19 @@ impl Axecutor {
     fn instr_retnq(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Retnq);
 
-        pop_rip!(self);
+        let rsp = self.reg_read_64(RSP)? + 8;
+        if rsp == self.stack_top {
+            return Err(AxError::from("Cannot pop from empty stack").end_execution());
+        }
+        let rip = self.mem_read_64(rsp)?;
+        if self.state.call_stack.pop().is_none() {
+            debug_log!(
+                "Warning: Call stack is empty, so ret is jumping somewhere we didn't call from"
+            );
+        }
+        self.trace_return(i, rip)?;
+        self.reg_write_64(RIP, rip)?;
+        self.reg_write_64(RSP, rsp)?;
 
         Ok(())
     }

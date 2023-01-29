@@ -200,11 +200,26 @@ impl Axecutor {
             }
         }
 
-        // Otherwise, we are completely out of range
-        AxError::from(format!(
-            "Error during {} of length {} at address {:#x}: this address is not contained in any memory or code area",
-            operation.to_lowercase(), length, address
-        ))
+        // Check if an area with name "Stack" exists -- this is something one can easily forget
+        let have_stack = self
+            .state
+            .memory
+            .iter()
+            .any(|area| area.name == Some("Stack".to_string()));
+
+        AxError::from(
+            format!(
+                "Could not {} memory of length {} from address {:#x}: this address is not contained in any memory area{}",
+                operation.to_lowercase(),
+                length,
+                address,
+                if have_stack {
+                    ""
+                } else {
+                    "\n\nHint: it appears you have not set up any memory areas for the stack"
+                }
+            ),
+        )
     }
 
     /// Reads a 64-bit value from memory at `address`

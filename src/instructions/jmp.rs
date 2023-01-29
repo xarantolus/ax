@@ -62,6 +62,7 @@ impl Axecutor {
         match i.op0_kind() {
             OpKind::NearBranch64 => {
                 let offset = i.near_branch64() as i64 as u64;
+                self.trace_jump(i, offset)?;
                 self.reg_write_64(RIP.into(), offset)?;
                 Ok(())
             }
@@ -96,6 +97,7 @@ impl Axecutor {
         // imm8 sign-extended
         let offset = i.immediate8() as i8 as u64;
         let rip = self.reg_read_64(RIP.into())? as i64 as u64;
+        self.trace_jump(i, rip + offset)?;
         self.reg_write_64(RIP.into(), rip + offset)?;
         Ok(())
     }
@@ -118,6 +120,7 @@ impl Axecutor {
         match i.op0_kind() {
             OpKind::NearBranch64 => {
                 let offset = i.near_branch64() as i64 as u64;
+                self.trace_jump(i, offset)?;
                 self.reg_write_64(RIP.into(), offset)?;
                 Ok(())
             }
@@ -155,6 +158,7 @@ impl Axecutor {
             _ => fatal_error!("Invalid operand for JMP r/m64"),
         };
 
+        self.trace_jump(i, addr)?;
         self.reg_write_64(SupportedRegister::RIP, addr)?;
 
         Ok(())

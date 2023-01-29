@@ -112,6 +112,7 @@ impl Axecutor {
             .iter()
             .filter(|shdr| shdr.sh_type == SHT_REL || shdr.sh_type == SHT_RELA)
         {
+            // TODO: implement relocations
             if section.sh_type == SHT_REL {
                 debug_log!("ELF: Loading REL section @{:#x}", section.sh_addr);
 
@@ -168,8 +169,8 @@ impl Axecutor {
                     );
                 }
                 // Skippable, but we should warn and probably implement them in the future
-                PT_GNU_EH_FRAME | PT_GNU_STACK | PT_GNU_RELRO => {
-                    // TODO: Read more about PT_GNU_RELRO, as it might be where 0x800 is relocated from. Not sure
+                PT_GNU_EH_FRAME | PT_GNU_STACK | PT_GNU_RELRO | PT_GNU_PROPERTY => {
+                    // TODO: Read more about PT_GNU_RELRO, as it might be where 0x800 from exit_c is relocated from. Not sure
                     debug_log!(
                         "ELF: Skip loading segment of type {} ({:#x}) @ {:#x} with size {:#x}",
                         p_type_to_str(segment.p_type).unwrap_or("unknown"),
