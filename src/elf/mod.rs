@@ -23,6 +23,8 @@ impl From<FromUtf8Error> for AxError {
     }
 }
 
+// TODO: System V ABI mentions %rdx should have "a function pointer that the application should register with atexit" at process entry
+
 #[wasm_bindgen]
 impl Axecutor {
     /// Create a new Axecutor from the bytes of an ELF binary.
@@ -30,6 +32,9 @@ impl Axecutor {
     /// One thing to note is that you might want to set up the stack via `init_stack_program_start` before running the binary.
     pub fn from_binary(binary: &[u8]) -> Result<Axecutor, AxError> {
         debug_log!("Calling Axecutor::from_binary");
+
+        // Following reference contains a lot of info about what all these ELF fields mean:
+        // https://man7.org/linux/man-pages/man5/elf.5.html
 
         let file = ElfBytes::<AnyEndian>::minimal_parse(binary)?;
 
@@ -98,7 +103,34 @@ impl Axecutor {
             },
         )?;
 
-        // Load relocation sections
+        let reloc_sections = match file.section_headers() {
+            Some(headers) => headers,
+            None => return Err(AxError::from("ELF: No section headers")),
+        };
+
+        for section in reloc_sections
+            .iter()
+            .filter(|shdr| shdr.sh_type == SHT_REL || shdr.sh_type == SHT_RELA)
+        {
+            if section.sh_type == SHT_REL {
+                debug_log!("ELF: Loading REL section @{:#x}", section.sh_addr);
+
+                for rel in file.section_data_as_rels(&section)? {
+                    debug_log!(
+                        "ELF: Relocation: Rel {{ offset: {:#x}, sym: {}, type: {} }}",
+                        rel.r_offset,
+                        rel.r_sym,
+                        rel.r_type
+                    );
+                }
+            } else {
+                debug_log!("ELF: Loading RELA section @{:#x}", section.sh_addr);
+
+                for rela in file.section_data_as_relas(&section)? {
+                    debug_log!("ELF: Relocation: Rela {{ offset: {:#x}, sym: {}, type: {}, addend: {:#x} }}", rela.r_offset, rela.r_sym, rela.r_type, rela.r_addend                );
+                }
+            }
+        }
 
         let segments = match file.segments() {
             Some(headers) => headers,
@@ -107,7 +139,11 @@ impl Axecutor {
 
         for segment in segments {
             if segment.p_vaddr == 0 {
-                debug_log!("ELF: Skip loading segment with p_vaddr == 0");
+                debug_log!(
+                    "ELF: Skip loading segment with p_vaddr == 0, p_type {} ({})",
+                    p_type_to_str(segment.p_type).expect("Unknown segment type"),
+                    segment.p_type
+                );
                 continue;
             }
 
@@ -124,17 +160,22 @@ impl Axecutor {
                 // Skippable
                 PT_NULL | PT_NOTE | PT_SHLIB | PT_PHDR => {
                     debug_log!(
-                        "ELF: Skip loading segment of type {} ({:#x})",
+                        "ELF: Skip loading segment of type {} ({:#x}) @ {:#x} with size {:#x}",
                         p_type_to_str(segment.p_type).expect("Unknown segment type"),
-                        segment.p_type
+                        segment.p_type,
+                        segment.p_vaddr,
+                        segment.p_memsz
                     );
                 }
                 // Skippable, but we should warn and probably implement them in the future
                 PT_GNU_EH_FRAME | PT_GNU_STACK | PT_GNU_RELRO => {
+                    // TODO: Read more about PT_GNU_RELRO, as it might be where 0x800 is relocated from. Not sure
                     debug_log!(
-                        "ELF: Skip loading segment of type {} ({:#x})",
+                        "ELF: Skip loading segment of type {} ({:#x}) @ {:#x} with size {:#x}",
                         p_type_to_str(segment.p_type).unwrap_or("unknown"),
-                        segment.p_type
+                        segment.p_type,
+                        segment.p_vaddr,
+                        segment.p_memsz
                     );
                 }
                 // Unsupported segment types
@@ -283,6 +324,7 @@ mod tests {
             test_async![$name; async {
                 use crate::instructions::generated::SupportedMnemonic;
                 use crate::state::registers::SupportedRegister;
+                use crate::helpers::syscalls::Syscall;
 
                 let binary = include_bytes!($binary_path);
 
@@ -321,9 +363,9 @@ mod tests {
                             // Return number of bytes written
                             ax.reg_write_64(SupportedRegister::RAX, rdx)?;
                         }
-                        // Exit
-                        60 => {
-                            ax.stop();
+                        102 | 104 | 107 | 108 => {
+                            // getuid, getgid, geteuid, getegid
+                            ax.reg_write_64(SupportedRegister::RAX, 0)?;
                         }
                         _ => {
                             return Err(AxError::from(format!("Unsupported syscall: {}", syscall_num)).into());
@@ -332,6 +374,8 @@ mod tests {
 
                     Ok(HookResult::Handled)
                 };
+
+                ax.handle_syscalls(vec![Syscall::Exit, Syscall::Brk, Syscall::Pipe, Syscall::ArchPrctl]).expect("Failed to add syscall handlers");
 
                 ax.hook_before_mnemonic_native(SupportedMnemonic::Syscall, cb).expect("Failed add hook before Syscall");
 
@@ -347,6 +391,8 @@ mod tests {
 
     use super::*;
 
+    // Aspirationally, compatibility of all the programs on the demo site should be tested here
+
     test_binary![test_hello_world; "../../testdata/hello_world.bin"; "Hello, World!\n"; 0];
     test_binary![test_alphabet; "../../testdata/alphabet.bin"; "abcdefghijklmnopqrstuvwxyz\n"; 0];
     test_binary![test_args; "../../testdata/args.bin"; "--------------------------------------------------\n\
@@ -359,6 +405,8 @@ mod tests {
                                                         --------------------------------------------------\n\
                                                         env1=val1\n\
                                                         env2=val2\n"; 2];
+
+    test_binary![exit_c; "../../testdata/exit_c.bin"; ""; 5];
 
     test_async![binary_without_symbols; async {
         let bin = Axecutor::from_binary(include_bytes!("../../testdata/exit_c_no_symbols.bin")).expect("Failed to parse binary");

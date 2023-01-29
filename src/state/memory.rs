@@ -539,9 +539,10 @@ impl Axecutor {
             stack_start <<= 1;
         }
 
-        let initial_rsp = stack_start + length - 8;
+        // Align the stack pointer to 16 bytes -- System V ABI requires this on program entry
+        let initial_rsp = (stack_start + length - 8) & !0xf;
         self.reg_write_64(SupportedRegister::RSP, initial_rsp)?;
-        self.stack_top = stack_start + length;
+        self.stack_top = initial_rsp + 8;
 
         Ok(stack_start)
     }
@@ -650,12 +651,24 @@ impl Axecutor {
             stack_start <<= 1;
         }
 
-        let mut stack_top = stack_start + length - 16;
+        // Make sure the stack is aligned to 16 bytes
+        let mut stack_top = (stack_start + length - 16) & !0xf;
+        if stack_layout.len() % 2 == 1 {
+            // However, if we push an uneven amount of 64 bit values, we need to adjust
+            stack_top -= 8;
+        }
 
         for val in stack_layout.iter().rev() {
             self.mem_write_64(stack_top, *val)?;
             stack_top -= 8;
         }
+
+        // Alignment should still be OK
+        assert!(
+            stack_top & 0xf == 0,
+            "Stack top is not aligned to 16 bytes: {:#x}",
+            stack_top
+        );
 
         self.reg_write_64(SupportedRegister::RSP, stack_top)?;
 
