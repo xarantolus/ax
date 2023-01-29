@@ -2,7 +2,7 @@
 name = "ax-x86"
 version = "0.5.0"
 authors = ["xarantolus <xarantolus@protonmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "AGPL-3.0"
 homepage = "https://ax.010.one"
 repository = "https://github.com/xarantolus/ax"
