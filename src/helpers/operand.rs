@@ -169,6 +169,8 @@ impl Axecutor {
                 }
                 _ => {
                     // Others are always zero
+                    // AMD Architecture Programmer's Manual, 2.1.2 Segment Registers:
+                    // "For references to the DS, ES, or SS segments in 64-bit mode, the processor assumes that the base for each of these segments is zero"
                 }
             }
         }

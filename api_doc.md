@@ -277,6 +277,7 @@ This only works if a symbol table has been provided, which is currently only the
 
 #### `Axecutor.resolve_symbol(addr: bigint) => string`
 Get the symbol name for a given address. This only works if the ELF binary contains a symbol table.
+If no symbol is found, None or undefined is returned.
 
 
 ## Functions
