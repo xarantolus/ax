@@ -13,6 +13,7 @@ pub struct AxError {
     message: Option<String>,
     js: Option<JsValue>,
     call_trace: Option<String>,
+    trace: Option<String>,
 
     pub(crate) signals_normal_finish: bool,
 }
@@ -28,10 +29,11 @@ impl AxError {
             signals_normal_finish: true,
             detail: self.detail.clone(),
             call_trace: self.call_trace.clone(),
+            trace: self.trace.clone(),
         }
     }
 
-    pub(crate) fn add_detail(&self, s: String, trace: String) -> AxError {
+    pub(crate) fn add_detail(&self, s: String, call_trace: String, trace: String) -> AxError {
         AxError {
             detail: if !s.is_empty() {
                 Some(s)
@@ -41,10 +43,15 @@ impl AxError {
             message: self.message.clone(),
             js: self.js.clone(),
             signals_normal_finish: self.signals_normal_finish,
-            call_trace: if !trace.is_empty() {
-                Some(trace)
+            call_trace: if !call_trace.is_empty() {
+                Some(call_trace)
             } else {
                 self.call_trace.clone()
+            },
+            trace: if !trace.is_empty() {
+                Some(trace)
+            } else {
+                self.trace.clone()
             },
         }
     }
@@ -61,6 +68,7 @@ impl From<&str> for AxError {
             js: None,
             signals_normal_finish: false,
             call_trace: None,
+            trace: None,
         }
     }
 }
@@ -72,6 +80,7 @@ impl From<String> for AxError {
             js: None,
             signals_normal_finish: false,
             call_trace: None,
+            trace: None,
         }
     }
 }
@@ -83,6 +92,7 @@ impl From<JsError> for AxError {
             js: Some(JsValue::from(err)),
             signals_normal_finish: false,
             call_trace: None,
+            trace: None,
         }
     }
 }
@@ -94,6 +104,7 @@ impl From<JsValue> for AxError {
             js: Some(err),
             signals_normal_finish: false,
             call_trace: None,
+            trace: None,
         }
     }
 }
@@ -105,6 +116,7 @@ impl From<Box<dyn std::error::Error>> for AxError {
             js: None,
             signals_normal_finish: false,
             call_trace: None,
+            trace: None,
         }
     }
 }
@@ -134,7 +146,8 @@ impl From<AxError> for String {
         let js = err.js.map(stringify_js_value);
         let msg = err.message;
         let detail = err.detail;
-        let trace = err.call_trace;
+        let call_trace = err.call_trace;
+        let trace = err.trace;
 
         let mut s = String::new();
         if let Some(d) = detail {
@@ -152,9 +165,16 @@ impl From<AxError> for String {
             s.push('\n');
         }
 
-        if let Some(t) = trace {
+        if let Some(t) = call_trace {
             s.push_str("Call trace: \n");
             s.push_str(&t);
+            s.push('\n');
+        }
+
+        if let Some(t) = trace {
+            s.push_str("Trace: \n");
+            s.push_str(&t);
+            s.push('\n');
         }
 
         if s.is_empty() {

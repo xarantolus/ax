@@ -96,8 +96,9 @@ impl Axecutor {
 
         match i.op0_kind() {
             OpKind::NearBranch64 => {
-                push_rip!(self);
                 let offset = i.near_branch64() as i64 as u64;
+                push_rip!(self);
+                self.trace_call(i, offset)?;
                 self.reg_write_64(RIP, offset)?;
                 self.state.call_stack.push(offset);
                 log_call!(self, offset);
@@ -141,6 +142,7 @@ impl Axecutor {
         };
 
         push_rip!(self);
+        self.trace_call(i, target)?;
         self.reg_write_64(RIP, target)?;
         self.state.call_stack.push(target);
         log_call!(self, target);

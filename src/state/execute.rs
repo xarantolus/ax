@@ -78,7 +78,8 @@ impl Axecutor {
         let mnem: SupportedMnemonic = instr.mnemonic().try_into().map_err(|e: AxError| {
             e.add_detail(
                 "".to_string(),
-                self.call_trace().unwrap_or_else(|e| e.to_string()),
+                self.call_stack().unwrap_or_else(|e| e.to_string()),
+                self.trace().unwrap_or_else(|e| e.to_string()),
             )
         })?;
 
@@ -91,7 +92,8 @@ impl Axecutor {
                         "executing syscall after executing {} instructions: ",
                         self.state.executed_instructions_count
                     ),
-                    self.call_trace().unwrap_or_else(|e| e.to_string()),
+                    self.call_stack().unwrap_or_else(|e| e.to_string()),
+                    self.trace().unwrap_or_else(|e| e.to_string()),
                 )
             })?;
             debug_log!("Finished running before hooks for mnemonic {:?}", mnem);
@@ -123,7 +125,8 @@ impl Axecutor {
                         instr.code(),
                         self.state.executed_instructions_count
                     ),
-                    self.call_trace().unwrap_or_else(|e| e.to_string()),
+                    self.call_stack().unwrap_or_else(|e| e.to_string()),
+                    self.trace().unwrap_or_else(|e| e.to_string()),
                 );
 
                 debug_log!("Throwing error: {}", err_info);
@@ -150,7 +153,8 @@ impl Axecutor {
                         "executing syscall after executing {} instructions: ",
                         self.state.executed_instructions_count
                     ),
-                    self.call_trace().unwrap_or_else(|e| e.to_string()),
+                    self.call_stack().unwrap_or_else(|e| e.to_string()),
+                    self.trace().unwrap_or_else(|e| e.to_string()),
                 )
             })?;
             debug_log!("Finished running after hooks for mnemonic {:?}", mnem);
