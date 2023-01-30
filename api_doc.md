@@ -30,14 +30,14 @@ Several methods are available for interacting with registers, memory and hooks.
 #### Execution
 There are two ways to execute code: `execute` and `step`.
 
-##### `Axecutor.step() => Promise<boolean>`
-Execute the next instruction (including all registered hooks), returning if execution has stopped.
-
-
 ##### `Axecutor.execute() => Promise<void>`
 Execute all instructions until execution has stopped.
 Execution might stop due to hooks stopping emulation via the stop() method, execution reaching the end of the code, or an error.
 This is the same as calling `step` in a loop, but staying in WASM should be more efficient.
+
+
+##### `Axecutor.step() => Promise<boolean>`
+Execute the next instruction (including all registered hooks), returning if execution has stopped.
 
 
 #### Registers
@@ -91,12 +91,12 @@ The following methods are available for interacting with segment registers.
 Reads the value of the FS segment register.
 
 
-##### `Axecutor.write_fs(value: bigint) => void`
-Writes a value to the FS segment register.
-
-
 ##### `Axecutor.read_gs() => bigint`
 Reads the value of the GS segment register.
+
+
+##### `Axecutor.write_fs(value: bigint) => void`
+Writes a value to the FS segment register.
 
 
 ##### `Axecutor.write_gs(value: bigint) => void`
@@ -115,9 +115,13 @@ Initializes the stack with the given length, command-line arguments and environm
 This is useful for emulating ELF binaries.
 
 
-##### `Axecutor.mem_resize_section(start_addr: bigint, new_size: bigint) => void`
-Resize the already existing section of memory with start address `start_addr` to `new_size`
-The code section cannot be resized.
+##### `Axecutor.mem_init_anywhere(data: Uint8Array, name?: string) => bigint`
+Initialize a memory area with the given data at a random address.
+The start address is returned.
+
+
+##### `Axecutor.mem_init_area(start: bigint, data: Uint8Array) => void`
+Initialize a memory area with the given data.
 
 
 ##### `Axecutor.mem_init_area_named(start: bigint, data: Uint8Array, name?: string) => void`
@@ -125,16 +129,8 @@ Initialize a memory area with the given data and name.
 The name is used for logging and debugging purposes.
 
 
-##### `Axecutor.mem_init_area(start: bigint, data: Uint8Array) => void`
-Initialize a memory area with the given data.
-
-
 ##### `Axecutor.mem_init_zero(start: bigint, length: bigint) => void`
 Initialize a memory area with the given length.
-
-
-##### `Axecutor.mem_init_zero_named(start: bigint, length: bigint, name: string) => void`
-Initialize a memory area with the given length and name.
 
 
 ##### `Axecutor.mem_init_zero_anywhere(length: bigint) => bigint`
@@ -142,9 +138,13 @@ Initialize a memory area of the given length at a random address.
 The start address is returned.
 
 
-##### `Axecutor.mem_init_anywhere(data: Uint8Array, name?: string) => bigint`
-Initialize a memory area with the given data at a random address.
-The start address is returned.
+##### `Axecutor.mem_init_zero_named(start: bigint, length: bigint, name: string) => void`
+Initialize a memory area with the given length and name.
+
+
+##### `Axecutor.mem_resize_section(start_addr: bigint, new_size: bigint) => void`
+Resize the already existing section of memory with start address `start_addr` to `new_size`
+The code section cannot be resized.
 
 
 ##### `Axecutor.mem_read_8(address: bigint) => bigint`
@@ -187,19 +187,19 @@ Reads an 128-bit value from memory at `address`.
 Writes an 128-bit value to memory at `address`.
 
 
+##### `Axecutor.mem_prot(section_start: bigint, prot: number) => void`
+Set the access permissions of the memory area with the given start address.
+The access permissions are a bitmask of `PROT_READ` (1), `PROT_WRITE` (2), and `PROT_EXEC` (4).
+A value of 0 means no access.
+By default, all memory areas are initialized with `PROT_READ | PROT_WRITE`.
+
+
 ##### `Axecutor.mem_read_bytes(address: bigint, length: bigint) => Uint8Array`
 Reads `length` bytes from memory at `address`.
 
 
 ##### `Axecutor.mem_write_bytes(address: bigint, data: Uint8Array) => void`
 Writes bytes of `data` to memory at `address`.
-
-
-##### `Axecutor.mem_prot(section_start: bigint, prot: number) => void`
-Set the access permissions of the memory area with the given start address.
-The access permissions are a bitmask of `PROT_READ` (1), `PROT_WRITE` (2), and `PROT_EXEC` (4).
-A value of 0 means no access.
-By default, all memory areas are initialized with `PROT_READ | PROT_WRITE`.
 
 
 #### Hooks
@@ -209,8 +209,8 @@ They can either run before or after the instruction is executed. The callback fu
 type Function = (instance: Axecutor, mnemonic: Mnemonic) => void | Promise<void>;
 ```
 
-##### `Axecutor.hook_before_mnemonic(mnemonic: number, cb: Function) => void`
-Register a function to be called before a mnemonic is executed.
+##### `Axecutor.hook_after_mnemonic(mnemonic: number, cb: Function) => void`
+Register a function to be called after a mnemonic is executed.
 The function will be called with the Axecutor object and mnemonic as arguments.
 The function may be sync or async and *MUST* return the result of one of the following functions:
  - instance.commit(): Continue execution, keep data
@@ -219,8 +219,8 @@ The function may be sync or async and *MUST* return the result of one of the fol
 You can register multiple functions for the same mnemonic, the order of execution is however not defined.
 
 
-##### `Axecutor.hook_after_mnemonic(mnemonic: number, cb: Function) => void`
-Register a function to be called after a mnemonic is executed.
+##### `Axecutor.hook_before_mnemonic(mnemonic: number, cb: Function) => void`
+Register a function to be called before a mnemonic is executed.
 The function will be called with the Axecutor object and mnemonic as arguments.
 The function may be sync or async and *MUST* return the result of one of the following functions:
  - instance.commit(): Continue execution, keep data
@@ -269,12 +269,13 @@ The function takes variadic arguments, where each argument is a number of one of
 ### Other
 There are also some utility methods.
 
+#### `Axecutor.call_stack() => string`
+Give an overview of the current call stack.
+This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
+
+
 #### `Axecutor.free() => void`
 No documentation available.
-
-
-#### `Axecutor.toString() => string`
-Returns a string representation of the Axecutor instance that can be useful for debugging.
 
 
 #### `Axecutor.resolve_symbol(addr: bigint) => string`
@@ -282,13 +283,12 @@ Get the symbol name for a given address. This only works if the ELF binary conta
 If no symbol is found, None or undefined is returned.
 
 
+#### `Axecutor.toString() => string`
+Returns a string representation of the Axecutor instance that can be useful for debugging.
+
+
 #### `Axecutor.trace() => string`
 Generate a trace of the current execution state. This trace is a list of all executed jumps, calls and returns.
-This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
-
-
-#### `Axecutor.call_stack() => string`
-Give an overview of the current call stack.
 This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
 
 
