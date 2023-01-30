@@ -10,7 +10,7 @@ use crate::state::flags::FLAG_TO_NAMES;
 use crate::helpers::errors::AxError;
 use crate::helpers::trace::{TraceEntry, TraceVariant};
 use crate::state::hooks::HookProcessor;
-use crate::state::memory::MemoryArea;
+use crate::state::memory::{MemoryArea, PROT_EXEC, PROT_READ};
 use crate::state::registers::{randomized_register_set, randomized_xmm_set, SupportedRegister};
 
 extern crate console_error_panic_hook;
@@ -27,16 +27,11 @@ extern crate console_error_panic_hook;
 ///  - `ax.hook_before_mnemonic(Mnemonic.Syscall, (axInstance: Axecutor) => {...});`
 ///  - `ax.hook_after_mnemonic(Mnemonic.Syscall, (axInstance: Axecutor) => {...});`
 pub struct Axecutor {
-    // code_start_address is the memory address/RIP of the first instruction, which isn't necessarily the entrypoint (can be set by writing to RIP)
-    pub(crate) code_start_address: u64,
-    // code_length is the length of the encoded instructions in bytes
-    pub(crate) code_length: u64,
-
-    // code holds the encoded instructions
-    pub(crate) code: Vec<u8>,
-
     // stack_initial_rsp is the initial RSP address when starting, this allows top-level `ret`s to finish without errors. It's set by init_stack
     pub(crate) stack_top: u64,
+
+    // code_end_addr is the address where the code ends, if it is reached the execution finishes
+    pub(crate) code_end_addr: u64,
 
     // state holds the current state of the execution
     // NOTE THAT ANY VALUE NOT STORED IN THE STATE WILL *NOT* BE KEPT BETWEEN HOOKS -- ANY STATE MUST LIVE IN THE STATE
@@ -75,6 +70,31 @@ pub(crate) struct MachineState {
 
 #[wasm_bindgen]
 impl Axecutor {
+    /// An empty Axecutor should be used with care -- you must at least initialize a memory area with code and set the initial RIP
+    pub(crate) fn empty() -> Axecutor {
+        Self {
+            stack_top: 0,
+            hooks: HookProcessor::default(),
+            code_end_addr: 0,
+            symbol_table: HashMap::new(),
+            state: MachineState {
+                finished: false,
+                executed_instructions_count: 0,
+                memory: Vec::new(),
+                registers: randomized_register_set(0),
+                xmm_registers: randomized_xmm_set(),
+                // Intel SDM 3.4.3 EFLAGS Register mentions "0x00000002" as default value, but this conflicts with some test cases.
+                // Also the initial value shouldn't matter much
+                rflags: 0,
+                fs: 0,
+                gs: 0,
+                syscalls: SyscallState::default(),
+                call_stack: Vec::new(),
+                trace: Vec::new(),
+            },
+        }
+    }
+
     #[wasm_bindgen(constructor)]
     /// Creates a new Axecutor instance from the given x86-64 instruction bytes, writing the code to memory at `code_start_addr` and setting the initial RIP to `initial_rip`.
     pub fn new(code: &[u8], code_start_addr: u64, initial_rip: u64) -> Result<Axecutor, AxError> {
@@ -88,39 +108,27 @@ impl Axecutor {
         }
 
         debug_log!("Creating Axecutor");
-        Ok(Self {
-            code_start_address: code_start_addr,
-            code_length: code.len() as u64,
-            code: code.to_vec(),
-            stack_top: 0,
-            hooks: HookProcessor::default(),
-            // Just assume everything has "_start" as entrypoint
-            symbol_table: [(initial_rip, "_start".to_string())]
-                .iter()
-                .cloned()
-                .collect(),
-            state: MachineState {
-                finished: false,
-                executed_instructions_count: 0,
-                memory: Vec::new(),
-                registers: randomized_register_set(initial_rip),
-                xmm_registers: randomized_xmm_set(),
-                // Intel SDM 3.4.3 EFLAGS Register mentions "0x00000002" as default value, but this conflicts with some test cases.
-                // Also the initial value shouldn't matter much
-                rflags: 0,
-                fs: 0,
-                gs: 0,
-                syscalls: SyscallState::default(),
-                // Basically we pretend that we have a call to _start at the beginning
-                call_stack: vec![initial_rip],
-                trace: vec![TraceEntry {
-                    instr_ip: 0,
-                    target: initial_rip,
-                    variant: TraceVariant::Call,
-                    level: 0,
-                }],
-            },
-        })
+        let mut ax = Axecutor::empty();
+
+        ax.code_end_addr = code_start_addr + code.len() as u64;
+        ax.state
+            .registers
+            .insert(SupportedRegister::RIP, initial_rip);
+
+        // Pretend to call _start
+        ax.state.call_stack.push(initial_rip);
+        ax.symbol_table.insert(initial_rip, "_start".to_string());
+        ax.state.trace.push(TraceEntry {
+            instr_ip: 0,
+            target: initial_rip,
+            variant: TraceVariant::Call,
+            level: 0,
+        });
+
+        ax.mem_init_area(code_start_addr, Vec::from(code))?;
+        ax.mem_prot(code_start_addr, PROT_READ | PROT_EXEC)?;
+
+        Ok(ax)
     }
 
     #[wasm_bindgen(js_name = toString)]
@@ -130,14 +138,10 @@ impl Axecutor {
         debug_log!("Calling Axecutor::to_string");
         format!(
             "Axecutor {{
-    code_start_address: {:#0x},
-    code_length: {:#x},
     hooks: {},
     state: {},
     call_stack: {:#?}
 }}",
-            self.code_start_address,
-            self.code_length,
             self.prefix_each_line(self.hooks.to_string().as_str(), "    "),
             self.state.to_string_ident(1),
             self.prefix_each_line(
