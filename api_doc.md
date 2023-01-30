@@ -292,6 +292,10 @@ Give an overview of the current call stack.
 This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
 
 
+#### `Axecutor.read_mem_prot(section_start: bigint) => number`
+Get the access permissions of the memory area with the given start address.
+
+
 ## Functions
 The following functions are available after the `init` function has been called.
 

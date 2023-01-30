@@ -1,19 +1,25 @@
-extern crate elf;
-use elf::abi::*;
-use elf::endian::AnyEndian;
-use elf::to_str::p_type_to_str;
-use elf::{ElfBytes, ParseError};
+extern crate elfloader;
 
+use elfloader::{ElfBinary, ElfLoaderErr, RelocationEntry};
 use std::string::FromUtf8Error;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::helpers::debug::debug_log;
-use crate::helpers::macros::{assert_fatal, fatal_error};
+
+use crate::helpers::trace::{TraceEntry, TraceVariant};
+use crate::state::memory::{PROT_EXEC, PROT_READ, PROT_WRITE};
+use crate::state::registers::SupportedRegister;
 use crate::{axecutor::Axecutor, helpers::errors::AxError};
 
-impl From<ParseError> for AxError {
-    fn from(err: ParseError) -> Self {
-        AxError::from(format!("ELF: Parse error: {}", err))
+impl From<ElfLoaderErr> for AxError {
+    fn from(err: ElfLoaderErr) -> Self {
+        AxError::from(format!("ELF: {}", err))
+    }
+}
+
+impl From<AxError> for ElfLoaderErr {
+    fn from(_err: AxError) -> Self {
+        ElfLoaderErr::from("Internal Axecutor error that can't be converted during ELF loading")
     }
 }
 
@@ -23,7 +29,108 @@ impl From<FromUtf8Error> for AxError {
     }
 }
 
+fn flags_mask(flags: elfloader::Flags) -> u32 {
+    let mut access = 0;
+    if flags.is_read() {
+        access |= PROT_READ;
+    }
+    if flags.is_write() {
+        access |= PROT_WRITE;
+    }
+    if flags.is_execute() {
+        access |= PROT_EXEC;
+    }
+
+    access
+}
+
 // TODO: System V ABI mentions %rdx should have "a function pointer that the application should register with atexit" at process entry
+
+struct AxecutorElfLoader {
+    ax: Axecutor,
+}
+
+impl elfloader::ElfLoader for AxecutorElfLoader {
+    fn allocate(&mut self, load_headers: elfloader::LoadableHeaders) -> Result<(), ElfLoaderErr> {
+        debug_log!("Calling AxecutorElfLoader::allocate");
+
+        for header in load_headers {
+            let start = header.virtual_addr();
+            let length = header.mem_size();
+            let flags = header.flags();
+
+            debug_log!(
+                "Allocating memory for ELF section at {:#x} with length {:#x} and flags {:#?}",
+                start,
+                length,
+                flags
+            );
+
+            self.ax
+                .mem_init_zero_named(start, length, format!("elf_header_{:#x}", start))?;
+
+            // self.ax.mem_prot(start, flags_mask(flags) | PROT_WRITE)?;
+            self.ax
+                .mem_prot(start, PROT_READ | PROT_WRITE | PROT_EXEC)?;
+        }
+
+        Ok(())
+    }
+
+    fn load(
+        &mut self,
+        _flags: elfloader::Flags,
+        section_start: elfloader::VAddr,
+        data: &[u8],
+    ) -> Result<(), ElfLoaderErr> {
+        debug_log!("Calling AxecutorElfLoader::load");
+
+        // Make sure we can write to the section
+        // self.ax.mem_prot(section_start, PROT_WRITE)?;
+
+        self.ax.mem_write_bytes(section_start, data)?;
+
+        self.ax
+            .mem_prot(section_start, PROT_READ | PROT_WRITE | PROT_EXEC)?;
+
+        Ok(())
+    }
+
+    fn relocate(&mut self, entry: elfloader::RelocationEntry) -> Result<(), ElfLoaderErr> {
+        debug_log!("Calling AxecutorElfLoader::relocate");
+
+        let RelocationEntry {
+            rtype: _,
+            offset: _,
+            index: _,
+            addend: _,
+        } = entry;
+
+        Ok(())
+    }
+
+    fn make_readonly(&mut self, _base: elfloader::VAddr, _size: usize) -> Result<(), ElfLoaderErr> {
+        // debug_log!("Calling AxecutorElfLoader::make_readonly");
+        // let initial_access = self.ax.read_mem_prot(base)?;
+        // self.ax.mem_prot(base, initial_access & !PROT_WRITE)?;
+
+        Ok(())
+    }
+
+    fn tls(
+        &mut self,
+        tdata_start: elfloader::VAddr,
+        _tdata_length: u64,
+        _total_size: u64,
+        _align: u64,
+    ) -> Result<(), ElfLoaderErr> {
+        debug_log!("Calling AxecutorElfLoader::tls");
+
+        self.ax.write_fs(tdata_start);
+
+        Ok(())
+    }
+}
 
 #[wasm_bindgen]
 impl Axecutor {
@@ -36,281 +143,32 @@ impl Axecutor {
         // Following reference contains a lot of info about what all these ELF fields mean:
         // https://man7.org/linux/man-pages/man5/elf.5.html
 
-        let file = ElfBytes::<AnyEndian>::minimal_parse(binary)?;
+        let binary = ElfBinary::new(binary)?;
 
-        let text_section = match file.section_header_by_name(".text")? {
-            Some(section) => section,
-            None => return Err(AxError::from("ELF: No .text section")),
+        let mut loader = AxecutorElfLoader {
+            ax: Axecutor::empty(),
         };
 
-        let mut initial_addr = text_section.sh_addr;
-        let mut code = Vec::from(match file.section_data(&text_section)? {
-            (data, None) => data,
-            (_, Some(_)) => {
-                return Err(AxError::from("ELF: Compressed .text section not supported"))
-            }
+        binary.load(&mut loader)?;
+
+        let mut ax = loader.ax;
+
+        let initial_rip = binary.entry_point();
+        ax.state
+            .registers
+            .insert(SupportedRegister::RIP, initial_rip);
+
+        // Pretend to call _start
+        ax.state.call_stack.push(initial_rip);
+        ax.symbol_table.insert(initial_rip, "_start".to_string());
+        ax.state.trace.push(TraceEntry {
+            instr_ip: 0,
+            target: initial_rip,
+            variant: TraceVariant::Call,
+            level: 0,
         });
 
-        // Usually in binaries, we have a `.init` section, then the `.plt` section and then `.text`
-        // This order is also recommended in the System V ABI, see "4.2.3 Special Sections"
-        // We try to load the `.init` section into memory and then set the code section initial address
-        if let Some(plt_section) = file.section_header_by_name(".plt")? {
-            // Now if the .plt section is exactly before the .text section, let the overlap work out
-            if plt_section.sh_addr + plt_section.sh_size == initial_addr {
-                // We have a .plt section, let's load it into memory
-                let plt_data = match file.section_data(&plt_section)? {
-                    (data, None) => data,
-                    (_, Some(_)) => {
-                        return Err(AxError::from("ELF: Compressed .plt section not supported"))
-                    }
-                };
-
-                initial_addr = plt_section.sh_addr;
-
-                // Prepend to code
-                code = [plt_data, &code].concat();
-
-                debug_log!("ELF: Found .plt section and prepended it before .text");
-            }
-        }
-        // Now the same for .init section
-        if let Some(init_section) = file.section_header_by_name(".init")? {
-            if init_section.sh_addr + init_section.sh_size == initial_addr {
-                let init_data = match file.section_data(&init_section)? {
-                    (data, None) => data,
-                    (_, Some(_)) => {
-                        return Err(AxError::from("ELF: Compressed .init section not supported"))
-                    }
-                };
-
-                initial_addr = init_section.sh_addr;
-
-                // Prepend to code
-                code = [init_data, &code].concat();
-
-                debug_log!("ELF: Found .init section and prepended it before .text");
-            }
-        }
-
-        let entrypoint = file.ehdr.e_entry;
-        let mut axecutor = Axecutor::new(
-            &code,
-            initial_addr,
-            if entrypoint == 0 {
-                text_section.sh_addr
-            } else {
-                entrypoint
-            },
-        )?;
-
-        let reloc_sections = match file.section_headers() {
-            Some(headers) => headers,
-            None => return Err(AxError::from("ELF: No section headers")),
-        };
-
-        for section in reloc_sections
-            .iter()
-            .filter(|shdr| shdr.sh_type == SHT_REL || shdr.sh_type == SHT_RELA)
-        {
-            // TODO: implement relocations
-            if section.sh_type == SHT_REL {
-                debug_log!("ELF: Loading REL section @{:#x}", section.sh_addr);
-
-                for rel in file.section_data_as_rels(&section)? {
-                    debug_log!(
-                        "ELF: Relocation: Rel {{ offset: {:#x}, sym: {}, type: {} }}",
-                        rel.r_offset,
-                        rel.r_sym,
-                        rel.r_type
-                    );
-                }
-            } else {
-                debug_log!("ELF: Loading RELA section @{:#x}", section.sh_addr);
-
-                for rela in file.section_data_as_relas(&section)? {
-                    debug_log!("ELF: Relocation: Rela {{ offset: {:#x}, sym: {}, type: {}, addend: {:#x} }}", rela.r_offset, rela.r_sym, rela.r_type, rela.r_addend                );
-                }
-            }
-        }
-
-        let segments = match file.segments() {
-            Some(headers) => headers,
-            None => return Err(AxError::from("ELF: No program headers")),
-        };
-
-        for segment in segments {
-            if segment.p_vaddr == 0 {
-                debug_log!(
-                    "ELF: Skip loading segment with p_vaddr == 0, p_type {} ({})",
-                    p_type_to_str(segment.p_type).expect("Unknown segment type"),
-                    segment.p_type
-                );
-                continue;
-            }
-
-            if segment.p_vaddr >= initial_addr && segment.p_vaddr < initial_addr + code.len() as u64
-            {
-                // skip .text, .init and .plt section -- we already them
-                // Aspirationally this should go away once the memory implementation also handles the code section
-                continue;
-            }
-
-            let content = file.segment_data(&segment)?;
-
-            match segment.p_type {
-                // Skippable
-                PT_NULL | PT_NOTE | PT_SHLIB | PT_PHDR => {
-                    debug_log!(
-                        "ELF: Skip loading segment of type {} ({:#x}) @ {:#x} with size {:#x}",
-                        p_type_to_str(segment.p_type).expect("Unknown segment type"),
-                        segment.p_type,
-                        segment.p_vaddr,
-                        segment.p_memsz
-                    );
-                }
-                // Skippable, but we should warn and probably implement them in the future
-                PT_GNU_EH_FRAME | PT_GNU_STACK | PT_GNU_RELRO | PT_GNU_PROPERTY => {
-                    // TODO: Read more about PT_GNU_RELRO, as it might be where 0x800 from exit_c is relocated from. Not sure
-                    debug_log!(
-                        "ELF: Skip loading segment of type {} ({:#x}) @ {:#x} with size {:#x}",
-                        p_type_to_str(segment.p_type).unwrap_or("unknown"),
-                        segment.p_type,
-                        segment.p_vaddr,
-                        segment.p_memsz
-                    );
-                }
-                // Unsupported segment types
-                PT_DYNAMIC => {
-                    return Err(AxError::from("ELF: Dynamic linking not supported"));
-                }
-                PT_TLS => {
-                    // Thread-local storage
-                    debug_log!(
-                        "ELF: Loading TLS segment at {:#x} with size {:#x} and offset {:#x}",
-                        segment.p_vaddr,
-                        segment.p_memsz,
-                        segment.p_offset
-                    );
-
-                    assert_fatal!(axecutor.read_fs() == 0, "ELF: TLS already initialized");
-
-                    // See if we already have a memory area with that address
-                    let end_addr = match axecutor.mem_get_area(segment.p_vaddr) {
-                        Some(a) => {
-                            // We already have an area, let's make sure it's big enough
-                            assert_fatal!(
-                                a.len() >= segment.p_memsz,
-                                "ELF: preexisting TLS area is too small"
-                            );
-                            debug_log!("ELF: TLS area already exists, reusing it");
-                            segment.p_vaddr + a.len() as u64
-                        }
-                        None => {
-                            // We don't have an area, let's create one
-                            debug_log!("ELF: TLS area doesn't exist, creating it");
-
-                            if segment.p_memsz == segment.p_filesz {
-                                let addr = axecutor.mem_init_anywhere(
-                                    content.to_vec(),
-                                    Some(format!("elf_tls_header_{:#x}", segment.p_vaddr)),
-                                )?;
-                                addr + content.len() as u64
-                            } else {
-                                // Make sure we create the memory at full size and then write the first bytes, rest should be zeroed
-                                let addr = axecutor.mem_init_anywhere(
-                                    vec![0; segment.p_memsz as usize],
-                                    Some(format!("elf_tls_zeroed_header_{:#x}", segment.p_vaddr)),
-                                )?;
-
-                                axecutor.mem_write_bytes(
-                                    segment.p_vaddr,
-                                    &content[..segment.p_filesz as usize],
-                                )?;
-
-                                addr + segment.p_memsz as u64
-                            }
-                        }
-                    };
-
-                    axecutor.write_fs(end_addr);
-                }
-                PT_LOAD => {
-                    debug_log!(
-                        "ELF: Loading segment at {:#x} with size {:#x} and offset {:#x}",
-                        segment.p_vaddr,
-                        segment.p_memsz,
-                        segment.p_offset,
-                    );
-
-                    if segment.p_memsz == segment.p_filesz {
-                        axecutor.mem_init_area_named(
-                            segment.p_vaddr,
-                            content.to_vec(),
-                            Some(format!("elf_header_{:#x}", segment.p_vaddr)),
-                        )?;
-                    } else {
-                        // Make sure we create the memory at full size and then write the first bytes, rest should be zeroed
-                        axecutor.mem_init_zero_named(
-                            segment.p_vaddr,
-                            segment.p_memsz,
-                            format!("elf_zeroed_header_{:#x}", segment.p_vaddr),
-                        )?;
-
-                        if content.len() > segment.p_filesz as usize {
-                            return Err(AxError::from(
-                                "ELF: Content is larger than specified in segment header"
-                                    .to_string(),
-                            ));
-                        }
-
-                        axecutor.mem_write_bytes(
-                            segment.p_vaddr,
-                            &content[..segment.p_filesz as usize],
-                        )?;
-                    }
-                }
-                _ => {
-                    fatal_error!(
-                        "ELF: Unsupported segment type {} ({:#x})",
-                        p_type_to_str(segment.p_type).unwrap_or("unknown"),
-                        segment.p_type
-                    );
-                }
-            }
-        }
-
-        match file.symbol_table() {
-            Ok(Some((symbol_table, str_table))) => {
-                for symbol in symbol_table.iter() {
-                    if symbol.is_undefined() {
-                        debug_log!("ELF: Ignoring undefined symbol in strtab");
-                        continue;
-                    }
-
-                    let name = match str_table.get(symbol.st_name as usize) {
-                        Ok(name) => name,
-                        Err(_) => {
-                            debug_log!("ELF: Invalid symbol name (wrong string table index)");
-                            continue;
-                        }
-                    };
-
-                    debug_log!("ELF: Found symbol {} at {:#x}", name, symbol.st_value);
-
-                    axecutor
-                        .symbol_table
-                        .insert(symbol.st_value, name.to_string());
-                }
-            }
-            Ok(None) => {
-                debug_log!("ELF: No symbol table");
-            }
-            Err(_) => {
-                debug_log!("ELF: No symbol table");
-            }
-        }
-
-        Ok(axecutor)
+        Ok(ax)
     }
 }
 

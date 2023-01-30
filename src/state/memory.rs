@@ -581,6 +581,20 @@ impl Axecutor {
         )))
     }
 
+    /// Get the access permissions of the memory area with the given start address.
+    pub fn read_mem_prot(&self, section_start: u64) -> Result<u32, AxError> {
+        for area in &self.state.memory {
+            if section_start == area.start {
+                return Ok(area.access);
+            }
+        }
+
+        Err(AxError::from(format!(
+            "No section has start address {:#x}",
+            section_start
+        )))
+    }
+
     /// Initialize a memory area with the given data.
     pub fn mem_init_area(&mut self, start: u64, data: Vec<u8>) -> Result<(), AxError> {
         self.mem_init_area_named(start, data, None)
