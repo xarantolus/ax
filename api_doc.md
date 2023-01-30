@@ -195,6 +195,13 @@ Reads `length` bytes from memory at `address`.
 Writes bytes of `data` to memory at `address`.
 
 
+##### `Axecutor.mem_prot(section_start: bigint, prot: number) => void`
+Set the access permissions of the memory area with the given start address.
+The access permissions are a bitmask of `PROT_READ` (1), `PROT_WRITE` (2), and `PROT_EXEC` (4).
+A value of 0 means no access.
+By default, all memory areas are initialized with `PROT_READ | PROT_WRITE`.
+
+
 #### Hooks
 The following methods are available for hooks. Hooks are used to intercept execution of specific instructions.
 They can either run before or after the instruction is executed. The callback function can be either synchronous or asynchronous and has the following signature:
@@ -266,6 +273,15 @@ There are also some utility methods.
 No documentation available.
 
 
+#### `Axecutor.toString() => string`
+Returns a string representation of the Axecutor instance that can be useful for debugging.
+
+
+#### `Axecutor.resolve_symbol(addr: bigint) => string`
+Get the symbol name for a given address. This only works if the ELF binary contains a symbol table.
+If no symbol is found, None or undefined is returned.
+
+
 #### `Axecutor.trace() => string`
 Generate a trace of the current execution state. This trace is a list of all executed jumps, calls and returns.
 This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
@@ -274,15 +290,6 @@ This works best when a symbol table has been provided, which is currently only t
 #### `Axecutor.call_stack() => string`
 Give an overview of the current call stack.
 This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
-
-
-#### `Axecutor.toString() => string`
-Returns a string representation of the Axecutor instance that can be useful for debugging.
-
-
-#### `Axecutor.resolve_symbol(addr: bigint) => string`
-Get the symbol name for a given address. This only works if the ELF binary contains a symbol table.
-If no symbol is found, None or undefined is returned.
 
 
 ## Functions

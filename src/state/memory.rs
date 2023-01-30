@@ -9,7 +9,47 @@ use crate::{axecutor::Axecutor, helpers::errors::AxError};
 #[cfg(all(target_arch = "wasm32", not(test)))]
 use wasm_bindgen::JsValue;
 
+use std::cmp::min;
 use std::convert::TryInto;
+
+/// The area must not be accessed
+pub const PROT_NONE: u32 = 0x0;
+/// The area can be read from
+pub const PROT_READ: u32 = 0x1;
+/// The area can be written to
+pub const PROT_WRITE: u32 = 0x2;
+/// The area can be executed
+pub const PROT_EXEC: u32 = 0x4;
+
+fn access_to_string(prot: u32) -> String {
+    if prot == PROT_NONE {
+        return "PROT_NONE".to_string();
+    }
+
+    let mut s = String::new();
+
+    if prot & PROT_READ != 0 {
+        s.push_str("READ");
+    }
+
+    if prot & PROT_WRITE != 0 {
+        if !s.is_empty() {
+            s.push_str(" | ");
+        }
+
+        s.push_str("WRITE");
+    }
+
+    if prot & PROT_EXEC != 0 {
+        if !s.is_empty() {
+            s.push_str(" | ");
+        }
+
+        s.push_str("EXEC");
+    }
+
+    s
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct MemoryArea {
@@ -17,6 +57,7 @@ pub(crate) struct MemoryArea {
     start: u64,
     length: u64,
     data: Vec<u8>,
+    access: u32,
 }
 
 impl MemoryArea {
@@ -46,6 +87,13 @@ impl MemoryArea {
             " ".repeat(i * 4),
             self.length
         ));
+
+        s.push_str(&format!(
+            "{}    access: {},\n",
+            " ".repeat(i * 4),
+            access_to_string(self.access)
+        ));
+
         s.push_str(&format!("{}    data: [", " ".repeat(i * 4)));
 
         const MAX_LEN: usize = 255;
@@ -94,44 +142,62 @@ impl Axecutor {
             length
         );
 
-        let mut result = Vec::new();
+        let area = self
+            .state
+            .memory
+            .iter()
+            .find(|area| area.start <= address && address < area.start + area.length)
+            .ok_or_else(|| self.collect_mem_error_hints(address, length, "Read".to_string()))?;
 
-        for area in &self.state.memory {
-            if address >= area.start && address + length <= area.start + area.length {
-                let offset = (address - area.start) as usize;
-                let slice = &area.data[offset..offset + length as usize];
-                result.extend_from_slice(slice);
+        if area.access & PROT_READ == 0 {
+            return Err(AxError::from(format!(
+                "Cannot read {} bytes from memory area{} @ {:#x}, access is {}",
+                length,
+                match &area.name {
+                    Some(name) => format!(" {}", name),
+                    None => String::new(),
+                },
+                address,
+                access_to_string(area.access)
+            )));
+        }
 
-                if result.len() <= 100 {
-                    debug_log!(
-                        "Read from memory area{}, start={:#x}, area_length={}, read={:?}{}",
-                        match &area.name {
-                            Some(name) => format!(" {}", name),
-                            None => String::new(),
-                        },
-                        area.start,
-                        area.length,
-                        result,
-                        match result.len() {
-                            1 => format!(", formatted=0x{:02x}", result[0]),
-                            2 => format!(
-                                ", formatted=0x{:04x}",
-                                u16::from_le_bytes(slice.try_into().unwrap())
-                            ),
-                            4 => format!(
-                                ", formatted=0x{:08x}",
-                                u32::from_le_bytes(slice.try_into().unwrap())
-                            ),
-                            8 => format!(
-                                ", formatted=0x{:016x}",
-                                u64::from_le_bytes(slice.try_into().unwrap())
-                            ),
-                            _ => "".to_string(),
-                        }
-                    );
-                } else {
-                    // Only log the first 50 and last 50 bytes of the memory area, with "<too much data to display>" in the middle
-                    debug_log!(
+        let offset = (address - area.start) as usize;
+        let slice = &area.data[offset..offset + length as usize];
+
+        let result = slice.to_vec();
+
+        #[cfg(debug_assertions)]
+        if result.len() <= 100 {
+            debug_log!(
+                "Read from memory area{}, start={:#x}, area_length={}, read={:?}{}",
+                match &area.name {
+                    Some(name) => format!(" {}", name),
+                    None => String::new(),
+                },
+                area.start,
+                area.length,
+                result,
+                match result.len() {
+                    1 => format!(", formatted=0x{:02x}", result[0]),
+                    2 => format!(
+                        ", formatted=0x{:04x}",
+                        u16::from_le_bytes(slice.try_into().unwrap())
+                    ),
+                    4 => format!(
+                        ", formatted=0x{:08x}",
+                        u32::from_le_bytes(slice.try_into().unwrap())
+                    ),
+                    8 => format!(
+                        ", formatted=0x{:016x}",
+                        u64::from_le_bytes(slice.try_into().unwrap())
+                    ),
+                    _ => "".to_string(),
+                }
+            );
+        } else {
+            // Only log the first 50 and last 50 bytes of the memory area, with "<too much data to display>" in the middle
+            debug_log!(
                         "Read from memory area{}, start={:#x}, length={}, read=[{:?}, <too much data to display>, {:?}]",
                         match &area.name {
                             Some(name) => format!(" {}", name),
@@ -142,30 +208,47 @@ impl Axecutor {
                         &result[0..50],
                         &result[result.len() - 50..]
                     );
-                }
-
-                return Ok(result);
-            }
         }
 
-        // We are out of range -- try to collect the best possible error hints for the user
-        Err(self.collect_mem_error_hints(address, length, "Read".to_string()))
+        Ok(result)
+    }
+
+    pub(crate) fn mem_read_executable_bytes(&self, address: u64) -> Result<Vec<u8>, AxError> {
+        let area = self
+            .state
+            .memory
+            .iter()
+            .find(|area| area.start <= address && address < area.start + area.length)
+            .ok_or_else(|| {
+                self.collect_mem_error_hints(address, 15, "Read executable".to_string())
+            })?;
+
+        if area.access & PROT_EXEC == 0 {
+            return Err(AxError::from(format!(
+                "Cannot read executable bytes from memory area{} @ {:#x}, access is {}",
+                match &area.name {
+                    Some(name) => format!(" {}", name),
+                    None => String::new(),
+                },
+                address,
+                access_to_string(area.access)
+            )));
+        }
+
+        // Read up to 15 bytes, but only as many as are available in the memory area
+
+        // &self.code[code_offset..min(code_offset + 15, self.code.len())];
+
+        let offset = (address - area.start) as usize;
+        let slice = &area.data[offset..min(offset + 15, area.data.len())];
+
+        let result = slice.to_vec();
+
+        Ok(result)
     }
 
     fn collect_mem_error_hints(&self, address: u64, length: u64, operation: String) -> AxError {
-        // Check if address is within the code area
-        if address >= self.code_start_address
-            && address < self.code_start_address + self.code_length
-        {
-            return AxError::from(format!(
-                "Memory {} of length {} in code area at address {:#x}",
-                operation.to_lowercase(),
-                length,
-                address
-            ));
-        }
-
-        // Otherwise, check if start or end address is within any of the memory areas
+        // check if start or end address is within any of the memory areas
         for area in &self.state.memory {
             if address >= area.start && address < area.start + area.length {
                 return AxError::from(format!(
@@ -250,6 +333,16 @@ impl Axecutor {
         Ok(bytes[0] as u64)
     }
 
+    pub(crate) fn mem_get_area(&self, start_addr: u64) -> Option<MemoryArea> {
+        for area in &self.state.memory {
+            if start_addr == area.start {
+                return Some(area.clone());
+            }
+        }
+
+        None
+    }
+
     // TODO: Currently cannot write consecutive sections of memory
     // It would also make sense to give better error messages, e.g. if the write start address is within an area, but the data is too long
     /// Writes bytes of `data` to memory at `address`
@@ -260,51 +353,74 @@ impl Axecutor {
             data.len()
         );
 
-        for area in &mut self.state.memory {
-            if address >= area.start && address + data.len() as u64 <= area.start + area.length {
-                let offset = (address - area.start) as usize;
-                area.data[offset..offset + data.len()].copy_from_slice(data);
+        let area = match self
+            .state
+            .memory
+            .iter_mut()
+            .find(|area| area.start <= address && address < area.start + area.length)
+        {
+            Some(area) => area,
+            None => {
+                return Err(self.collect_mem_error_hints(
+                    address,
+                    data.len() as u64,
+                    "Write".to_string(),
+                ))
+            }
+        };
 
-                #[cfg(debug_assertions)]
-                if data.len() <= 100 {
-                    debug_log!(
-                        "Wrote to memory area, start={:#x}, length={}, wrote={:?}{}",
-                        area.start,
-                        area.length,
-                        data,
-                        match data.len() {
-                            1 => format!(", formatted=0x{:02x}", data[0]),
-                            2 => format!(
-                                ", formatted=0x{:04x}",
-                                u16::from_le_bytes(data.try_into().unwrap())
-                            ),
-                            4 => format!(
-                                ", formatted=0x{:08x}",
-                                u32::from_le_bytes(data.try_into().unwrap())
-                            ),
-                            8 => format!(
-                                ", formatted=0x{:016x}",
-                                u64::from_le_bytes(data.try_into().unwrap())
-                            ),
-                            _ => "".to_string(),
-                        }
-                    );
-                } else {
-                    // Only log the first 50 and last 50 bytes of data, with "<too much data to display>" in the middle
-                    debug_log!(
+        if area.access & PROT_WRITE == 0 {
+            return Err(AxError::from(format!(
+                "Cannot write {} bytes to memory area{} @ {:#x}, access is {}",
+                data.len(),
+                match &area.name {
+                    Some(name) => format!(" {}", name),
+                    None => String::new(),
+                },
+                address,
+                access_to_string(area.access)
+            )));
+        }
+
+        let offset = (address - area.start) as usize;
+        area.data[offset..offset + data.len()].copy_from_slice(data);
+
+        #[cfg(debug_assertions)]
+        if data.len() <= 100 {
+            debug_log!(
+                "Wrote to memory area, start={:#x}, length={}, wrote={:?}{}",
+                area.start,
+                area.length,
+                data,
+                match data.len() {
+                    1 => format!(", formatted=0x{:02x}", data[0]),
+                    2 => format!(
+                        ", formatted=0x{:04x}",
+                        u16::from_le_bytes(data.try_into().unwrap())
+                    ),
+                    4 => format!(
+                        ", formatted=0x{:08x}",
+                        u32::from_le_bytes(data.try_into().unwrap())
+                    ),
+                    8 => format!(
+                        ", formatted=0x{:016x}",
+                        u64::from_le_bytes(data.try_into().unwrap())
+                    ),
+                    _ => "".to_string(),
+                }
+            );
+        } else {
+            // Only log the first 50 and last 50 bytes of data, with "<too much data to display>" in the middle
+            debug_log!(
                         "Wrote to memory area, start={:#x}, length={}, wrote=[{:?}, <too much data to display>, {:?}]",
                         area.start,
                         area.length,
                         &data[0..50],
                         &data[data.len() - 50..]
                     );
-                }
-
-                return Ok(());
-            }
         }
 
-        Err(self.collect_mem_error_hints(address, data.len() as u64, "Write".to_string()))
+        Ok(())
     }
 
     /// Writes a 64-bit value to memory at `address`
@@ -371,14 +487,6 @@ impl Axecutor {
             }
         }
 
-        // No overlap with code section
-        if start_addr + new_size > self.code_start_address {
-            return Err(AxError::from(format!(
-                "Cannot resize section at address {:#x} to length {}, as it overlaps with the code section starting at {:#x}",
-                start_addr, new_size, self.code_start_address
-            )));
-        }
-
         if let Some(i) = area_to_resize {
             // Resize the area -- this works for both shrinking and growing
             let mut new_data = vec![0; new_size as usize];
@@ -401,16 +509,6 @@ impl Axecutor {
         )))
     }
 
-    pub(crate) fn mem_get_area(&self, start_addr: u64) -> Option<MemoryArea> {
-        for area in &self.state.memory {
-            if start_addr == area.start {
-                return Some(area.clone());
-            }
-        }
-
-        None
-    }
-
     /// Initialize a memory area with the given data and name.
     /// The name is used for logging and debugging purposes.
     pub fn mem_init_area_named(
@@ -419,14 +517,6 @@ impl Axecutor {
         data: Vec<u8>,
         name: Option<String>,
     ) -> Result<(), AxError> {
-        // Make sure there's no overlapping area already defined, including code region
-        if start >= self.code_start_address && start < self.code_start_address + self.code_length {
-            return Err(AxError::from(format!(
-                "Cannot initialize memory area {} at {:#x} (len={}), as it overlaps with the code section starting at {:#x} (len={})",
-                name.unwrap_or_else(|| "<unnamed>".to_string()), start, data.len(), self.code_start_address, self.code_length
-            )));
-        }
-
         for area in &self.state.memory {
             if start >= area.start && start < area.start + area.length {
                 let overlap_name = area
@@ -453,16 +543,42 @@ impl Axecutor {
             length: len,
             data,
             name,
+            access: PROT_READ | PROT_WRITE,
         });
 
         debug_log!(
-            "Initialized memory area{}, start={:#x}, length={:#x}",
+            "Initialized memory area{}, start={:#x}, length={:#x}, access={}",
             display_name,
             start,
-            len
+            len,
+            access_to_string(PROT_READ | PROT_WRITE)
         );
 
         Ok(())
+    }
+
+    /// Set the access permissions of the memory area with the given start address.
+    /// The access permissions are a bitmask of `PROT_READ` (1), `PROT_WRITE` (2), and `PROT_EXEC` (4).
+    /// A value of 0 means no access.
+    /// By default, all memory areas are initialized with `PROT_READ | PROT_WRITE`.
+    pub fn mem_prot(&mut self, section_start: u64, prot: u32) -> Result<(), AxError> {
+        assert_fatal!(
+            prot <= 7,
+            "Invalid access permissions {:#x} for memory area, must be a bitmask of PROT_READ (1), PROT_WRITE (2), and PROT_EXEC (4)",
+            prot
+        );
+
+        for area in &mut self.state.memory {
+            if section_start == area.start {
+                area.access = prot;
+                return Ok(());
+            }
+        }
+
+        Err(AxError::from(format!(
+            "No section has start address {:#x}",
+            section_start
+        )))
     }
 
     /// Initialize a memory area with the given data.
