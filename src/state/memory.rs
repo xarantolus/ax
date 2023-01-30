@@ -158,7 +158,7 @@ impl Axecutor {
             && address < self.code_start_address + self.code_length
         {
             return AxError::from(format!(
-                "Could not {} memory of length {} from code area at address {:#x}",
+                "Memory {} of length {} in code area at address {:#x}",
                 operation.to_lowercase(),
                 length,
                 address
@@ -169,10 +169,10 @@ impl Axecutor {
         for area in &self.state.memory {
             if address >= area.start && address < area.start + area.length {
                 return AxError::from(format!(
-                    "{} at address {:#x} of length {} over end of memory area {} (start {:#x}, length {})",
+                    "Memory {} of length {} at address {:#x} over end of memory area {} (start {:#x}, length {})",
                     operation,
-                    address,
                     length,
+                    address,
                     match &area.name {
                         Some(name) => name,
                         None => "<unnamed>",
@@ -186,10 +186,10 @@ impl Axecutor {
         for area in &self.state.memory {
             if address + length > area.start && address + length <= area.start + area.length {
                 return AxError::from(format!(
-                    "{} at address {:#x} of length {} before start of memory area {} (start {:#x}, length {})",
-                                        operation,
-                    address,
+                    "Memory {} of length {} at address {:#x} before start of memory area {} (start {:#x}, length {})",
+                    operation,
                     length,
+                    address,
                     match &area.name {
                         Some(name) => name,
                         None => "<unnamed>",
@@ -209,7 +209,7 @@ impl Axecutor {
 
         AxError::from(
             format!(
-                "Could not {} memory of length {} from address {:#x}: this address is not contained in any memory area{}",
+                "Memory {} of length {} at address {:#x}: this address is not contained in any memory area{}",
                 operation.to_lowercase(),
                 length,
                 address,
