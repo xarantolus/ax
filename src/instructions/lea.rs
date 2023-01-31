@@ -74,7 +74,7 @@ impl Axecutor {
 
         let dest = dest.into();
 
-        self.reg_write_64(dest, src_addr as u64)?;
+        self.reg_write_64(dest, src_addr)?;
         Ok(())
     }
 }

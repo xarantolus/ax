@@ -327,6 +327,7 @@ export enum Mnemonic {
   And,
   Call,
   Cdq,
+  Cdqe,
   Cld,
   Cmovae,
   Cmove,
@@ -383,6 +384,7 @@ export enum Mnemonic {
   Syscall,
   Test,
   Xor,
+  Xorps,
   Int3,
 }
 ```

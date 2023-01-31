@@ -158,7 +158,7 @@ pub enum SupportedMnemonic {
 
 impl SupportedMnemonic {
     pub fn name(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 

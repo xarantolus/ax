@@ -32,7 +32,7 @@ pub(crate) fn ax_test_runner<S, A>(
         setup(&mut ax);
 
         if let Err(e) = ax.execute().await {
-            panic!("Failed to execute: {:?}", e)
+            panic!("Failed to execute: {e:?}")
         };
 
         let flags = ax.state.rflags;

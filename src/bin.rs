@@ -16,7 +16,7 @@ async fn main() {
             std::process::exit(exit_code);
         }
         Err(e) => {
-            eprintln!("Error: {}", e);
+            eprintln!("Error: {e}");
             std::process::exit(1);
         }
     }
@@ -24,16 +24,14 @@ async fn main() {
 
 async fn main_impl() -> Result<i32, AxError> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let envp: Vec<String> = std::env::vars()
-        .map(|(k, v)| format!("{}={}", k, v))
-        .collect();
+    let envp: Vec<String> = std::env::vars().map(|(k, v)| format!("{k}={v}")).collect();
 
     let (elf_path, argv) = args
         .split_first()
         .ok_or_else(|| AxError::from("No arguments provided"))?;
 
     let binary = std::fs::read(elf_path)
-        .map_err(|e| AxError::from(format!("Failed to read file {}: {}", elf_path, e)))?;
+        .map_err(|e| AxError::from(format!("Failed to read file {elf_path}: {e}")))?;
 
     println!(
         "Emulating {} with ax v{}, {}",
@@ -64,9 +62,9 @@ async fn main_impl() -> Result<i32, AxError> {
                 let output_text = String::from_utf8(result_buf)?;
 
                 if rdi == 2 {
-                    eprint!("{}", output_text);
+                    eprint!("{output_text}");
                 } else {
-                    print!("{}", output_text);
+                    print!("{output_text}");
                 }
 
                 // Return number of bytes written
@@ -77,7 +75,7 @@ async fn main_impl() -> Result<i32, AxError> {
                 ax.stop();
             }
             _ => {
-                return Err(AxError::from(format!("Unsupported syscall: {}", syscall_num)).into());
+                return Err(AxError::from(format!("Unsupported syscall: {syscall_num}")).into());
             }
         }
 

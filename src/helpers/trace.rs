@@ -75,7 +75,7 @@ impl Axecutor {
                 "entrypoint".to_string()
             } else {
                 match self.decode_at(entry.instr_ip) {
-                    Ok(instr) => format!("{}", instr),
+                    Ok(instr) => format!("{instr}"),
                     Err(_) => "<decoding error>".to_string(),
                 }
             };
@@ -215,8 +215,8 @@ impl Axecutor {
 
         for (i, addr) in self.state.call_stack.iter().enumerate() {
             let formatted = match self.symbol_table.get(addr) {
-                Some(sym) => format!("{}@{:#x}", sym, addr),
-                None => format!("{:#x}", addr),
+                Some(sym) => format!("{sym}@{addr:#x}"),
+                None => format!("{addr:#x}"),
             };
 
             if i == self.state.call_stack.len() - 1 {

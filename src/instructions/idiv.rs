@@ -40,8 +40,7 @@ impl Axecutor {
 
         if src_val == 0 {
             return Err(AxError::from(format!(
-                "Divide by zero in Idiv_rm8: operand {:?} is 0",
-                op
+                "Divide by zero in Idiv_rm8: operand {op:?} is 0"
             )));
         }
 
@@ -69,8 +68,7 @@ impl Axecutor {
 
         if src_val == 0 {
             return Err(AxError::from(format!(
-                "Divide by zero in Idiv_rm16: operand {:?} is 0",
-                op
+                "Divide by zero in Idiv_rm16: operand {op:?} is 0"
             )));
         }
 
@@ -101,13 +99,11 @@ impl Axecutor {
 
         if src_val == 0 {
             return Err(AxError::from(format!(
-                "Divide by zero in Idiv_rm32: operand {:?} is 0",
-                op
+                "Divide by zero in Idiv_rm32: operand {op:?} is 0"
             )));
         }
 
-        let dst_val =
-            (self.reg_read_32(EAX)? as u64 | ((self.reg_read_32(EDX)? as u64) << 32)) as i64;
+        let dst_val = (self.reg_read_32(EAX)? | (self.reg_read_32(EDX)? << 32)) as i64;
 
         let (quotient, remainder) = (dst_val / src_val, dst_val % src_val);
 
@@ -133,8 +129,7 @@ impl Axecutor {
 
         if src_val == 0 {
             return Err(AxError::from(format!(
-                "Divide by zero in Idiv_rm64: operand {:?} is 0",
-                op
+                "Divide by zero in Idiv_rm64: operand {op:?} is 0"
             )));
         }
 

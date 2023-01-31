@@ -13,13 +13,13 @@ use crate::{axecutor::Axecutor, helpers::errors::AxError};
 
 impl From<ParseError> for AxError {
     fn from(err: ParseError) -> Self {
-        AxError::from(format!("ELF: Parse error: {}", err))
+        AxError::from(format!("ELF: Parse error: {err}"))
     }
 }
 
 impl From<FromUtf8Error> for AxError {
     fn from(err: FromUtf8Error) -> Self {
-        AxError::from(format!("ELF: Invalid UTF-8 in section name: {}", err))
+        AxError::from(format!("ELF: Invalid UTF-8 in section name: {err}"))
     }
 }
 
@@ -205,7 +205,7 @@ impl Axecutor {
                                 "ELF: preexisting TLS area is too small"
                             );
                             debug_log!("ELF: TLS area already exists, reusing it");
-                            segment.p_vaddr + a.len() as u64
+                            segment.p_vaddr + a.len()
                         }
                         None => {
                             // We don't have an area, let's create one
@@ -229,7 +229,7 @@ impl Axecutor {
                                     &content[..segment.p_filesz as usize],
                                 )?;
 
-                                addr + segment.p_memsz as u64
+                                addr + segment.p_memsz
                             }
                         }
                     };
