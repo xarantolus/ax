@@ -123,6 +123,7 @@ impl Axecutor {
             target: initial_rip,
             variant: TraceVariant::Call,
             level: 0,
+            count: 1,
         });
 
         ax.mem_init_area(code_start_addr, Vec::from(code))?;
