@@ -195,13 +195,13 @@ impl From<AxError> for JsValue {
 impl fmt::Display for AxError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = String::from(self.clone());
-        write!(f, "{}", s)
+        write!(f, "{s}")
     }
 }
 
 impl fmt::Debug for AxError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = String::from(self.clone());
-        write!(f, "{}", s)
+        write!(f, "{s}")
     }
 }

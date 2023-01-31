@@ -35,8 +35,7 @@ impl TryFrom<iced_x86::Register> for SupportedSegmentRegister {
             iced_x86::Register::FS => Ok(SupportedSegmentRegister::FS),
             iced_x86::Register::GS => Ok(SupportedSegmentRegister::GS),
             _ => Err(AxError::from(format!(
-                "Unsupported segment register: {:?}",
-                value
+                "Unsupported segment register: {value:?}"
             ))),
         }
     }
@@ -64,8 +63,7 @@ impl From<Operand> for u8 {
             Operand::Immediate { data, size } => {
                 debug_assert_eq!(
                     size, 1,
-                    "Expected immediate operand of size 1, got size {}",
-                    size
+                    "Expected immediate operand of size 1, got size {size}"
                 );
                 data as u8
             }
@@ -80,8 +78,7 @@ impl From<Operand> for u16 {
             Operand::Immediate { data, size } => {
                 debug_assert_eq!(
                     size, 2,
-                    "Expected immediate operand of size 2, got size {}",
-                    size
+                    "Expected immediate operand of size 2, got size {size}"
                 );
                 data as u16
             }
@@ -96,8 +93,7 @@ impl From<Operand> for u32 {
             Operand::Immediate { data, size } => {
                 debug_assert_eq!(
                     size, 4,
-                    "Expected immediate operand of size 4, got size {}",
-                    size
+                    "Expected immediate operand of size 4, got size {size}"
                 );
                 data as u32
             }
@@ -112,8 +108,7 @@ impl From<Operand> for u64 {
             Operand::Immediate { data, size } => {
                 debug_assert_eq!(
                     size, 8,
-                    "Expected immediate operand of size 8, got size {}",
-                    size
+                    "Expected immediate operand of size 8, got size {size}"
                 );
                 data
             }

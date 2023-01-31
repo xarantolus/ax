@@ -100,7 +100,7 @@ impl MemoryArea {
 
         if self.data.len() < MAX_LEN {
             for (i, byte) in self.data.iter().enumerate() {
-                s.push_str(&format!("0x{:02x}", byte));
+                s.push_str(&format!("0x{byte:02x}"));
 
                 if i != self.data.len() - 1 {
                     s.push_str(", ");
@@ -154,7 +154,7 @@ impl Axecutor {
                 "Cannot read {} bytes from memory area{} @ {:#x}, access is {}",
                 length,
                 match &area.name {
-                    Some(name) => format!(" {}", name),
+                    Some(name) => format!(" {name}"),
                     None => String::new(),
                 },
                 address,
@@ -172,7 +172,7 @@ impl Axecutor {
             debug_log!(
                 "Read from memory area{}, start={:#x}, area_length={}, read={:?}{}",
                 match &area.name {
-                    Some(name) => format!(" {}", name),
+                    Some(name) => format!(" {name}"),
                     None => String::new(),
                 },
                 area.start,
@@ -200,7 +200,7 @@ impl Axecutor {
             debug_log!(
                         "Read from memory area{}, start={:#x}, length={}, read=[{:?}, <too much data to display>, {:?}]",
                         match &area.name {
-                            Some(name) => format!(" {}", name),
+                            Some(name) => format!(" {name}"),
                             None => String::new(),
                         },
                         area.start,
@@ -227,7 +227,7 @@ impl Axecutor {
             return Err(AxError::from(format!(
                 "Cannot read executable bytes from memory area{} @ {:#x}, access is {}",
                 match &area.name {
-                    Some(name) => format!(" {}", name),
+                    Some(name) => format!(" {name}"),
                     None => String::new(),
                 },
                 address,
@@ -374,7 +374,7 @@ impl Axecutor {
                 "Cannot write {} bytes to memory area{} @ {:#x}, access is {}",
                 data.len(),
                 match &area.name {
-                    Some(name) => format!(" {}", name),
+                    Some(name) => format!(" {name}"),
                     None => String::new(),
                 },
                 address,
@@ -504,8 +504,7 @@ impl Axecutor {
         }
 
         Err(AxError::from(format!(
-            "No section has start address {:#x}",
-            start_addr
+            "No section has start address {start_addr:#x}"
         )))
     }
 
@@ -533,7 +532,7 @@ impl Axecutor {
         #[allow(unused_variables)]
         #[cfg(debug_assertions)]
         let display_name = match &name {
-            Some(n) => format!(" {}", n),
+            Some(n) => format!(" {n}"),
             None => "".to_string(),
         };
 
@@ -576,8 +575,7 @@ impl Axecutor {
         }
 
         Err(AxError::from(format!(
-            "No section has start address {:#x}",
-            section_start
+            "No section has start address {section_start:#x}"
         )))
     }
 
@@ -742,7 +740,7 @@ impl Axecutor {
             arg_bytes.push(0);
 
             // Allocate space for the string
-            let str_addr = self.mem_init_anywhere(arg_bytes, Some(format!("arg{}", i)))?;
+            let str_addr = self.mem_init_anywhere(arg_bytes, Some(format!("arg{i}")))?;
             stack_layout.push(str_addr);
         }
         // argv[argc] = NULL
@@ -754,7 +752,7 @@ impl Axecutor {
             env_bytes.push(0);
 
             // Allocate space for the string
-            let str_addr = self.mem_init_anywhere(env_bytes, Some(format!("env{}", i)))?;
+            let str_addr = self.mem_init_anywhere(env_bytes, Some(format!("env{i}")))?;
             stack_layout.push(str_addr);
         }
 
@@ -797,8 +795,7 @@ impl Axecutor {
         // Alignment should still be OK
         assert!(
             stack_top & 0xf == 0,
-            "Stack top is not aligned to 16 bytes: {:#x}",
-            stack_top
+            "Stack top is not aligned to 16 bytes: {stack_top:#x}"
         );
 
         self.reg_write_64(SupportedRegister::RSP, stack_top)?;

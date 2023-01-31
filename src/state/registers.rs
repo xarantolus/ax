@@ -429,7 +429,7 @@ impl From<SupportedRegister> for Register {
 
 impl SupportedRegister {
     pub fn name(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 
@@ -531,7 +531,7 @@ impl Axecutor {
             qword_register,
             result_value,
             match old {
-                Some(o) => format!(" (previously {:#x})", o),
+                Some(o) => format!(" (previously {o:#x})"),
                 Option::None => "".to_string(),
             }
         );
@@ -556,7 +556,7 @@ impl Axecutor {
             value,
             reg,
             match old {
-                Some(o) => format!(" (previously {:#x})", o),
+                Some(o) => format!(" (previously {o:#x})"),
                 Option::None => "".to_string(),
             }
         );
@@ -726,7 +726,7 @@ impl Axecutor {
             value,
             reg,
             match old {
-                Some(o) => format!(" (previously {:#x})", o),
+                Some(o) => format!(" (previously {o:#x})"),
                 Option::None => "".to_string(),
             }
         );

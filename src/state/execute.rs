@@ -80,7 +80,7 @@ impl Axecutor {
         if let Some(ref h) = hooks {
             debug_log!("Calling before hooks for mnemonic {:?}", mnem);
             h.run_before(self, mnem).await.map_err(|e| {
-                AxError::from(format!("running before hooks for {}: {}", instr, e)).add_detail(
+                AxError::from(format!("running before hooks for {instr}: {e}")).add_detail(
                     format!(
                         "executing syscall after executing {} instructions: ",
                         self.state.executed_instructions_count
@@ -139,7 +139,7 @@ impl Axecutor {
         if let Some(ref h) = hooks {
             debug_log!("Calling after hooks for mnemonic {:?}", mnem);
             h.run_after(self, mnem).await.map_err(|e| {
-                AxError::from(format!("running after hooks for {}: {}", instr, e)).add_detail(
+                AxError::from(format!("running after hooks for {instr}: {e}")).add_detail(
                     format!(
                         "executing syscall after executing {} instructions: ",
                         self.state.executed_instructions_count

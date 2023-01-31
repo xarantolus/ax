@@ -53,11 +53,7 @@ impl TryFrom<u16> for Syscall {
             22 => Syscall::Pipe,
             60 => Syscall::Exit,
             158 => Syscall::ArchPrctl,
-            _ => {
-                return Err(AxError::from(
-                    format!("Unknown syscall: {}", value).as_str(),
-                ))
-            }
+            _ => return Err(AxError::from(format!("Unknown syscall: {value}").as_str())),
         })
     }
 }

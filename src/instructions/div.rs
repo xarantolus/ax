@@ -40,8 +40,7 @@ impl Axecutor {
 
         if src_val == 0 {
             return Err(AxError::from(format!(
-                "Divide by zero in Div_rm8: operand {:?} is 0",
-                op
+                "Divide by zero in Div_rm8: operand {op:?} is 0"
             )));
         }
 
@@ -69,8 +68,7 @@ impl Axecutor {
 
         if src_val == 0 {
             return Err(AxError::from(format!(
-                "Divide by zero in Div_rm16: operand {:?} is 0",
-                op
+                "Divide by zero in Div_rm16: operand {op:?} is 0"
             )));
         }
 
@@ -96,16 +94,15 @@ impl Axecutor {
             Operand::Register(r) => self.reg_read_32(r)?,
             Operand::Memory(m) => self.mem_read_32(self.mem_addr(m))?,
             _ => fatal_error!("Invalid operand {:?} for Div_rm32", op),
-        } as u64;
+        };
 
         if src_val == 0 {
             return Err(AxError::from(format!(
-                "Divide by zero in Div_rm32: operand {:?} is 0",
-                op
+                "Divide by zero in Div_rm32: operand {op:?} is 0"
             )));
         }
 
-        let dst_val = self.reg_read_32(EAX)? as u64 | ((self.reg_read_32(EDX)? as u64) << 32);
+        let dst_val = self.reg_read_32(EAX)? | (self.reg_read_32(EDX)? << 32);
 
         let (quotient, remainder) = (dst_val / src_val, dst_val % src_val);
 
@@ -131,8 +128,7 @@ impl Axecutor {
 
         if src_val == 0 {
             return Err(AxError::from(format!(
-                "Divide by zero in Div_rm64: operand {:?} is 0",
-                op
+                "Divide by zero in Div_rm64: operand {op:?} is 0"
             )));
         }
 

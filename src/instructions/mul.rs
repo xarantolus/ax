@@ -104,7 +104,7 @@ impl Axecutor {
 
         let dst_val = self.reg_read_32(EAX)?;
 
-        let result = (dst_val as u64).wrapping_mul(src_val as u64);
+        let result = dst_val.wrapping_mul(src_val);
 
         let upper = (result >> 32) as u32;
 

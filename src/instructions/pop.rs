@@ -36,7 +36,7 @@ impl Axecutor {
         let rsp = self.reg_read_64(Register::RSP.into())? + 2;
 
         let value = self.mem_read_16(rsp)?;
-        self.reg_write_16(reg, value as u64)?;
+        self.reg_write_16(reg, value)?;
 
         self.reg_write_64(Register::RSP.into(), rsp)?;
 
