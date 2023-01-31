@@ -12,6 +12,7 @@ pub(crate) struct TraceEntry {
     pub(crate) target: u64,
     pub(crate) variant: TraceVariant,
     pub(crate) level: i16,
+    pub(crate) count: u64,
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
@@ -30,21 +31,34 @@ impl Axecutor {
         target: u64,
         variant: TraceVariant,
     ) -> Result<(), AxError> {
+        let instr_ip = self.reg_read_64(SupportedRegister::RIP)? - i.len() as u64;
         let mut lvl = 0;
-        if let Some(last) = self.state.trace.last() {
+
+        if let Some(last) = self.state.trace.last_mut() {
             lvl = last.level;
             match last.variant {
                 TraceVariant::Call => lvl += 1,
                 TraceVariant::Return => lvl -= 1,
-                TraceVariant::Jump => {}
+                TraceVariant::Jump => {
+                    // If we have seen this exact jump before, we just increment the count
+                    if last.instr_ip == instr_ip
+                        && last.target == target
+                        && last.variant == variant
+                        && last.level == lvl
+                    {
+                        last.count += 1;
+                        return Ok(());
+                    }
+                }
             }
         }
 
         self.state.trace.push(TraceEntry {
-            instr_ip: self.reg_read_64(SupportedRegister::RIP)? - i.len() as u64,
             level: lvl,
+            instr_ip,
             target,
             variant,
+            count: 1,
         });
 
         Ok(())
@@ -94,29 +108,15 @@ impl Axecutor {
             };
 
             // If we have a jump, we count how many of the next are equal and then write e.g. x10 instead of 10 times the same line
-            let repeats = if entry.variant == TraceVariant::Jump {
-                self.state
-                    .trace
-                    .iter()
-                    .skip(i + 1)
-                    .take_while(|e| e.clone().clone() == entry.clone())
-                    .count()
-            } else {
-                0
-            };
-
-            if repeats > 0 {
+            if entry.count > 1 {
                 trace.push_str(&format!(
-                    "{}{}: {} => {} (repeated {} more times)\n",
+                    "{}{}: {} => {} ({} times)\n",
                     "  ".repeat(entry.level as usize),
                     instruction_symbol,
                     instruction,
                     target_symbol,
-                    repeats + 1,
+                    entry.count,
                 ));
-                // +1 to skip the first one, which we already counted
-                i += repeats + 1;
-                continue;
             } else {
                 trace.push_str(&format!(
                     "{}{}: {} => {}\n",
@@ -125,8 +125,8 @@ impl Axecutor {
                     instruction,
                     target_symbol,
                 ));
-                i += 1;
             }
+            i += 1;
         }
 
         Ok(trace)
@@ -160,10 +160,10 @@ mod tests {
     first_level@0x401015: jmp short 000000000040101Eh => 0x40101e
     0x40101e: call 0000000000401031h => second_level@0x401031
       second_level@0x401031: call 000000000040103Ch => third_level@0x40103c
-        0x401052: jne short 000000000040104Ah => 0x40104a (repeated 9 more times)
+        0x401052: jne short 000000000040104Ah => 0x40104a (9 times)
         0x401054: ret => 0x401036
       0x401036: call 000000000040103Ch => third_level@0x40103c
-        0x401052: jne short 000000000040104Ah => 0x40104a (repeated 9 more times)
+        0x401052: jne short 000000000040104Ah => 0x40104a (9 times)
         0x401054: ret => 0x40103b
       0x40103b: ret => 0x401023
     0x401023: call 0000000000401029h => second_level_two@0x401029
@@ -181,9 +181,22 @@ mod tests {
 
         #[allow(non_upper_case_globals)]
         static mut jle_count: u64 = 0;
-        ax.hook_before_mnemonic_native(SupportedMnemonic::Jle, &move |_: &mut Axecutor, _| {
+        #[allow(non_upper_case_globals)]
+        static mut jle_rip: u64 = 0;
+        ax.hook_before_mnemonic_native(SupportedMnemonic::Jle, &move |ax: &mut Axecutor, _| {
             unsafe {
-                jle_count += 1;
+                jle_rip = ax.reg_read_64(crate::state::registers::SupportedRegister::RIP)?;
+            };
+
+            Ok(crate::state::hooks::HookResult::Handled)
+        }).expect("Failed to add hook");
+
+        ax.hook_after_mnemonic_native(SupportedMnemonic::Jle, &move |ax: &mut Axecutor, _| {
+            unsafe {
+                // Did we jump somewhere else?
+                if jle_rip != ax.reg_read_64(crate::state::registers::SupportedRegister::RIP)? {
+                    jle_count += 1;
+                }
             };
 
             Ok(crate::state::hooks::HookResult::Handled)
@@ -199,9 +212,9 @@ mod tests {
 
         assert_eq!(trace, format!(r#"<emulator_start>: entrypoint => _start@0x40101a
   0x401034: jmp short 000000000040103Eh => 0x40103e
-  0x401042: jle short 0000000000401036h => 0x401036 (repeated {} more times)
+  0x401042: jle short 0000000000401036h => 0x401036 ({} times)
   0x401049: call 0000000000401000h => sys_exit@0x401000
-"#, unsafe { jle_count - 1 }));
+"#, unsafe { jle_count }));
     }];
 }
 
