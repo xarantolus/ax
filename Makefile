@@ -113,7 +113,7 @@ watch-tests:
 RM_TARGETS += lcov.info
 
 web: copy-programs build
-	cd examples/web && npm install && npm run dev
+	cd examples/web && npm install && npm run dev -- --host
 
 test-scripts: python-dependencies
 	$(PY) t.py --test
