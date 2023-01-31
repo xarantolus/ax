@@ -55,9 +55,14 @@ impl Axecutor {
         }
 
         // Fetch the next instruction
-        let instr = self
-            .decode_next()
-            .map_err(|e| AxError::from(format!("decoding instruction: {}", e)))?;
+        let instr = self.decode_next().map_err(|e| {
+            e.add_detail(
+                "fetching next instruction".to_string(),
+                self.call_stack().unwrap_or_else(|e| e.to_string()),
+                self.trace().unwrap_or_else(|e| e.to_string()),
+            )
+        })?;
+
         debug_log!("Fetched instruction {}", instr);
 
         let rip = instr.next_ip();

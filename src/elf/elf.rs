@@ -184,6 +184,8 @@ impl Axecutor {
                     return Err(AxError::from("ELF: Dynamic linking not supported"));
                 }
                 PT_TLS => {
+                    // TODO: Make sure implementation is correct, see e.g. https://maskray.me/blog/2021-02-14-all-about-thread-local-storage for some notes
+
                     // Thread-local storage
                     debug_log!(
                         "ELF: Loading TLS segment at {:#x} with size {:#x} and offset {:#x}",
