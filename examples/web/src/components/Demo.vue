@@ -113,6 +113,12 @@ export default defineComponent({
         description: "Prints \"Hello World!\" to stdout",
       },
       {
+        name: "Fibonacci (C, -nostdlib)",
+        binary: "fib_c_nostdlib.bin",
+        source_name: "fib_c_nostdlib/fib_c_nostdlib.c",
+        description: "Prints Fibonacci numbers to stdout",
+      },
+      {
         name: "Exit Code (C)",
         binary: "exit_c.bin",
         source_name: "exit/exit_c.c",

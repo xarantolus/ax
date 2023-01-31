@@ -19,6 +19,7 @@ impl Axecutor {
             And => self.mnemonic_and(i),
             Call => self.mnemonic_call(i),
             Cdq => self.mnemonic_cdq(i),
+            Cdqe => self.mnemonic_cdqe(i),
             Cld => self.mnemonic_cld(i),
             Cmovae => self.mnemonic_cmovae(i),
             Cmove => self.mnemonic_cmove(i),
@@ -75,6 +76,7 @@ impl Axecutor {
             Syscall => self.mnemonic_syscall(i),
             Test => self.mnemonic_test(i),
             Xor => self.mnemonic_xor(i),
+            Xorps => self.mnemonic_xorps(i),
             Int3 => self.mnemonic_int3(i),
             _ => Err(AxError::from(format!(
                 "cannot execute unimplemented mnemonic {:?}",
@@ -93,6 +95,7 @@ pub enum SupportedMnemonic {
     And = 21,
     Call = 59,
     Cdq = 61,
+    Cdqe = 62,
     Cld = 66,
     Cmovae = 78,
     Cmove = 81,
@@ -149,6 +152,7 @@ pub enum SupportedMnemonic {
     Syscall = 746,
     Test = 751,
     Xor = 1518,
+    Xorps = 1520,
     Int3 = 1620,
 }
 
@@ -168,6 +172,7 @@ impl TryFrom<Mnemonic> for SupportedMnemonic {
             And => SupportedMnemonic::And,
             Call => SupportedMnemonic::Call,
             Cdq => SupportedMnemonic::Cdq,
+            Cdqe => SupportedMnemonic::Cdqe,
             Cld => SupportedMnemonic::Cld,
             Cmovae => SupportedMnemonic::Cmovae,
             Cmove => SupportedMnemonic::Cmove,
@@ -224,6 +229,7 @@ impl TryFrom<Mnemonic> for SupportedMnemonic {
             Syscall => SupportedMnemonic::Syscall,
             Test => SupportedMnemonic::Test,
             Xor => SupportedMnemonic::Xor,
+            Xorps => SupportedMnemonic::Xorps,
             Int3 => SupportedMnemonic::Int3,
             _ => {
                 fatal_error!(
