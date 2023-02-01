@@ -12,7 +12,7 @@ use crate::helpers::macros::opcode_unimplemented;
 use crate::helpers::operand::Operand;
 
 impl Axecutor {
-    pub fn mnemonic_test(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_test(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Test);
 
         match i.code() {

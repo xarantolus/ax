@@ -14,7 +14,7 @@ use crate::helpers::macros::fatal_error;
 use crate::helpers::macros::opcode_unimplemented;
 
 impl Axecutor {
-    pub fn mnemonic_mov(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_mov(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Mov);
 
         match i.code() {

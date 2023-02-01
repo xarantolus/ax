@@ -33,7 +33,7 @@ macro_rules! log_call {
 }
 
 impl Axecutor {
-    pub fn mnemonic_call(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_call(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Call);
 
         match i.code() {

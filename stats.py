@@ -5,7 +5,7 @@ import re
 
 def is_instruction_file(content: str) -> bool:
     return "impl Axecutor" in content and \
-        "pub fn mnemonic" in content and \
+        "pub(crate) fn mnemonic" in content and \
         "match i.code" in content
 
 

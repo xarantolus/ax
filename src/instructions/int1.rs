@@ -8,7 +8,7 @@ use crate::helpers::macros::fatal_error;
 use crate::instructions::generated::SupportedMnemonic;
 
 impl Axecutor {
-    pub fn mnemonic_int1(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_int1(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Int1);
 
         match i.code() {

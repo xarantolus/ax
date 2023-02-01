@@ -13,7 +13,7 @@ use crate::helpers::macros::opcode_unimplemented;
 use crate::state::registers::SupportedRegister::*;
 
 impl Axecutor {
-    pub fn mnemonic_jl(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_jl(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Jl);
 
         match i.code() {

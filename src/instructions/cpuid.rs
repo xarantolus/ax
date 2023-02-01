@@ -11,7 +11,7 @@ use crate::helpers::macros::fatal_error;
 use crate::state::registers::SupportedRegister;
 
 impl Axecutor {
-    pub fn mnemonic_cpuid(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_cpuid(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Cpuid);
 
         match i.code() {

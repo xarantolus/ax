@@ -12,7 +12,7 @@ use crate::helpers::macros::fatal_error;
 use crate::state::flags::*;
 
 impl Axecutor {
-    pub fn mnemonic_adc(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_adc(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Adc);
 
         match i.code() {

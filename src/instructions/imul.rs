@@ -10,7 +10,7 @@ use crate::state::flags::*;
 use crate::state::registers::SupportedRegister::*;
 
 impl Axecutor {
-    pub fn mnemonic_imul(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_imul(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Imul);
 
         match i.code() {
