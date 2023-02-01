@@ -17,6 +17,8 @@ from typing import Literal, Final
 import pyperclip
 from tqdm import tqdm
 
+xmmword_registers = ["xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7",
+                     "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15"]
 qword_registers = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp",
                    "rsp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
 dword_registers = ["eax", "ebx", "ecx", "edx", "esi", "edi", "ebp",
@@ -26,7 +28,7 @@ word_registers = ["ax", "bx", "cx", "dx", "si", "di", "bp", "sp",
 byte_registers = ["al", "ah", "bl", "bh", "cl", "ch", "dl", "dh", "sil", "dil",
                   "bpl", "spl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b"]
 
-registers: Final[list[str]] = qword_registers + dword_registers + word_registers + byte_registers
+registers: Final[list[str]] = xmmword_registers + qword_registers + dword_registers + word_registers + byte_registers
 
 
 FLAG_CF: Final[int] = 0x0001
@@ -71,7 +73,7 @@ class Operand(abc.ABC):
     base_register: RegisterOperand
 
     @abc.abstractmethod
-    def size(self) -> Literal[1, 2, 4, 8]:
+    def size(self) -> Literal[1, 2, 4, 8, 16]:
         ...
 
     def size_letter(self):
@@ -84,6 +86,8 @@ class Operand(abc.ABC):
             return "d"
         elif size == 8:
             return "q"
+        elif size == 16:
+            return "x"
         else:
             # illegal argument
             raise ValueError("size must be 1, 2, 4 or 8")
@@ -97,7 +101,12 @@ class RegisterOperand(Operand):
             raise ParseError("Unknown register: " + str(name))
         self.name = name
 
+    def is_xmm(self):
+        return self.name in xmmword_registers
+
     def size(self):
+        if self.name in xmmword_registers:
+            return 16
         if self.name in qword_registers:
             return 8
         if self.name in dword_registers:
@@ -128,7 +137,10 @@ class ImmediateOperand(Operand):
         if pow(2, target.size() * 8) <= self.number:
             raise ValueError(f"Number {hex(self.number)} too big for target register {target.name}")
 
-        if self.number >= 2147483647:
+        # larger than 2^64?
+        if target.size() == 16:
+            return hex(self.number) + "u128"
+        elif self.number >= 2147483647:
             if target.size() == 4:
                 return hex(self.number) + "u32"
             return hex(self.number) + "u64"
@@ -152,7 +164,7 @@ class MemoryOperand(Operand):
             offset: int = 0,
             scale: int = 1,
             index_register: RegisterOperand | str | None = None,
-            size: Literal[1, 2, 4, 8] = None
+            size: Literal[1, 2, 4, 8, 16] = None
     ):
         self.base_register = base_register if isinstance(base_register, RegisterOperand) else RegisterOperand(base_register)
 
@@ -161,7 +173,7 @@ class MemoryOperand(Operand):
 
         self.index_register = index_register if isinstance(index_register, RegisterOperand) else RegisterOperand(index_register) if index_register is not None else None
 
-        if size not in [1, 2, 4, 8, None]:
+        if size not in [1, 2, 4, 8, 16, None]:
             raise ParseError("Invalid size: " + str(size))
         self._size = size
 
@@ -185,6 +197,8 @@ class MemoryOperand(Operand):
             size_prefix = "dword ptr "
         elif self._size == 8:
             size_prefix = "qword ptr "
+        elif self._size == 16:
+            size_prefix = "xmmword ptr "
 
         if self.index_register is None:
             return f"{size_prefix}[{self.base_register.name}]" if self.offset == 0 else \
@@ -214,6 +228,15 @@ class MemoryOperand(Operand):
         elif argument.startswith("qword ptr"):
             size = 8
             argument = argument[9:]
+        elif argument.startswith("xword ptr"):
+            size = 16
+            argument = argument[9:]
+        elif argument.startswith("xmmword ptr"):
+            size = 16
+            argument = argument[11:]
+        elif argument.startswith("dqword ptr"):
+            size = 16
+            argument = argument[10:]
         elif argument.startswith("ptr"):
             if other_operand is None:
                 raise ParseError("Cannot parse memory operand: " + original_argument)
@@ -236,6 +259,10 @@ class MemoryOperand(Operand):
             if argument.startswith(register):
                 base_register = register
                 argument = argument[len(register):]
+
+                if RegisterOperand(base_register).size() == 16:
+                    raise ParseError("Cannot use XMM register as base register: " + original_argument)
+
                 break
         else:
             base_register = None
@@ -341,6 +368,7 @@ class Instruction:
         # mov [rsp+4*rcx], rax
         # push rax
         # pop al
+        # movups xmm0, [rsp+8]
         # ret
 
         # split into mnemonic and arguments
@@ -448,6 +476,15 @@ class Tests(unittest.TestCase):
             MemoryOperand("rsp", 0, 4, "rcx", 1),
             "[rsp+4*rcx]"
         )
+        self.assertEqual(MemoryOperand.parse(
+            "[rsp]", RegisterOperand("xmm0")),
+            MemoryOperand("rsp", 0, 1, None, 16),
+        )
+
+        with self.assertRaises(ParseError):
+            MemoryOperand.parse("[xmm0]", RegisterOperand("rax"))
+        with self.assertRaises(ParseError):
+            MemoryOperand.parse("[xmm16+8*rcx]", RegisterOperand("rax"))
 
     def test_parse_register_operand(self):
         op = RegisterOperand("rax")
@@ -473,6 +510,10 @@ class Tests(unittest.TestCase):
 
         with self.assertRaises(Exception):
             op.hexify(RegisterOperand("ax"))
+
+        op = ImmediateOperand(2**64)
+        self.assertEqual(op.hexify(RegisterOperand("xmm0")), "0x10000000000000000u128")
+
 
     def test_parse_instruction(self):
         instr = Instruction.parse("mov rax, 0x5")
@@ -505,6 +546,11 @@ class Tests(unittest.TestCase):
         instr = Instruction.parse("ret")
         self.assertEqual(instr.mnemonic, "ret")
         self.assertEqual(instr.arguments, [])
+
+        instr = Instruction.parse("movups xmm0, [rsp]")
+        self.assertEqual(instr.mnemonic, "movups")
+        self.assertEqual(instr.arguments[0].name, "xmm0")
+        self.assertEqual(instr.arguments[1].base_register, RegisterOperand("rsp"))
 
 
 def assemble(instruction: Instruction | str) -> list[str]:
@@ -653,6 +699,10 @@ class TestCase:
             0x100000000,
             0x7fffffffffffffff,
             0x8000000000000000,
+            # 128 bit values
+            0x10000000000000000,
+            0x7fffffffffffffffffffffffffffffff,
+            0xffffffffffffffffffffffffffffffff,
         ]
         +  # powers of 2
         [2 ** i for i in range(64)]
@@ -727,7 +777,16 @@ class TestCase:
             idx = 0
             for arg in dynamic_operands:
                 if isinstance(arg, RegisterOperand):
-                    setup_code.append(f"mov {arg}, {args.values[idx]}")
+                    if arg.is_xmm():
+                        label = f".Larg_{idx}"
+                        setup_code.append(".data")
+                        setup_code.append(f"{label}:")
+                        setup_code.append(f".quad {args.values[idx] & 0xffffffffffffffff}")
+                        setup_code.append(f".quad {args.values[idx] >> 64}")
+                        setup_code.append(".text")
+                        setup_code.append(f"movups {arg}, [rip + {label}]")
+                    else:
+                        setup_code.append(f"mov {arg}, {args.values[idx]}")
                     idx += 1
                 elif isinstance(arg, MemoryOperand):
                     # write memory operands to the stack
@@ -735,8 +794,24 @@ class TestCase:
                         setup_code.append(f"mov {arg.base_register}, rsp")
                     if arg.index_register is not None:
                         setup_code.append(f"mov {arg.index_register}, 0")
-                    setup_code.append(
-                        f"mov {arg}, {args.values[idx]}")
+
+                    if arg.size() < 16:
+                        setup_code.append(
+                            f"mov {arg}, {args.values[idx]}")
+                    else:
+                        # similar to above
+                        setup_code.append(".data")
+                        setup_code.append(f".Larg_{idx}:")
+                        setup_code.append(f".quad {args.values[idx] & 0xffffffffffffffff}")
+                        setup_code.append(f".quad {args.values[idx] >> 64}")
+                        setup_code.append(".text")
+                        # here we have to use a temp xmm0 because it's a memory operand
+                        # and for that we also have to save xmm0
+                        setup_code.append("sub rsp, 16; movdqu [rsp], xmm0")
+                        setup_code.append(f"movups xmm0, [rip + .Larg_{idx}]")
+                        setup_code.append(f"movups {arg}, xmm0")
+                        setup_code.append("movdqu xmm0, [rsp]; add rsp, 16")
+
                     idx += 1
                 else:
                     raise ValueError("invalid dynamic operand" + str(arg))
@@ -750,11 +825,30 @@ class TestCase:
             def get_rax(op):
                 return {1: 'al', 2: 'ax', 4: 'eax', 8: 'rax'}[op.size()]
 
+            def generate_save_code(op, idx):
+                if (isinstance(op, RegisterOperand) and op.is_xmm()) or op.size() == 16:
+                    # use xmm0 as temporary register
+                    return f"""
+                        sub rsp, 16
+                        movdqu [rsp], xmm0
+
+                        movups xmm0, {op}
+                        movdqu [rip+output_val{idx}], xmm0
+
+                        movdqu xmm0, [rsp]
+                        add rsp, 16"""
+                else:
+                    temp_reg = get_rax(op)
+                    return f"""push rax
+                        mov {temp_reg}, {op}
+                        mov [rip+output_val{idx}], {temp_reg}
+                        pop rax"""
+
             generated_code = f""".intel_syntax noprefix
                 .data
                 rflags_dest: .space 8
-                output_val: .space 8
-                output_val2: .space 8
+                output_val0: .space 16
+                output_val1: .space 16
                 .text
                 .global _start
                 _start:
@@ -780,22 +874,13 @@ class TestCase:
                 pop rax
 
                 # Now read the output values
-
-                push rax
-                {f'mov {get_rax(dynamic_operands[0])}, {dynamic_operands[0]}; mov [rip+output_val], {get_rax(dynamic_operands[0])}' if len(
-                    dynamic_operands) > 0 else ''}
-                pop rax
-
-                push rax
-                {f'mov {get_rax(dynamic_operands[1])}, {dynamic_operands[1]}; mov [rip+output_val2], {get_rax(dynamic_operands[1])}' if len(
-                    dynamic_operands) > 1 else ''}
-                pop rax
-
+                {generate_save_code(dynamic_operands[0], 0) if len(dynamic_operands) > 0 else ''}
+                {generate_save_code(dynamic_operands[1], 1) if len(dynamic_operands) > 1 else ''}
 
                 mov rax, 1
                 mov rdi, 1
                 lea rsi, [rip+rflags_dest]
-                mov rdx, 24
+                mov rdx, 40
                 syscall
 
                 mov rax, 60
@@ -822,12 +907,12 @@ class TestCase:
 
             os.remove(object_path)
 
-            # run executable and capture 24 bytes of output
+            # run executable and capture 8 + 2 * 16 = 40 bytes of output
             output = subprocess.run([executable_path], stdout=subprocess.PIPE).stdout
 
             os.remove(executable_path)
 
-            assert len(output) == 24, "Output is not 24 bytes long"
+            assert len(output) == 40, "Output is not 40 bytes long"
 
             rflags = int.from_bytes(output[:8], byteorder="little", signed=False)
 
@@ -864,7 +949,7 @@ class TestCase:
                 output_op_val1 = int.from_bytes(
                     output[8:8+dynamic_operands[0].size()], byteorder="little", signed=False)
                 output_op_val2 = int.from_bytes(
-                    output[16:16+dynamic_operands[1].size()], byteorder="little", signed=False)
+                    output[24:24+dynamic_operands[1].size()], byteorder="little", signed=False)
 
                 return TestCase(
                     assembled,
@@ -878,7 +963,13 @@ class TestCase:
                 raise ValueError("invalid number of dynamic operands")
         except subprocess.CalledProcessError:
             # include stack trace
-            TestCase.last_exception = traceback.format_exc()
+            TestCase.last_exception = f"""Error while running testcase {i}:
+Code:
+{generated_code or "None"}
+
+Exception:
+{traceback.format_exc()}
+"""
             return None
 
     @staticmethod
@@ -963,8 +1054,7 @@ class TestCase:
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: Axecutor| {{
         todo!("Asset state of registers and/or memory");{
             f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if self.args.flags else ''}
-    }};
-    ({flags_to_str(self.flags_set, self.flags_not_set)})
+    }}{f';{TestCase.NEWLINE}({flags_to_str(self.flags_set, self.flags_not_set)})' if self.flags_set or self.flags_not_set else ''}
 ];"""
         elif len(dynamic_operands) == 1:
             return f"""// {self.instruction}
@@ -975,8 +1065,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     }};
     |a: Axecutor| {{
         {assert_operand(dynamic_operands[0], self.expected_values[0])}
-    }};
-    ({flags_to_str(self.flags_set, self.flags_not_set)})
+    }}{f';{TestCase.NEWLINE}({flags_to_str(self.flags_set, self.flags_not_set)})' if self.flags_set or self.flags_not_set else ''}
 ];"""
         elif len(dynamic_operands) == 2:
             return f"""// {self.instruction}
@@ -989,8 +1078,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: Axecutor| {{
         {assert_operand(dynamic_operands[0], self.expected_values[0])}
         {assert_operand(dynamic_operands[1], self.expected_values[1])}
-    }};
-    ({flags_to_str(self.flags_set, self.flags_not_set)})
+    }}{f';{TestCase.NEWLINE}({flags_to_str(self.flags_set, self.flags_not_set)})' if self.flags_set or self.flags_not_set else ''}
 ];"""
         raise ValueError("invalid number of dynamic operands")
 
@@ -1037,6 +1125,18 @@ def main():
         unittest.main()
         exit(0)
 
+    is_xmm = any(map(lambda a: isinstance(a, RegisterOperand) and a.is_xmm(), instruction.arguments))
+
+    global OUTPUT_FLAGS_TO_ANALYZE
+    if is_xmm:
+        # automatically enable -r and remove all flags
+        args.result = True
+        args.flags = None
+        OUTPUT_FLAGS_TO_ANALYZE = []
+
+        print("Info: Detected XMM register, will go by result (-r) and disable flags (-f\"\")")
+
+
     if args.flags:
         flags = [s.strip().upper() for s in args.flags.split(',')]
         valid = all(map(lambda f: any(map(lambda t: t[1] == f, FLAGS)), flags))
@@ -1044,7 +1144,6 @@ def main():
         if not valid:
             raise ValueError(
                 f"Invalid flags: {args.flags}, valid flags are {FLAGS}")
-        global OUTPUT_FLAGS_TO_ANALYZE
         OUTPUT_FLAGS_TO_ANALYZE = list(filter(lambda t: t[1] in flags, FLAGS))
 
         print(f"Testing flags: {OUTPUT_FLAGS_TO_ANALYZE}")
@@ -1062,6 +1161,9 @@ def main():
 
     if args.extreme or len(TestCase.dynamic_operands(instruction)) < 2:
         TestCase.GOOD_TEST_VALUES += [i for i in range(0, 256)]
+
+    if is_xmm:
+        TestCase.GOOD_TEST_VALUES += [random.randint(2**64, 2**128) for _ in range(25)]
 
     print(
         f"Testing instruction {instruction} with more than {len(TestCase.GOOD_TEST_VALUES)} values (all combinations)")
@@ -1092,7 +1194,7 @@ def main():
     print(f"Found {len(test_cases_str)} test cases for {assembly_code}")
 
     too_many = False
-    TOO_MANY_TRESHOLD = 50
+    TOO_MANY_TRESHOLD = 25
     if len(test_cases_str) > TOO_MANY_TRESHOLD:
         print(f"Too many test cases, only a sample of {TOO_MANY_TRESHOLD} will be returned")
         test_cases_str = random.sample(test_cases_str, TOO_MANY_TRESHOLD)

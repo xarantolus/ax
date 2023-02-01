@@ -260,7 +260,7 @@ ax_test![add_al_byte_ptr_rbx_cf;
 ];
 ```
 
-The test case generation script [`t.py`](t.py) currently only supports register, a subset of memory and immediate operands. It requires that the GNU Assembler `as` and `gcc` are installed and must be run on x86-64 Linux. It places thousands of generated assembly files and binaries in `/dev/shm/ax_*`, so in case you run out of RAM that is the place to check.
+The test case generation script [`t.py`](t.py) supports register operands (both general purpose and SSE 128-bit), as well as a subset of memory and immediate operands. It requires that the GNU Assembler `as` and `gcc` are installed and must be run on x86-64 Linux. It places thousands of generated assembly files and binaries in `/dev/shm/ax_*`, so in case you run out of RAM that is the place to check.
 
 Another script for testing jumps ([`j.py`](j.py)) is also available, but it's not as automated. Some other convenience copy-paste texts can be generated with [`a.py`](a.py), e.g. with `python3 a.py add al, [rbx]` and then selecting `u` you'll get a code snippet for a JavaScript `Uint8Array` containing the bytes of the instruction.
 
