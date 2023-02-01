@@ -164,7 +164,7 @@ use crate::helpers::macros::opcode_unimplemented;
 use crate::state::registers::SupportedRegister::*;
 
 impl Axecutor {{
-    pub fn mnemonic_{mnemonic.lower()}(&mut self, i: Instruction) -> Result<(), AxError> {{
+    pub(crate) fn mnemonic_{mnemonic.lower()}(&mut self, i: Instruction) -> Result<(), AxError> {{
         debug_assert_eq!(i.mnemonic(), {mnemonic});
 
         match i.code() {{""" + "\n"
@@ -298,7 +298,7 @@ pub enum SupportedMnemonic {
 
 impl SupportedMnemonic {
     pub fn name(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 }
 

@@ -8,7 +8,7 @@ use crate::axecutor::Axecutor;
 use crate::helpers::errors::AxError;
 
 impl Axecutor {
-    pub fn mnemonic_nop(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_nop(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Nop);
 
         match i.code() {

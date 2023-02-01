@@ -12,7 +12,7 @@ use crate::helpers::macros::fatal_error;
 use crate::helpers::macros::opcode_unimplemented;
 use crate::state::registers::SupportedRegister::*;
 impl Axecutor {
-    pub fn mnemonic_jb(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_jb(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Jb);
 
         match i.code() {

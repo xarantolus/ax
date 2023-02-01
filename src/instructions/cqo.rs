@@ -9,7 +9,7 @@ use crate::helpers::macros::fatal_error;
 use crate::state::registers::SupportedRegister::*;
 
 impl Axecutor {
-    pub fn mnemonic_cqo(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_cqo(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Cqo);
 
         match i.code() {

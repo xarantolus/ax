@@ -13,7 +13,7 @@ use crate::helpers::operand::Operand;
 use crate::state::registers::SupportedRegister;
 
 impl Axecutor {
-    pub fn mnemonic_push(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_push(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Push);
 
         match i.code() {

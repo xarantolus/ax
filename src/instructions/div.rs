@@ -11,7 +11,7 @@ use crate::helpers::operand::Operand;
 use crate::state::registers::SupportedRegister::*;
 
 impl Axecutor {
-    pub fn mnemonic_div(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_div(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Div);
 
         match i.code() {

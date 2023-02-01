@@ -10,7 +10,7 @@ use crate::helpers::macros::opcode_unimplemented;
 use crate::state::flags::*;
 
 impl Axecutor {
-    pub fn mnemonic_inc(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_inc(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Inc);
 
         match i.code() {

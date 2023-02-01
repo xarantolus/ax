@@ -12,7 +12,7 @@ use crate::helpers::macros::NO_WRITEBACK;
 use crate::state::flags::*;
 
 impl Axecutor {
-    pub fn mnemonic_cmp(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_cmp(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Cmp);
 
         match i.code() {

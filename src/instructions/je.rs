@@ -13,7 +13,7 @@ use crate::helpers::macros::fatal_error;
 use crate::helpers::macros::opcode_unimplemented;
 
 impl Axecutor {
-    pub fn mnemonic_je(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_je(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Je);
 
         match i.code() {

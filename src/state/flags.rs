@@ -175,19 +175,19 @@ macro_rules! set_flags {
 }
 
 impl Axecutor {
-    pub fn set_flags_u8(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u8) {
+    pub(crate) fn set_flags_u8(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u8) {
         set_flags!(u8; 8)(self, flags_to_set, flags_to_clear, result);
     }
 
-    pub fn set_flags_u16(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u16) {
+    pub(crate) fn set_flags_u16(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u16) {
         set_flags!(u16; 16)(self, flags_to_set, flags_to_clear, result);
     }
 
-    pub fn set_flags_u32(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u32) {
+    pub(crate) fn set_flags_u32(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u32) {
         set_flags!(u32; 32)(self, flags_to_set, flags_to_clear, result);
     }
 
-    pub fn set_flags_u64(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u64) {
+    pub(crate) fn set_flags_u64(&mut self, flags_to_set: u64, flags_to_clear: u64, result: u64) {
         set_flags!(u64; 64)(self, flags_to_set, flags_to_clear, result);
     }
 }

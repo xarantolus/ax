@@ -11,7 +11,7 @@ use crate::helpers::macros::calculate_r_rm;
 use crate::helpers::macros::fatal_error;
 
 impl Axecutor {
-    pub fn mnemonic_cmovae(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_cmovae(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Cmovae);
 
         match i.code() {

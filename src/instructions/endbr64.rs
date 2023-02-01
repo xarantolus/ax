@@ -7,7 +7,7 @@ use crate::axecutor::Axecutor;
 use crate::helpers::errors::AxError;
 
 impl Axecutor {
-    pub fn mnemonic_endbr64(&mut self, i: Instruction) -> Result<(), AxError> {
+    pub(crate) fn mnemonic_endbr64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.mnemonic(), Endbr64);
 
         match i.code() {
