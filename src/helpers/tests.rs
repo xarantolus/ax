@@ -279,7 +279,7 @@ macro_rules! write_reg_value {
             "Register must be 128 bit wide"
         );
         $axecutor
-            .reg_write_128(wrap, $value)
+            .reg_write_128(wrap, $value as u128)
             .expect("could not write 128-bit register");
     };
 }
