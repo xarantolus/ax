@@ -160,7 +160,9 @@ use crate::helpers::macros::calculate_r_rm;
 use crate::helpers::macros::calculate_rm_r;
 use crate::helpers::macros::calculate_rm_imm;
 use crate::helpers::macros::fatal_error;
+use crate::helpers::operand::Operand;
 use crate::helpers::macros::opcode_unimplemented;
+use crate::state::registers::SupportedRegister;
 use crate::state::registers::SupportedRegister::*;
 
 impl Axecutor {{

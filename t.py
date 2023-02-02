@@ -198,6 +198,7 @@ class MemoryOperand(Operand):
         elif self._size == 8:
             size_prefix = "qword ptr "
         elif self._size == 16:
+            # TODO: this is e.g. wrong for movd xmm3, [rax]
             size_prefix = "xmmword ptr "
 
         if self.index_register is None:
