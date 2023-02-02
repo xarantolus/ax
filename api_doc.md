@@ -365,6 +365,7 @@ export enum Mnemonic {
   Js,
   Lea,
   Mov,
+  Movd,
   Movsxd,
   Movups,
   Movzx,

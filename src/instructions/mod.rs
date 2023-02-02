@@ -44,6 +44,7 @@ pub mod jrcxz;
 pub mod js;
 pub mod lea;
 pub mod mov;
+pub mod movd;
 pub mod movsxd;
 pub mod movups;
 pub mod movzx;
