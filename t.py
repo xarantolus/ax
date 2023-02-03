@@ -1055,7 +1055,7 @@ Exception:
 ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)}; |a: Axecutor| {{
         todo!("Asset state of registers and/or memory");{
             f'{TestCase.NEWLINE}        write_flags!(a; {joinflags(self.args.flags)});' if self.args.flags else ''}
-    }}{f';{TestCase.NEWLINE}({flags_to_str(self.flags_set, self.flags_not_set)})' if self.flags_set or self.flags_not_set else ''}
+    }}{f';{TestCase.NEWLINE}    ({flags_to_str(self.flags_set, self.flags_not_set)})' if self.flags_set or self.flags_not_set else ''}
 ];"""
         elif len(dynamic_operands) == 1:
             return f"""// {self.instruction}
@@ -1066,7 +1066,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     }};
     |a: Axecutor| {{
         {assert_operand(dynamic_operands[0], self.expected_values[0])}
-    }}{f';{TestCase.NEWLINE}({flags_to_str(self.flags_set, self.flags_not_set)})' if self.flags_set or self.flags_not_set else ''}
+    }}{f';{TestCase.NEWLINE}    ({flags_to_str(self.flags_set, self.flags_not_set)})' if self.flags_set or self.flags_not_set else ''}
 ];"""
         elif len(dynamic_operands) == 2:
             return f"""// {self.instruction}
@@ -1079,7 +1079,7 @@ ax_test![{self.test_id()}; {", ".join(self.assembled_bytes)};
     |a: Axecutor| {{
         {assert_operand(dynamic_operands[0], self.expected_values[0])}
         {assert_operand(dynamic_operands[1], self.expected_values[1])}
-    }}{f';{TestCase.NEWLINE}({flags_to_str(self.flags_set, self.flags_not_set)})' if self.flags_set or self.flags_not_set else ''}
+    }}{f';{TestCase.NEWLINE}    ({flags_to_str(self.flags_set, self.flags_not_set)})' if self.flags_set or self.flags_not_set else ''}
 ];"""
         raise ValueError("invalid number of dynamic operands")
 
