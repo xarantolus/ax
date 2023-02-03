@@ -285,8 +285,7 @@ Here are some limitations that could be inspiration for future features:
   * If you have registered hooks using `hook_before_mnemonic` or `hook_after_mnemonic`) they are essentially a no-op with your handler executing
   * If no hooks are registered and a syscall/interrupt is executed, an exception is thrown
 * The memory implementation is quite weird and needs an overhaul
-  * Memory for code currently is basically its own implementation instead of just being stored using the normal memory implementation
-  * Segments, access restrictions, page management etc. is missing
+  * Access restrictions (partially implemented), page management (maybe better to leave to the user) etc. is missing
 * ELF file parsing is currently really basic
   * Binaries with libc don't work due to relocations and more not being implemented
   * Basically only very basic binaries work
