@@ -20,3 +20,5 @@ ax
 .idea
 node_modules
 **.log
+Notes.md
+*.txt
