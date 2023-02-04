@@ -109,7 +109,7 @@ coverage:
 	$(MOLD) cargo tarpaulin --out Lcov --skip-clean
 
 watch-tests:
-	$(MOLD) cargo watch -w src --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests' --ignore lcov.info
+	$(MOLD) cargo watch -w src --why --exec 'tarpaulin --out Lcov --skip-clean --target-dir target/tests -- -q' --ignore lcov.info
 RM_TARGETS += lcov.info
 
 web: copy-programs build

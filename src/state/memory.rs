@@ -214,6 +214,7 @@ impl Axecutor {
     }
 
     pub(crate) fn mem_read_executable_bytes(&self, address: u64) -> Result<Vec<u8>, AxError> {
+        // TODO: Optimize these reads by caching a reference to the last section we used?
         let area = self
             .state
             .memory
@@ -225,7 +226,7 @@ impl Axecutor {
 
         if area.access & PROT_EXEC == 0 {
             return Err(AxError::from(format!(
-                "Cannot read executable bytes from memory area{} @ {:#x}, access is {}",
+                "Cannot read executable bytes from memory area{} @ {:#x}, access is {} (does not include PROT_EXEC)",
                 match &area.name {
                     Some(name) => format!(" {name}"),
                     None => String::new(),
@@ -567,9 +568,25 @@ impl Axecutor {
             prot
         );
 
+        debug_log!(
+            "Calling Axecutor::mem_prot, section_start={:#x}, prot={}",
+            section_start,
+            access_to_string(prot)
+        );
+
         for area in &mut self.state.memory {
             if section_start == area.start {
                 area.access = prot;
+                debug_log!(
+                    "Set access rights of memory area{}, start={:#x}, rights={}",
+                    match &area.name {
+                        Some(name) => format!(" {name}"),
+                        None => String::new(),
+                    },
+                    area.start,
+                    access_to_string(area.access)
+                );
+
                 return Ok(());
             }
         }
