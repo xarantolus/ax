@@ -13,9 +13,6 @@
 			"packages": "make,gcc"
 		}
 	},
-	"extensions": [
-		"ryanluker.vscode-coverage-gutters"
-	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
 		5173
@@ -24,11 +21,17 @@
 		// Increase size of temporary in-memory filesystem for auto-generated binaries by test scripts
 		"--shm-size=1G"
 	],
-	"onCreateCommand": "curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh && echo \"Installing dependencies, this might take a while...\" && make dependencies"
+	"onCreateCommand": "curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh && echo \"Installing dependencies, this might take a while...\" && make dependencies",
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "rustc --version",
 	// Configure tool-specific properties.
-	// "customizations": {},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ryanluker.vscode-coverage-gutters"
+			]
+		}
+	}
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
 }
