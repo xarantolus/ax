@@ -1,4 +1,4 @@
-.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax generate docs watch-programs watch-debug watch-tests precommit clean-programs
+.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax generate docs watch-programs watch-debug watch-tests precommit clean-programs node-dependencies
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -140,11 +140,15 @@ watch-programs:
 ######################
 ### Utilities
 ######################
-dependencies: python-dependencies
+dependencies: python-dependencies node-dependencies
 	cargo install cargo-tarpaulin cargo-watch python-launcher
 
 python-dependencies:
 	$(PY) -m pip install pyperclip tqdm
+
+node-dependencies:
+	npm install -g eslint
+
 
 clean:
 	rm -rf $(RM_TARGETS)
