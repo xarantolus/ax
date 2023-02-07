@@ -289,6 +289,7 @@ Returns a string representation of the Axecutor instance that can be useful for 
 
 #### `Axecutor.trace() => string`
 Generate a trace of the current execution state. This trace is a list of all executed jumps, calls and returns.
+Conditional jumps that were not taken are **not** included in the trace.
 This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
 
 
