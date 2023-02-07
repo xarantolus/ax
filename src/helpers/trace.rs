@@ -20,6 +20,7 @@ pub(crate) enum TraceVariant {
     Call,
     Return,
     Jump,
+    // TODO: Add syscall
 }
 
 // This is for the full tracing functionality, not to be confused with call_stack
@@ -94,7 +95,7 @@ impl Axecutor {
                 }
             };
             let instruction_symbol = if entry.instr_ip == 0 {
-                "<emulator_start>".to_string()
+                "<emulation_start>".to_string()
             } else {
                 match self.symbol_table.get(&entry.instr_ip) {
                     Some(sym) => format!("{}@{:#x}", sym, entry.instr_ip),
@@ -155,7 +156,7 @@ mod tests {
 
         debug_log!("Trace:\n{}", trace);
 
-        assert_eq!(trace, r#"<emulator_start>: entrypoint => _start@0x401000
+        assert_eq!(trace, r#"<emulation_start>: entrypoint => _start@0x401000
   _start@0x401000: call 0000000000401015h => first_level@0x401015
     first_level@0x401015: jmp short 000000000040101Eh => 0x40101e
     0x40101e: call 0000000000401031h => second_level@0x401031
@@ -210,7 +211,7 @@ mod tests {
 
         debug_log!("Trace:\n{}", trace);
 
-        assert_eq!(trace, format!(r#"<emulator_start>: entrypoint => _start@0x40101a
+        assert_eq!(trace, format!(r#"<emulation_start>: entrypoint => _start@0x40101a
   0x401034: jmp short 000000000040103Eh => 0x40103e
   0x401042: jle short 0000000000401036h => 0x401036 ({} times)
   0x401049: call 0000000000401000h => sys_exit@0x401000

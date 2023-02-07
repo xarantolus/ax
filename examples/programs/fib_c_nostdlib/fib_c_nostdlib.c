@@ -26,17 +26,18 @@ int sys_write(unsigned fd, const char *buf, unsigned count)
 	return ret;
 }
 
-void to_hex(char *buf, uint64_t num)
+int to_hex(char *buf, uint64_t num)
 {
 	int i = 0;
 
 	if (num == 0)
 	{
 		buf[i] = '0';
+		i++;
 	}
 	else
 	{
-		char stack[16] = {0};
+		char stack[32] = {0};
 		int stack_i = 0;
 
 		while (num > 0)
@@ -63,11 +64,13 @@ void to_hex(char *buf, uint64_t num)
 			i++;
 		}
 	}
-	buf[i++] = '\n';
+	buf[i] = '\n';
+	i++;
 	buf[i] = '\0';
+
+	return i;
 }
 
-// Print first 75 Fibonacci numbers
 void _start()
 {
 	uint64_t a = 0;
@@ -77,15 +80,20 @@ void _start()
 
 	char buf[128];
 
-	while (counter < 75)
+	while (counter < 25)
 	{
-		int64_t c = a + b;
+		int64_t c;
+		if (__builtin_add_overflow(a, b, &c))
+		{
+			sys_write(2, "Overflow\n", 9);
+			sys_exit(1);
+		}
 		a = b;
 		b = c;
 		counter++;
 
-		to_hex(buf, a);
-		sys_write(1, buf, 128);
+		int len = to_hex(buf, a);
+		sys_write(1, buf, len);
 	}
 
 	sys_exit(0);
