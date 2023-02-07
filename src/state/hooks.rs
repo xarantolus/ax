@@ -14,8 +14,8 @@ use std::{
     fmt::{Display, Formatter},
 };
 
+use crate::auto::generated::SupportedMnemonic;
 use crate::helpers::debug::debug_log;
-use crate::instructions::generated::SupportedMnemonic;
 use crate::{axecutor::Axecutor, helpers::errors::AxError};
 use std::error::Error;
 use std::fmt::Debug;

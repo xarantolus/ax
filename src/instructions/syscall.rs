@@ -6,7 +6,7 @@ use crate::helpers::errors::AxError;
 
 use crate::helpers::macros::fatal_error;
 
-use crate::instructions::generated::SupportedMnemonic;
+use crate::auto::generated::SupportedMnemonic;
 
 impl Axecutor {
     pub(crate) fn mnemonic_syscall(&mut self, i: Instruction) -> Result<(), AxError> {

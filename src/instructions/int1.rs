@@ -4,8 +4,8 @@ use iced_x86::Mnemonic::Int1;
 use crate::axecutor::Axecutor;
 use crate::helpers::errors::AxError;
 
+use crate::auto::generated::SupportedMnemonic;
 use crate::helpers::macros::fatal_error;
-use crate::instructions::generated::SupportedMnemonic;
 
 impl Axecutor {
     pub(crate) fn mnemonic_int1(&mut self, i: Instruction) -> Result<(), AxError> {

@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::helpers::debug::debug_log;
 
-use crate::{instructions::generated::SupportedMnemonic, state::registers::SupportedRegister};
+use crate::{auto::generated::SupportedMnemonic, state::registers::SupportedRegister};
 
 use crate::{axecutor::Axecutor, helpers::errors::AxError};
 
