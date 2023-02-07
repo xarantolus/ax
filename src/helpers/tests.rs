@@ -288,6 +288,53 @@ macro_rules! write_reg_value {
 pub(crate) use write_reg_value;
 
 #[cfg(test)]
+macro_rules! init_mem_value {
+    (b; $axecutor:expr; $addr:expr; $value:expr) => {
+        $axecutor
+            .mem_init_zero($addr, 1)
+            .expect("could not initialize 8-bit memory");
+        $axecutor
+            .mem_write_8($addr, $value as u64)
+            .expect("could not write 8-bit memory");
+    };
+    (w; $axecutor:expr; $addr:expr; $value:expr) => {
+        $axecutor
+            .mem_init_zero($addr, 2)
+            .expect("could not initialize 16-bit memory");
+        $axecutor
+            .mem_write_16($addr, $value as u64)
+            .expect("could not write 16-bit memory");
+    };
+    (d; $axecutor:expr; $addr:expr; $value:expr) => {
+        $axecutor
+            .mem_init_zero($addr, 4)
+            .expect("could not initialize 32-bit memory");
+        $axecutor
+            .mem_write_32($addr, $value as u64)
+            .expect("could not write 32-bit memory");
+    };
+    (q; $axecutor:expr; $addr:expr; $value:expr) => {
+        $axecutor
+            .mem_init_zero($addr, 8)
+            .expect("could not initialize 64-bit memory");
+        $axecutor
+            .mem_write_64($addr, $value as u64)
+            .expect("could not write 64-bit memory");
+    };
+    (x; $axecutor:expr; $addr:expr; $value:expr) => {
+        $axecutor
+            .mem_init_zero($addr, 16)
+            .expect("could not initialize 128-bit memory");
+        $axecutor
+            .mem_write_128($addr, $value as u128)
+            .expect("could not write 128-bit memory");
+    };
+}
+
+#[cfg(test)]
+pub(crate) use init_mem_value;
+
+#[cfg(test)]
 macro_rules! write_flags {
     ($axecutor:expr; $flags:expr) => {
         $axecutor.state.rflags = $flags;

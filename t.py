@@ -1033,8 +1033,7 @@ Exception:
                 # Set up base and index registers, as well as memory
                 return f"""write_reg_value!({operand.base_register.size_letter()}; a; {operand.base_register.name.upper()}; {hex(mem_start + operand.offset)});{
                 f'{TestCase.NEWLINE}        write_reg_value!({operand.index_register.size_letter()}; a; {operand.index_register.name.upper()}; 0);' if operand.index_register is not None else ''}
-        a.mem_init_zero({hex(mem_start + operand.offset)}, {operand.size()}).unwrap();
-        a.mem_write_{operand.size() * 8}({hex(mem_start + operand.offset)}, {ImmediateOperand(value).hexify(operand)}).unwrap();"""
+        init_mem_value!({operand.size_letter()}; a; {hex(mem_start + operand.offset)}; {ImmediateOperand(value).hexify(operand)});"""
             else:
                 raise ValueError("invalid operand type")
 

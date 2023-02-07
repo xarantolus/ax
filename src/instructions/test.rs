@@ -336,7 +336,9 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use crate::axecutor::Axecutor;
-    use crate::helpers::tests::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
+    use crate::helpers::tests::{
+        assert_mem_value, assert_reg_value, ax_test, init_mem_value, write_reg_value,
+    };
     use iced_x86::Register::*;
 
     // test al, 0x7f
@@ -421,8 +423,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; R11L; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x0).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; R11L; 0x0);
@@ -436,8 +437,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; R11L; 0x1);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x1).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; R11L; 0x1);
@@ -451,8 +451,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; R11L; 0xf);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0xf).unwrap();
+            init_mem_value!(b; a; 0x1000; 0xf);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; R11L; 0xf);
@@ -466,8 +465,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; R11L; 0x80);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x80).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x80);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; R11L; 0x80);
@@ -481,8 +479,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; R11L; 0xff);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0xff).unwrap();
+            init_mem_value!(b; a; 0x1000; 0xff);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; R11L; 0xff);

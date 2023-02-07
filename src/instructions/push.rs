@@ -197,13 +197,13 @@ mod tests {
             write_reg_value!(w; a; AX; 0x1234);
 
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
             a.mem_init_zero(0x1000, 2).unwrap();
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; AX; 0x1234);
 
-            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-2);
+            assert_reg_value!(q; a; RSP; 0x1000-2);
             assert_mem_value!(w; a; 0x1000; 0x1234);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -215,13 +215,13 @@ mod tests {
             write_reg_value!(q; a; RBX; 0x1234567890ABCDEF);
 
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RBX; 0x1234567890ABCDEFu64);
 
-            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
+            assert_reg_value!(q; a; RSP; 0x1000-8);
             assert_mem_value!(q; a; 0x1000; 0x1234567890ABCDEFu64);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -231,11 +231,11 @@ mod tests {
     ax_test![push_0x1234; 0x68, 0x34, 0x12, 0x0, 0x0;
         |a: &mut Axecutor| {
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
-            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
+            assert_reg_value!(q; a; RSP; 0x1000-8);
             assert_mem_value!(q; a; 0x1000; 0x1234);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -245,11 +245,11 @@ mod tests {
     ax_test![push_0xff; 0x6a, 0xff;
         |a: &mut Axecutor| {
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
-            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
+            assert_reg_value!(q; a; RSP; 0x1000-8);
             assert_mem_value!(q; a; 0x1000; 0xffffffffffffffffu64);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -259,11 +259,11 @@ mod tests {
     ax_test![push_0x7f; 0x6a, 0x7f;
         |a: &mut Axecutor| {
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
-            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
+            assert_reg_value!(q; a; RSP; 0x1000-8);
             assert_mem_value!(q; a; 0x1000; 0x7f);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -273,11 +273,11 @@ mod tests {
     ax_test![push_0xfffffff; 0x68, 0xff, 0xff, 0xff, 0x0;
         |a: &mut Axecutor| {
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
-            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
+            assert_reg_value!(q; a; RSP; 0x1000-8);
             assert_mem_value!(q; a; 0x1000; 0xffffff);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
@@ -287,11 +287,12 @@ mod tests {
     ax_test![push_0x7fffffff; 0x68, 0xff, 0xff, 0xff, 0x7f;
         |a: &mut Axecutor| {
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
+            write_reg_value!(q; a; RSP; 0x1000);
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
-            assert_eq!(a.reg_read_64(RSP.into()).unwrap(), 0x1000-8);
+            assert_reg_value!(q; a; RSP; 0x1000-8);
             assert_mem_value!(q; a; 0x1000; 0x7fffffff);
         };
         (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)

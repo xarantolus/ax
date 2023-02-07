@@ -180,7 +180,9 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use crate::helpers::tests::{assert_mem_value, assert_reg_value, jmp_test, test_async};
+    use crate::helpers::tests::{
+        assert_mem_value, assert_reg_value, jmp_test, test_async, write_reg_value,
+    };
     use crate::{axecutor::Axecutor, state::flags::*};
     use iced_x86::Register::*;
 
@@ -226,7 +228,7 @@ mod tests {
         50000; // 50000 bytes of 0x90 (nop) as padding
         0x48, 0xc7, 0xc0, 0x32, 0x0, 0x0, 0x0, 0xe8, 0x9c, 0x3c, 0xff, 0xff, 0x90; // Lcall: mov rax, 50; call func; nop
         |a: &mut Axecutor| {
-            a.reg_write_64(RSP.into(), 0x8000).unwrap();
+            write_reg_value!(q; a; RSP; 0x8000);
             a.mem_init_zero(0x8000, 8).expect("Failed to init memory");
         };
         |a: Axecutor| {
@@ -241,7 +243,7 @@ mod tests {
         50; // 50 bytes of 0x90 (nop) as padding
         0x48, 0x8d, 0x5, 0xbf, 0xff, 0xff, 0xff, 0xff, 0xd0, 0x90; // Lcall: lea rax, [rip+func]; call rax; nop
         |a: &mut Axecutor| {
-            a.reg_write_64(RSP.into(), 0x8000).unwrap();
+            write_reg_value!(q; a; RSP; 0x8000);
             a.mem_init_zero(0x8000, 8).expect("Failed to init memory");
         };
         |a: Axecutor| {

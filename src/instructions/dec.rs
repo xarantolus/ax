@@ -109,7 +109,9 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use crate::axecutor::Axecutor;
-    use crate::helpers::tests::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
+    use crate::helpers::tests::{
+        assert_mem_value, assert_reg_value, ax_test, init_mem_value, write_reg_value,
+    };
     use iced_x86::Register::*;
 
     // dec al
@@ -358,8 +360,7 @@ mod tests {
     ax_test![dec_word_ptr_r12; 0x66, 0x41, 0xff, 0xc, 0x24;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R12; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x8).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R12; 0x1000);
@@ -372,8 +373,7 @@ mod tests {
     ax_test![dec_word_ptr_r12_pf; 0x66, 0x41, 0xff, 0xc, 0x24;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R12; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x7).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x7);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R12; 0x1000);
@@ -386,8 +386,7 @@ mod tests {
     ax_test![dec_word_ptr_r12_pf_of; 0x66, 0x41, 0xff, 0xc, 0x24;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R12; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x8000).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x8000);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R12; 0x1000);
@@ -400,8 +399,7 @@ mod tests {
     ax_test![dec_word_ptr_r12_pf_sf; 0x66, 0x41, 0xff, 0xc, 0x24;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R12; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x0).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R12; 0x1000);
@@ -414,8 +412,7 @@ mod tests {
     ax_test![dec_word_ptr_r12_pf_zf; 0x66, 0x41, 0xff, 0xc, 0x24;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R12; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x1).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R12; 0x1000);
