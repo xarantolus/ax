@@ -3,9 +3,9 @@
 use std::println;
 
 use ax_x86::{
+    auto::generated::SupportedMnemonic::Syscall,
     axecutor::Axecutor,
     helpers::errors::AxError,
-    instructions::generated::SupportedMnemonic::Syscall,
     state::{hooks::HookResult, registers::SupportedRegister},
 };
 

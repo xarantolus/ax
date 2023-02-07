@@ -137,10 +137,10 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
+    use crate::auto::generated::SupportedMnemonic;
     use crate::axecutor::Axecutor;
     use crate::helpers::syscalls::Syscall;
     use crate::helpers::{debug::debug_log, tests::test_async};
-    use crate::instructions::generated::SupportedMnemonic;
 
     test_async![simple_trace; async {
         let binary = include_bytes!("../../testdata/trace.bin");

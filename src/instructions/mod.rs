@@ -15,7 +15,6 @@ pub mod cwd;
 pub mod dec;
 pub mod div;
 pub mod endbr64;
-pub mod generated;
 pub mod idiv;
 pub mod imul;
 pub mod inc;

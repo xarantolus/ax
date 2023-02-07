@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
+    auto::generated::SupportedMnemonic,
     axecutor::Axecutor,
     helpers::macros::assert_fatal,
-    instructions::generated::SupportedMnemonic,
     state::{hooks::HookResult, registers::SupportedRegister::*},
 };
 

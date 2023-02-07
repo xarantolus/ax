@@ -326,9 +326,11 @@ impl TryFrom<Mnemonic> for SupportedMnemonic {
 """
 
     # Write to file generated.rs
-    with open("src/instructions/generated.rs", "w", encoding='utf8') as f:
+    with open("src/auto/generated.rs", "w", encoding='utf8') as f:
         f.write(code)
-    subprocess.run(["rustfmt", "--edition=2021", "src/instructions/generated.rs"])
+    subprocess.run(["rustfmt", "--edition=2021", "src/auto/generated.rs"])
+
+    print("Regenerated src/auto/generated.rs")
 
 
 def main():

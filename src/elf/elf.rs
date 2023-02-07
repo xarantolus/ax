@@ -268,7 +268,7 @@ mod tests {
     macro_rules! test_binary {
         [$name:ident; $binary_path:expr; $expected_output:expr; $expected_exit_code:expr] => {
             test_async![$name; async {
-                use crate::instructions::generated::SupportedMnemonic;
+                use crate::auto::generated::SupportedMnemonic;
                 use crate::state::registers::SupportedRegister;
                 use crate::helpers::syscalls::Syscall;
 

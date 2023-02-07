@@ -1,3 +1,4 @@
+pub mod auto;
 pub mod axecutor;
 pub mod elf;
 pub mod helpers;
