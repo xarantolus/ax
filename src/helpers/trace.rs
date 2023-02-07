@@ -78,6 +78,7 @@ impl Axecutor {
     }
 
     /// Generate a trace of the current execution state. This trace is a list of all executed jumps, calls and returns.
+    /// Conditional jumps that were not taken are **not** included in the trace.
     /// This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
     pub fn trace(&mut self) -> Result<String, AxError> {
         let mut trace = String::new();
