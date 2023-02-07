@@ -336,7 +336,9 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use crate::axecutor::Axecutor;
-    use crate::helpers::tests::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
+    use crate::helpers::tests::{
+        assert_mem_value, assert_reg_value, ax_test, init_mem_value, write_reg_value,
+    };
     use iced_x86::Register::*;
 
     // sub al, 0x5
@@ -1357,8 +1359,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x1).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x0);
@@ -1372,8 +1373,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x8);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x10).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x8);
@@ -1387,8 +1387,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x91cd4a18fad40360u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x1).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x91cd4a18fad40360u64);
@@ -1402,8 +1401,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0xdaa5b64c30262321u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x0).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xdaa5b64c30262321u64);
@@ -1417,8 +1415,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0xbe2001ffcd2422c7u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x3f).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x3f);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xbe2001ffcd2422c7u64);
@@ -1432,8 +1429,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0xa8d77020859f619fu64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x10).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0xa8d77020859f619fu64);
@@ -1447,8 +1443,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x10);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x0).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x10);
@@ -1462,8 +1457,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x0).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1);
@@ -1477,8 +1471,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x8000000000000000u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x0).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x8000000000000000u64);
@@ -1492,8 +1485,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x20);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x0).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x20);
@@ -1507,8 +1499,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x8);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x0).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x8);
@@ -1522,8 +1513,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x8000000000000000u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x1).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x8000000000000000u64);
@@ -1537,8 +1527,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x7).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x7);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1);
@@ -1552,8 +1541,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x10).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1);
@@ -1567,8 +1555,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x0).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x0);
@@ -1582,8 +1569,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x1);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x0).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x1);
@@ -1597,8 +1583,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x10);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x8).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x8);
@@ -1612,8 +1597,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0xf);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0xff).unwrap();
+            init_mem_value!(b; a; 0x1000; 0xff);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x10);
@@ -1627,8 +1611,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0xff).unwrap();
+            init_mem_value!(b; a; 0x1000; 0xff);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x1);
@@ -1642,8 +1625,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x8);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0xff).unwrap();
+            init_mem_value!(b; a; 0x1000; 0xff);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x9);
@@ -1657,8 +1639,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x10).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xf0);
@@ -1672,8 +1653,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x1).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xff);
@@ -1687,8 +1667,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x1);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x80).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x80);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x81);
@@ -1702,8 +1681,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x20).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x20);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xe0);
@@ -1717,8 +1695,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x8).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xf8);
@@ -1732,8 +1709,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x80).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x80);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x80);
@@ -1747,8 +1723,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x80);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x10).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x70);
@@ -1762,8 +1737,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x80);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x1).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x7f);
@@ -1777,8 +1751,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x7);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x1).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x6);
@@ -1792,8 +1765,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x10);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x1).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xf);
@@ -1807,8 +1779,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x80);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x20).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x20);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x60);
@@ -1822,8 +1793,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x80);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x8).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x78);
@@ -1837,8 +1807,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0xff);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x0).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0xff);
@@ -1852,8 +1821,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x0).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x0);
@@ -1867,8 +1835,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; AL; 0x80);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x0).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x80);
@@ -1882,8 +1849,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x1);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x0).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x1);
@@ -1897,8 +1863,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x10);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x8).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x8);
@@ -1912,8 +1877,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x10).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0xfff0);
@@ -1927,8 +1891,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x1).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0xffff);
@@ -1942,8 +1905,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x8000).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x8000);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x8000);
@@ -1957,8 +1919,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x20).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x20);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0xffe0);
@@ -1972,8 +1933,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x8).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0xfff8);
@@ -1987,8 +1947,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x1);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x8000).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x8000);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x8001);
@@ -2002,8 +1961,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x8000);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x20).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x20);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x7fe0);
@@ -2017,8 +1975,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x8000);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x8).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x7ff8);
@@ -2032,8 +1989,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x7);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x1).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x6);
@@ -2047,8 +2003,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x10);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x1).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0xf);
@@ -2062,8 +2017,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x8000);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x10).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x7ff0);
@@ -2077,8 +2031,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x8000);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x1).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x7fff);
@@ -2092,8 +2045,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x8000);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x0).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x8000);
@@ -2107,8 +2059,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x0).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x0);
@@ -2122,8 +2073,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x1);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x0).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x1);
@@ -2137,8 +2087,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x10);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x8).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x8);
@@ -2152,8 +2101,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x10).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0xfffffff0u32);
@@ -2167,8 +2115,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x1).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0xffffffffu32);
@@ -2182,8 +2129,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x80000000u64).unwrap()
+            init_mem_value!(d; a; 0x1000; 0x80000000u64);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x80000000u32);
@@ -2197,8 +2143,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x20).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x20);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0xffffffe0u32);
@@ -2212,8 +2157,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x8).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0xfffffff8u32);
@@ -2227,8 +2171,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x1);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x80000000u64).unwrap()
+            init_mem_value!(d; a; 0x1000; 0x80000000u64);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x80000001u32);
@@ -2242,8 +2185,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x80000000u32);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x20).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x20);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x7fffffe0);
@@ -2257,8 +2199,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x80000000u32);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x8).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x7ffffff8);
@@ -2272,8 +2213,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x7);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x1).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x6);
@@ -2287,8 +2227,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x10);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x1).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0xf);
@@ -2302,8 +2241,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x80000000u32);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x10).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x7ffffff0);
@@ -2317,8 +2255,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x80000000u32);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x1).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x7fffffffu32);
@@ -2332,8 +2269,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x80000000u32);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x0).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x80000000u32);
@@ -2347,8 +2283,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x0).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x0);
@@ -2362,8 +2297,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x1);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x0).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0x1);
@@ -2377,8 +2311,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x10);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x8).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0x8);
@@ -2392,8 +2325,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x10).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0xfffffffffffffff0u64);
@@ -2407,8 +2339,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x1).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0xffffffffffffffffu64);
@@ -2422,8 +2353,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x20).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x20);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0xffffffffffffffe0u64);
@@ -2437,8 +2367,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x8).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0xfffffffffffffff8u64);
@@ -2452,8 +2381,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x8000000000000000u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x20).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x20);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0x7fffffffffffffe0u64);
@@ -2467,8 +2395,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x8000000000000000u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x8).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0x7ffffffffffffff8u64);
@@ -2482,8 +2409,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x7);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x1).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0x6);
@@ -2497,8 +2423,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x10);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x1).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0xf);
@@ -2512,8 +2437,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x8000000000000000u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x10).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0x7ffffffffffffff0u64);
@@ -2527,8 +2451,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x8000000000000000u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x1).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0x7fffffffffffffffu64);
@@ -2542,8 +2465,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x8000000000000000u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x0).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0x8000000000000000u64);
@@ -2557,8 +2479,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0xcf6d86fccfbbd28bu64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x1f).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x1f);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0xcf6d86fccfbbd26cu64);
@@ -2572,8 +2493,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x0);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x0).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0x0);
@@ -2587,8 +2507,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0xc4142648cbf91786u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x10).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0xc4142648cbf91776u64);
@@ -2602,8 +2521,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0xef3e2c7ce6fa5534u64);
             write_reg_value!(q; a; RBX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x7f).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x7f);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0xef3e2c7ce6fa54b5u64);
@@ -2913,8 +2831,7 @@ mod tests {
     ax_test![sub_word_ptr_rax_0x31; 0x66, 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x3f).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x3f);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -2927,8 +2844,7 @@ mod tests {
     ax_test![sub_word_ptr_rax_0x31_af; 0x66, 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x80).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x80);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -2941,8 +2857,7 @@ mod tests {
     ax_test![sub_word_ptr_rax_0x31_cf_pf_sf; 0x66, 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x8).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -2955,8 +2870,7 @@ mod tests {
     ax_test![sub_word_ptr_rax_0x31_cf_pf_sf_af; 0x66, 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x0).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -2969,8 +2883,7 @@ mod tests {
     ax_test![sub_word_ptr_rax_0x31_cf_sf; 0x66, 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x1).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -2983,8 +2896,7 @@ mod tests {
     ax_test![sub_word_ptr_rax_0x31_cf_sf_af; 0x66, 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x10).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -2997,8 +2909,7 @@ mod tests {
     ax_test![sub_word_ptr_rax_0x31_pf; 0x66, 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x7f).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x7f);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3011,8 +2922,7 @@ mod tests {
     ax_test![sub_word_ptr_rax_0x31_pf_af; 0x66, 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x40).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x40);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3025,8 +2935,7 @@ mod tests {
     ax_test![sub_word_ptr_rax_0x31_pf_of_af; 0x66, 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x8000).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x8000);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3039,8 +2948,7 @@ mod tests {
     ax_test![sub_word_ptr_rax_0x31_pf_zf; 0x66, 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x31).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x31);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3053,8 +2961,7 @@ mod tests {
     ax_test![sub_dword_ptr_rax_0x31; 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x3f).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x3f);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3067,8 +2974,7 @@ mod tests {
     ax_test![sub_dword_ptr_rax_0x31_af; 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x80).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x80);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3081,8 +2987,7 @@ mod tests {
     ax_test![sub_dword_ptr_rax_0x31_cf_pf_sf; 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x8).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3095,8 +3000,7 @@ mod tests {
     ax_test![sub_dword_ptr_rax_0x31_cf_pf_sf_af; 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x0).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3109,8 +3013,7 @@ mod tests {
     ax_test![sub_dword_ptr_rax_0x31_cf_sf; 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x1).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3123,8 +3026,7 @@ mod tests {
     ax_test![sub_dword_ptr_rax_0x31_cf_sf_af; 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x10).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x10);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3137,8 +3039,7 @@ mod tests {
     ax_test![sub_dword_ptr_rax_0x31_pf; 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x7f).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x7f);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3151,8 +3052,7 @@ mod tests {
     ax_test![sub_dword_ptr_rax_0x31_pf_af; 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x40).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x40);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3165,8 +3065,7 @@ mod tests {
     ax_test![sub_dword_ptr_rax_0x31_pf_of_af; 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x80000000u64).unwrap()
+            init_mem_value!(d; a; 0x1000; 0x80000000u64);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3179,8 +3078,7 @@ mod tests {
     ax_test![sub_dword_ptr_rax_0x31_pf_zf; 0x83, 0x28, 0x31;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x31).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x31);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3193,8 +3091,7 @@ mod tests {
     ax_test![sub_qword_ptr_rax_0x35; 0x48, 0x83, 0x28, 0x35;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x7f).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x7f);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3207,8 +3104,7 @@ mod tests {
     ax_test![sub_qword_ptr_rax_0x35_af; 0x48, 0x83, 0x28, 0x35;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x40).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x40);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3221,8 +3117,7 @@ mod tests {
     ax_test![sub_qword_ptr_rax_0x35_cf_pf_sf; 0x48, 0x83, 0x28, 0x35;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x7).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x7);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3235,8 +3130,7 @@ mod tests {
     ax_test![sub_qword_ptr_rax_0x35_cf_pf_sf_af; 0x48, 0x83, 0x28, 0x35;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x1).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x1);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3249,8 +3143,7 @@ mod tests {
     ax_test![sub_qword_ptr_rax_0x35_cf_sf; 0x48, 0x83, 0x28, 0x35;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x8).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x8);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3263,8 +3156,7 @@ mod tests {
     ax_test![sub_qword_ptr_rax_0x35_cf_sf_af; 0x48, 0x83, 0x28, 0x35;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x0).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x0);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3277,8 +3169,7 @@ mod tests {
     ax_test![sub_qword_ptr_rax_0x35_pf; 0x48, 0x83, 0x28, 0x35;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x3f).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x3f);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3291,8 +3182,7 @@ mod tests {
     ax_test![sub_qword_ptr_rax_0x35_pf_af; 0x48, 0x83, 0x28, 0x35;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x41).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x41);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3305,8 +3195,7 @@ mod tests {
     ax_test![sub_qword_ptr_rax_0x35_pf_zf; 0x48, 0x83, 0x28, 0x35;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x35).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x35);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3319,8 +3208,7 @@ mod tests {
     ax_test![sub_byte_ptr_rax_0xf; 0x80, 0x28, 0xf;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 1).unwrap();
-            a.mem_write_8(0x1000, 0x1f).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x1f);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3333,8 +3221,7 @@ mod tests {
     ax_test![sub_word_ptr_rax_0x13b_pf_of_af; 0x66, 0x81, 0x28, 0x3b, 0x1;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 2).unwrap();
-            a.mem_write_16(0x1000, 0x8000).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x8000);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3347,8 +3234,7 @@ mod tests {
     ax_test![sub_dword_ptr_rax_0x4c8ab_pf_of_af; 0x81, 0x28, 0xab, 0xc8, 0x4, 0x0;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 4).unwrap();
-            a.mem_write_32(0x1000, 0x80000000u64).unwrap()
+            init_mem_value!(d; a; 0x1000; 0x80000000u64);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);
@@ -3361,8 +3247,7 @@ mod tests {
     ax_test![sub_qword_ptr_rax_0x1de62ef_pf_af; 0x48, 0x81, 0x28, 0xef, 0x62, 0xde, 0x1;
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x1000);
-            a.mem_init_zero(0x1000, 8).unwrap();
-            a.mem_write_64(0x1000, 0x2000000).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x2000000);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x1000);

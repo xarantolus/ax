@@ -241,17 +241,17 @@ ax_test![add_al_byte_ptr_rbx_cf;
     0x2, 0x3;
     // A setup function that is called before the instruction is executed:
     |a: &mut Axecutor| {
-        write_reg_value!(b; a; AL; 0x20);
-
+        write_reg_value!(b; a; AL; 0x8);
         // This sets up a memory area with a size of one byte, containing 0xff
+        init_mem_value!(b; a; 0x1000; 0xff); // -1
+        // RBX points to that memory area
         write_reg_value!(q; a; RBX; 0x1000);
-        a.mem_init_zero(0x1000, 1).unwrap();
-        a.mem_write_8(0x1000, 0xff).unwrap();
     };
     // This function is called after the instruction ran and checks the result:
     |a: Axecutor| {
-        assert_reg_value!(b; a; AL; 0x1f);
+        assert_reg_value!(b; a; AL; 0x7);
         // Also make sure the source operand is unchanged
+        assert_reg_value!(q; a; RBX; 0x1000);
         assert_mem_value!(b; a; 0x1000; 0xff);
     };
     // On the left side of `;` are the flags that must be set after the instruction ran,

@@ -12,7 +12,7 @@ mod test {
             write_reg_value!(q; a; RBX; 0x031591385913u64);
 
             // Setup stack
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
             a.mem_init_zero(0x1000, 8).unwrap();
         };
         |a: Axecutor| {
@@ -127,7 +127,7 @@ mod test {
             write_reg_value!(q; a; RAX; 0x50f01be8d7485109u64);
 
             // Setup stack for address
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
             a.mem_init_zero(0x1000, 8).expect("Failed to initialize memory");
         };
         |a: Axecutor| {

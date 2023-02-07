@@ -357,8 +357,7 @@ mod tests {
             Immediate { data: 1, size: 1 },
         ];
         |a: &mut Axecutor| {
-            use iced_x86::Register::*;
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
         };
         vec![
             0x1000
@@ -379,8 +378,7 @@ mod tests {
             Immediate { data: 1, size: 4 },
         ];
         |a: &mut Axecutor| {
-            use iced_x86::Register::*;
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
         };
         vec![
             0x1000
@@ -401,8 +399,7 @@ mod tests {
             Register(Register::R15D.into()),
         ];
         |a: &mut Axecutor| {
-            use iced_x86::Register::*;
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
         };
         vec![
             0x1001
@@ -424,8 +421,7 @@ mod tests {
             Register(Register::R15D.into()),
         ];
         |a: &mut Axecutor| {
-            use iced_x86::Register::*;
-            a.reg_write_64(RSP.into(), 0x1000).unwrap();
+            write_reg_value!(q; a; RSP; 0x1000);
         };
         vec![
             0x0fff
@@ -446,9 +442,8 @@ mod tests {
             Immediate { data: 1, size: 8 },
         ];
         |a: &mut Axecutor| {
-            use iced_x86::Register::*;
-            a.reg_write_64(R11.into(), 0x8001).unwrap();
-            a.reg_write_64(RCX.into(), 5).unwrap();
+            write_reg_value!(q; a; R11; 0x8001);
+            write_reg_value!(q; a; RCX; 5);
         };
         vec![
             0x8015

@@ -198,7 +198,7 @@ impl Axecutor {{
     #[cfg(test)]
 mod tests {
     use crate::helpers::tests::{{
-        assert_mem_value, assert_reg_value, ax_test, jmp_test, test_async, write_reg_value, write_flags,
+        assert_mem_value, assert_reg_value, ax_test, jmp_test, test_async, write_reg_value, write_flags, init_mem_value,
     }};
     use crate::{axecutor::Axecutor, state::flags::*};
     use iced_x86::Register::*;

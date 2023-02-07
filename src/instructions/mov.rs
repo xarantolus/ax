@@ -475,7 +475,9 @@ impl Axecutor {
 #[cfg(test)]
 mod tests {
     use crate::axecutor::Axecutor;
-    use crate::helpers::tests::{assert_mem_value, assert_reg_value, ax_test, write_reg_value};
+    use crate::helpers::tests::{
+        assert_mem_value, assert_reg_value, ax_test, init_mem_value, write_reg_value,
+    };
     use iced_x86::Register::*;
 
     // mov byte ptr [rsp+8], bl
@@ -516,8 +518,7 @@ mod tests {
             write_reg_value!(d; a; EDX; 0x12345678);
             // Create a small stack
             write_reg_value!(q; a; RSP; 0x1000);
-            a.mem_init_zero(0x1000, 256).unwrap();
-            a.mem_write_32(0x1000, 0xffffffff).unwrap();
+            init_mem_value!(d; a; 0x1000; 0xffffffff);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EDX; 0x12345678);
@@ -532,8 +533,7 @@ mod tests {
             write_reg_value!(q; a; RCX; 0x123456789abcdef0u64);
             // Create a small stack
             write_reg_value!(q; a; RSP; 0x1000);
-            a.mem_init_zero(0x1000, 256).unwrap();
-            a.mem_write_64(0x1000, 0xffffffffffffffff).unwrap();
+            init_mem_value!(q; a; 0x1000; 0xffffffffffffffff);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RCX; 0x123456789abcdef0u64);
@@ -572,8 +572,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(b; a; BL; 0x34);
             write_reg_value!(q; a; RSP; 0x1000);
-            a.mem_init_zero(0x1000, 256).unwrap();
-            a.mem_write_8(0x1000, 0x12).unwrap();
+            init_mem_value!(b; a; 0x1000; 0x12);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; BL; 0x12);
@@ -587,8 +586,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(w; a; CX; 0x1234);
             write_reg_value!(q; a; RSP; 0x1000);
-            a.mem_init_zero(0x1000, 256).unwrap();
-            a.mem_write_16(0x1000, 0x5678).unwrap();
+            init_mem_value!(w; a; 0x1000; 0x5678);
         };
         |a: Axecutor| {
             assert_reg_value!(w; a; CX; 0x5678);
@@ -602,8 +600,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; ECX; 0x12345678);
             write_reg_value!(q; a; RSP; 0x1000);
-            a.mem_init_zero(0x1000, 256).unwrap();
-            a.mem_write_32(0x1000, 0x9abcdef0).unwrap();
+            init_mem_value!(d; a; 0x1000; 0x9abcdef0);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; ECX; 0x9abcdef0u32);
@@ -617,8 +614,7 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; R11; 0x120u64);
             write_reg_value!(q; a; RSP; 0x1000);
-            a.mem_init_zero(0x1000, 256).unwrap();
-            a.mem_write_64(0x1000, 0x123456789abcdef0u64).unwrap();
+            init_mem_value!(q; a; 0x1000; 0x123456789abcdef0u64);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; R11; 0x123456789abcdef0u64);
@@ -743,8 +739,7 @@ mod tests {
     // mov al, BYTE PTR ds:0x10
     ax_test![mov_al_ds_moffs; 0x8a, 0x4, 0x25, 0x10, 0, 0, 0;
         |a: &mut Axecutor| {
-            a.mem_init_zero(0x10, 1).unwrap();
-            a.mem_write_8(0x10, 0x15).unwrap();
+            init_mem_value!(b; a; 0x10; 0x15);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x15);
@@ -756,8 +751,7 @@ mod tests {
     ax_test![mov_al_fs_moffs; 0x64, 0x8a, 0x4, 0x25, 0x10, 0, 0, 0;
         |a: &mut Axecutor| {
             a.write_fs(0x1000);
-            a.mem_init_zero(0x1010, 1).unwrap();
-            a.mem_write_8(0x1010, 0x15).unwrap();
+            init_mem_value!(b; a; 0x1010; 0x15);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x15);
@@ -769,8 +763,7 @@ mod tests {
     ax_test![mov_al_gs_moffs; 0x65, 0x8a, 0x4, 0x25, 0x10, 0, 0, 0;
         |a: &mut Axecutor| {
             a.write_gs(0x1000);
-            a.mem_init_zero(0x1010, 1).unwrap();
-            a.mem_write_8(0x1010, 0x15).unwrap();
+            init_mem_value!(b; a; 0x1010; 0x15);
         };
         |a: Axecutor| {
             assert_reg_value!(b; a; AL; 0x15);
