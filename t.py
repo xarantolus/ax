@@ -992,7 +992,7 @@ Exception:
             def imap_func(input: tuple[int, Input]):
                 return TestCase.learn_single_flags(input[0], assembled, instruction, input[1], tmpdir)
 
-            with Pool(os.cpu_count() * 4) as p:
+            with Pool(os.cpu_count() * 8) as p:
                 temp_results = list(
                     tqdm(
                         p.imap(imap_func, enumerate(input_args)),

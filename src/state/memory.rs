@@ -121,7 +121,7 @@ impl MemoryArea {
             s.push_str(&format!(
                 "{}    string: {:?},\n",
                 " ".repeat(i * 4),
-                String::from_utf8_lossy(&self.data)
+                String::from_utf8_lossy(&self.data[..self.data.len() - 1])
             ));
         }
 

@@ -354,6 +354,8 @@ mod tests {
 
     // test_binary![exit_c; "../../testdata/exit_c.bin"; ""; 5];
 
+    // test_binary![fib_c_nostdlib; "../../testdata/fib_c_nostdlib.bin"; "1\n1\n2\n3\n5\n8\nd\n15\n22\n37\n59\n90\ne9\n179\n262\n3db\n63d\na18\n1055\n1a6d\n2ac2\n452f\n6ff1\nb520\n12511"; 0];
+
     test_async![binary_without_symbols; async {
         let bin = Axecutor::from_binary(include_bytes!("../../testdata/exit_c_no_symbols.bin")).expect("Failed to parse binary");
         // Should only include the _start symbol
