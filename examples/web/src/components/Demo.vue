@@ -1,5 +1,18 @@
 <template >
-  <div class="middle width-2-3">
+  <div v-if="error" class="middle width-2-3">
+    <h1>Error</h1>
+    <p>
+      An error occurred while initializing this page:
+    </p>
+    <pre>{{ error }}</pre>
+    <p>
+      Please make sure that your browser supports WebAssembly.
+    </p>
+    <p>
+      To just see the source code, <a href="https://github.com/xarantolus/ax">visit the Git repository</a>.
+    </p>
+  </div>
+  <div v-else class="middle width-2-3">
     <h1><a href="https://github.com/xarantolus/ax">AX Demo Site</a></h1>
     <p>
       This is the demo site for <a href="https://github.com/xarantolus/ax">ax, an x86-64 emulator</a>
@@ -46,107 +59,113 @@ export default defineComponent({
     Terminal,
   },
   async setup() {
-    const terminalRef = ref<InstanceType<typeof Terminal>>();
+    try {
+      const terminalRef = ref<InstanceType<typeof Terminal>>();
 
-    const termReset = () => {
-      terminalRef.value?.term.reset();
-      terminalRef.value?.term.clear();
-      terminalRef.value?.term.focus();
-    };
+      const termReset = () => {
+        terminalRef.value?.term.reset();
+        terminalRef.value?.term.clear();
+        terminalRef.value?.term.focus();
+      };
 
-    onMounted(async () => {
-      termReset();
-      terminalRef.value?.term.writeln('Welcome to the AX demo site! When you run a binary, the output will be shown here.');
-    });
+      onMounted(async () => {
+        termReset();
+        terminalRef.value?.term.writeln('Welcome to the AX demo site! When you run a binary, the output will be shown here.');
+      });
 
-    const termWrite = (data: string | Uint8Array) => {
-      terminalRef.value!.term.write(data);
-    };
+      const termWrite = (data: string | Uint8Array) => {
+        terminalRef.value!.term.write(data);
+      };
 
-    const programs = [
-      {
-        name: "Exit Code",
-        binary: "exit_code.bin",
-        source_name: "exit/exit_code.s",
-        description: "Exits with exit code 13",
-      },
-      {
-        name: "Hello World",
-        binary: "hello_world.bin",
-        source_name: "hello_world/hello_world.s",
-        description: "Prints \"Hello World!\" to stdout",
-      },
-      {
-        name: "Alphabet",
-        binary: "alphabet.bin",
-        source_name: "alphabet/alphabet.s",
-        description: "Prints the alphabet to stdout",
-      },
-      {
-        name: "Input to uppercase",
-        binary: "uppercase_naive.bin",
-        source_name: "uppercase/uppercase_naive.s",
-        description: "Repeatedly reads a single character from stdin and prints the uppercase representation",
-      },
-      {
-        name: "Byte to hex",
-        binary: "hex_naive.bin",
-        source_name: "hex/hex_naive.s",
-        description: "Repeatedly reads a single byte from stdin and prints the hex representation",
-      },
-      {
-        name: "String length",
-        binary: "strlen.bin",
-        source_name: "strlen/strlen.s",
-        description: "Reads a string from stdin and prints its length",
-      },
-      {
-        name: "Print command-line arguments",
-        binary: "args.bin",
-        source_name: "args/args.S",
-        description: "Prints all command-line arguments and environment variables",
-      },
-      {
-        name: "Hello World (C, -nostdlib)",
-        binary: "hello_world_c_nostdlib.bin",
-        source_name: "hello_world_c_nostdlib/hello_world_c_nostdlib.c",
-        description: "Prints \"Hello World!\" to stdout",
-      },
-      {
-        name: "Fibonacci (C, -nostdlib)",
-        binary: "fib_c_nostdlib.bin",
-        source_name: "fib_c_nostdlib/fib_c_nostdlib.c",
-        description: "Prints Fibonacci numbers to stdout",
-      },
-      {
-        name: "Exit Code (C)",
-        binary: "exit_c.bin",
-        source_name: "exit/exit_c.c",
-      },
-      {
-        name: "Hello C",
-        binary: "hello_c.bin",
-        source_name: "hello_c/hello_c.c",
-      },
-      {
-        name: "thread_local errno (C)",
-        binary: "thread_local.bin",
-        source_name: "thread_local_c/thread_local.c",
+      const programs = [
+        {
+          name: "Exit Code",
+          binary: "exit_code.bin",
+          source_name: "exit/exit_code.s",
+          description: "Exits with exit code 13",
+        },
+        {
+          name: "Hello World",
+          binary: "hello_world.bin",
+          source_name: "hello_world/hello_world.s",
+          description: "Prints \"Hello World!\" to stdout",
+        },
+        {
+          name: "Alphabet",
+          binary: "alphabet.bin",
+          source_name: "alphabet/alphabet.s",
+          description: "Prints the alphabet to stdout",
+        },
+        {
+          name: "Input to uppercase",
+          binary: "uppercase_naive.bin",
+          source_name: "uppercase/uppercase_naive.s",
+          description: "Repeatedly reads a single character from stdin and prints the uppercase representation",
+        },
+        {
+          name: "Byte to hex",
+          binary: "hex_naive.bin",
+          source_name: "hex/hex_naive.s",
+          description: "Repeatedly reads a single byte from stdin and prints the hex representation",
+        },
+        {
+          name: "String length",
+          binary: "strlen.bin",
+          source_name: "strlen/strlen.s",
+          description: "Reads a string from stdin and prints its length",
+        },
+        {
+          name: "Print command-line arguments",
+          binary: "args.bin",
+          source_name: "args/args.S",
+          description: "Prints all command-line arguments and environment variables",
+        },
+        {
+          name: "Hello World (C, -nostdlib)",
+          binary: "hello_world_c_nostdlib.bin",
+          source_name: "hello_world_c_nostdlib/hello_world_c_nostdlib.c",
+          description: "Prints \"Hello World!\" to stdout",
+        },
+        {
+          name: "Fibonacci (C, -nostdlib)",
+          binary: "fib_c_nostdlib.bin",
+          source_name: "fib_c_nostdlib/fib_c_nostdlib.c",
+          description: "Prints Fibonacci numbers to stdout",
+        },
+        {
+          name: "Exit Code (C)",
+          binary: "exit_c.bin",
+          source_name: "exit/exit_c.c",
+        },
+        {
+          name: "Hello C",
+          binary: "hello_c.bin",
+          source_name: "hello_c/hello_c.c",
+        },
+        {
+          name: "thread_local errno (C)",
+          binary: "thread_local.bin",
+          source_name: "thread_local_c/thread_local.c",
+        }
+      ]
+
+      await init();
+
+      return {
+        terminalRef,
+        termReset,
+        termWrite,
+        programs,
+        program_source_prefix: "https://github.com/xarantolus/ax/blob/main/examples/programs/",
+        version: version(),
+        commit: commit(),
+        brk_start: 0n,
+        brk_len: 0n,
       }
-    ]
-
-    await init();
-
-    return {
-      terminalRef,
-      termReset,
-      termWrite,
-      programs,
-      program_source_prefix: "https://github.com/xarantolus/ax/blob/main/examples/programs/",
-      version: version(),
-      commit: commit(),
-      brk_start: 0n,
-      brk_len: 0n,
+    } catch (e) {
+      return {
+        error: e,
+      }
     }
   },
   methods: {
@@ -197,7 +216,7 @@ export default defineComponent({
 
           let result_buf = ax.mem_read_bytes(rsi, rdx);
 
-          this.termWrite(result_buf);
+          this.termWrite!(result_buf);
 
           return ax.unchanged();
         }
@@ -218,14 +237,14 @@ export default defineComponent({
     },
     async setBinary(name: string) {
       try {
-        this.termReset();
+        this.termReset!();
 
-        this.termWrite(`Downloading ${name}...\n`);
+        this.termWrite!(`Downloading ${name}...\n`);
 
         let response = await fetch(`/programs/${name}`);
 
         if (!response.ok) {
-          this.termWrite("Error while fetching binary: " + response.statusText);
+          this.termWrite!("Error while fetching binary: " + response.statusText);
           return;
         }
 
@@ -236,15 +255,15 @@ export default defineComponent({
         data.items.add(file);
         (this.$refs.file as any).files = data.files;
 
-        this.termWrite(`Successfully downloaded ${name}, you can now run it.\n`);
+        this.termWrite!(`Successfully downloaded ${name}, you can now run it.\n`);
       }
       catch (e) {
-        this.termWrite("Error while fetching binary:\n" + e);
+        this.termWrite!("Error while fetching binary:\n" + e);
         return;
       }
     },
     async runFile() {
-      this.termReset();
+      this.termReset!();
 
       this.brk_start = 0n;
 
@@ -253,12 +272,12 @@ export default defineComponent({
         let files = (this.$refs.file as any).files as FileList;
         console.log(files);
         if (files.length != 1) {
-          this.termWrite("Please select exactly one file\n");
+          this.termWrite!("Please select exactly one file\n");
           return;
         }
         let content = await files.item(0)?.arrayBuffer().then(buf => new Uint8Array(buf));
         if (!content) {
-          this.termWrite("Failed to read file, please only use statically linked ELF binaries.\n");
+          this.termWrite!("Failed to read file, please only use statically linked ELF binaries.\n");
           return;
         }
         ax = Axecutor.from_binary(content);
@@ -266,7 +285,7 @@ export default defineComponent({
       catch (e) {
         let axstate = (ax ?? "no axecutor state available").toString();
         console.error(axstate);
-        this.termWrite("Error while decoding binary:\n" + e);
+        this.termWrite!("Error while decoding binary:\n" + e);
         return;
       }
       try {
@@ -281,18 +300,18 @@ export default defineComponent({
       catch (e) {
         let axstate = (ax ?? "no axecutor state available").toString();
         console.error(axstate);
-        this.termWrite("Error during initialisation:\n" + e + "\n\n" + axstate);
+        this.termWrite!("Error during initialisation:\n" + e + "\n\n" + axstate);
         return;
       }
       try {
-        this.termWrite("Starting emulation...\n");
+        this.termWrite!("Starting emulation...\n");
         await ax.execute();
-        this.termWrite(`Program exited with exit code ${ax.reg_read_64(Register.RDI)}.\n`);
+        this.termWrite!(`Program exited with exit code ${ax.reg_read_64(Register.RDI)}.\n`);
       }
       catch (e) {
         let axstate = (ax ?? "no axecutor state available").toString();
         console.error(axstate);
-        this.termWrite("\nError during execution:\n" + e + "\n\n" + axstate);
+        this.termWrite!("\nError during execution:\n" + e + "\n\n" + axstate);
       }
     }
   }
