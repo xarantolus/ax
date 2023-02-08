@@ -64,7 +64,7 @@ RM_TARGETS += examples/web/node_modules examples/web/dist .vite
 precommit: generate fmt test test-scripts all
 
 # targets that might change files and thus prevent precommit from passing, especially when the version changes
-generate: build-web switch stats test-js docs
+generate: switch stats docs build-web test-js
 
 stats:
 	@$(PY) stats.py
