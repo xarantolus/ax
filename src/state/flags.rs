@@ -60,6 +60,7 @@ lazy_static! {
     .collect();
 }
 
+// TODO: Directly make this a function definition instead of calling a lambda?
 macro_rules! set_flags {
 	[$type:ident; $type_size:expr] => {
 			|a: &mut Axecutor, flags_to_set: u64, flags_to_clear: u64, result: $type| {

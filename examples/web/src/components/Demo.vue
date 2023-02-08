@@ -35,7 +35,7 @@
       <button @click="runFile">Run!</button>
     </div>
     <br />
-    <div v-if="programs.length > 0">
+    <div v-if="programs!.length > 0">
       Alternatively, you can load one of the following binaries by just clicking:
       <ul>
         <li v-for="program in programs" :key="program.name">
