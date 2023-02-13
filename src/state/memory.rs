@@ -146,8 +146,16 @@ impl Axecutor {
             .state
             .memory
             .iter()
-            .find(|area| area.start <= address && address < area.start + area.length)
+            .find(|area| {
+                // Start address is in range of memory area
+                area.start <= address && address < area.start + area.length
+            })
             .ok_or_else(|| self.collect_mem_error_hints(address, length, "Read".to_string()))?;
+
+        // Make sure it's in range before doing the slice access below
+        if address + length > area.start + area.length {
+            return Err(self.collect_mem_error_hints(address, length, "Read".to_string()));
+        }
 
         if area.access & PROT_READ == 0 {
             return Err(AxError::from(format!(
@@ -237,8 +245,7 @@ impl Axecutor {
         }
 
         // Read up to 15 bytes, but only as many as are available in the memory area
-
-        // &self.code[code_offset..min(code_offset + 15, self.code.len())];
+        // Since we use min, we don't need a range check
 
         let offset = (address - area.start) as usize;
         let slice = &area.data[offset..min(offset + 15, area.data.len())];
@@ -251,10 +258,13 @@ impl Axecutor {
     fn collect_mem_error_hints(&self, address: u64, length: u64, operation: String) -> AxError {
         // check if start or end address is within any of the memory areas
         for area in &self.state.memory {
-            if address >= area.start && address < area.start + area.length {
+            if address >= area.start
+                && address < area.start + area.length
+                && address + length > area.start + area.length
+            {
                 return AxError::from(format!(
                     "Memory {} of length {} at address {:#x} over end of memory area {} (start {:#x}, length {})",
-                    operation,
+                    operation.to_lowercase(),
                     length,
                     address,
                     match &area.name {
@@ -271,7 +281,7 @@ impl Axecutor {
             if address + length > area.start && address + length <= area.start + area.length {
                 return AxError::from(format!(
                     "Memory {} of length {} at address {:#x} before start of memory area {} (start {:#x}, length {})",
-                    operation,
+                    operation.to_lowercase(),
                     length,
                     address,
                     match &area.name {
@@ -369,6 +379,15 @@ impl Axecutor {
                 ))
             }
         };
+
+        // Range check before doing the copy_from_slice below
+        if address + data.len() as u64 > area.start + area.length {
+            return Err(self.collect_mem_error_hints(
+                address,
+                data.len() as u64,
+                "Write".to_string(),
+            ));
+        }
 
         if area.access & PROT_WRITE == 0 {
             return Err(AxError::from(format!(
