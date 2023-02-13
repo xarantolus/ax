@@ -58,8 +58,14 @@ async fn main_impl() -> Result<i32, AxError> {
                     return Err(AxError::from("write: invalid file descriptor").into());
                 }
 
-                let result_buf = ax.mem_read_bytes(rsi, rdx)?;
-                let output_text = String::from_utf8(result_buf)?;
+                let result_buf = ax.mem_read_bytes(rsi, rdx).map_err(|e| {
+                    AxError::from(format!("write: failed to read memory at {rsi}: {e}"))
+                })?;
+                let output_text = String::from_utf8(result_buf).map_err(|e| {
+                    AxError::from(format!(
+                        "write: failed to convert memory at {rsi} to utf8: {e}"
+                    ))
+                })?;
 
                 if rdi == 2 {
                     eprint!("{output_text}");
@@ -68,7 +74,9 @@ async fn main_impl() -> Result<i32, AxError> {
                 }
 
                 // Return number of bytes written
-                ax.reg_write_64(SupportedRegister::RAX, rdx)?;
+                ax.reg_write_64(SupportedRegister::RAX, rdx).map_err(|e| {
+                    AxError::from(format!("write: failed to write return value to RAX: {e}"))
+                })?;
             }
             // Exit
             60 => {
