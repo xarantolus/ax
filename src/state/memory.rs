@@ -797,6 +797,7 @@ impl Axecutor {
             stack_start <<= 1;
         }
 
+        // TODO: auxiliary vector
         // Make sure the stack is aligned to 16 bytes
         let mut stack_top = (stack_start + length - 16) & !0xf;
         if stack_layout.len() % 2 == 1 {
