@@ -26,6 +26,8 @@ impl Axecutor {
     fn instr_cpuid(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Code::Cpuid);
 
+        // TODO: CPUID; https://github.com/aengelke/instrew/blob/master/client/emulate.c#L214-L271
+
         // let eax = self.reg_read_32(SupportedRegister::EAX)?;
         // let ecx = self.reg_read_32(SupportedRegister::ECX)?;
 

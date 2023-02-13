@@ -106,6 +106,8 @@ impl Axecutor {
                         segment.p_memsz
                     );
                 }
+                // TODO: map PT_GNU_EH_FRAME
+
                 // Skippable, but we should warn and probably implement them in the future
                 PT_GNU_EH_FRAME | PT_GNU_PROPERTY => {
                     debug_log!(
