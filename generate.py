@@ -325,10 +325,22 @@ impl TryFrom<Mnemonic> for SupportedMnemonic {
 }
 """
 
-    # Write to file generated.rs
+    # if the code is the same as before, don't write to the file
+    # to know that, we have to format first
+    rustfmt = subprocess.run(["rustfmt", "--edition=2021", "--emit=stdout"], input=code, encoding='utf8',
+                             stdout=subprocess.PIPE)
+
+    path = os.path.join("src", "auto", "generated.rs")
+
+    with open(path, "r", encoding='utf8') as f:
+        old_code = f.read()
+
+    if old_code.strip() == rustfmt.stdout.strip():
+        print("No changes to src/auto/generated.rs")
+        return
+
     with open("src/auto/generated.rs", "w", encoding='utf8') as f:
-        f.write(code)
-    subprocess.run(["rustfmt", "--edition=2021", "src/auto/generated.rs"])
+        f.write(rustfmt.stdout)
 
     print("Regenerated src/auto/generated.rs")
 
