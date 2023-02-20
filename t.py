@@ -553,6 +553,12 @@ class Tests(unittest.TestCase):
         self.assertEqual(instr.arguments[0].name, "xmm0")
         self.assertEqual(instr.arguments[1].base_register, RegisterOperand("rsp"))
 
+        instr = Instruction.parse("pshufd xmm0, xmm3, 0x7")
+        self.assertEqual(instr.mnemonic, "pshufd")
+        self.assertEqual(instr.arguments[0].name, "xmm0")
+        self.assertEqual(instr.arguments[1].name, "xmm3")
+        self.assertEqual(instr.additional_imm, ImmediateOperand(0x7))
+
 
 def assemble(instruction: Instruction | str) -> list[str]:
     # create temporary directory
