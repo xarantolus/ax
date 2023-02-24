@@ -58,6 +58,10 @@ pub(crate) struct MachineState {
     // executed_instructions_count is the number of instructions that have been executed so far
     pub(crate) executed_instructions_count: u64,
 
+    // max_instructions is the maximum number of instructions that should be executed.
+    // If this is set, an error will be returned when the limit is reached
+    pub(crate) max_instructions: Option<u64>,
+
     // syscalls holds state for syscalls, e.g. the program break for brk
     pub(crate) syscalls: SyscallState,
 
@@ -88,6 +92,7 @@ impl Axecutor {
                 rflags: 0,
                 fs: 0,
                 gs: 0,
+                max_instructions: None,
                 syscalls: SyscallState::default(),
                 call_stack: Vec::new(),
                 trace: Vec::new(),
