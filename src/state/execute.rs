@@ -173,6 +173,8 @@ impl Axecutor {
 
     /// Sets an upper limit on the number of instructions that can be executed.
     pub fn set_max_instructions(&mut self, max: u64) {
+        debug_log!("Setting max instructions to {}", max);
+
         self.state.max_instructions = Some(max);
     }
 }
