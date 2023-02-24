@@ -283,6 +283,10 @@ Get the symbol name for a given address. This only works if the ELF binary conta
 If no symbol is found, None or undefined is returned.
 
 
+#### `Axecutor.set_max_instructions(max: bigint) => void`
+Sets an upper limit on the number of instructions that can be executed.
+
+
 #### `Axecutor.toString() => string`
 Returns a string representation of the Axecutor instance that can be useful for debugging.
 

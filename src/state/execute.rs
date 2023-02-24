@@ -53,6 +53,13 @@ impl Axecutor {
                 "Cannot advance after execution has already finished",
             ));
         }
+        if let Some(limit) = self.state.max_instructions {
+            if self.state.executed_instructions_count >= limit {
+                return Err(AxError::from(format!(
+                    "Instruction limit of {limit} has been reached"
+                )));
+            }
+        }
 
         // Fetch the next instruction
         let instr = self.decode_next().map_err(|e| {
@@ -163,4 +170,35 @@ impl Axecutor {
         while self.step().await? {}
         Ok(())
     }
+
+    /// Sets an upper limit on the number of instructions that can be executed.
+    pub fn set_max_instructions(&mut self, max: u64) {
+        self.state.max_instructions = Some(max);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use crate::axecutor::Axecutor;
+    use crate::helpers::tests::{assert_reg_value, test_async};
+    use iced_x86::Register::*;
+
+    test_async![limit_instructions; async {
+        let mut ax = Axecutor::new(
+            &[
+                0x48, 0xc7, 0xc0, 0x5, 0, 0, 0, // mov rax, 5
+                0x48, 0xc7, 0xc0, 0x6, 0, 0, 0, // mov rax, 6
+            ],
+            0x1000,
+            0x1000,
+        ).expect("Failed to create axecutor");
+
+        ax.set_max_instructions(1);
+
+        let result = ax.execute().await;
+        assert!(result.is_err());
+
+        assert_reg_value!(q; ax; RAX; 5);
+    }];
 }
