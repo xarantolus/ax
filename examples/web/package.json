@@ -11,17 +11,18 @@
   },
   "dependencies": {
     "ax-x86": "file:../../pkg",
+    "vite-plugin-wasm": "^3.2.1",
     "vue": "^3.2.38",
     "xterm": "^5.0.0",
-    "xterm-addon-fit": "^0.6.0"
+    "xterm-addon-fit": "^0.7.0"
   },
   "devDependencies": {
-    "@types/node": "^16.11.56",
-    "@vitejs/plugin-vue": "^3.0.3",
+    "@types/node": "^18.14.1",
+    "@vitejs/plugin-vue": "^4.0.0",
     "@vue/tsconfig": "^0.1.3",
     "npm-run-all": "^4.1.5",
-    "typescript": "~4.7.4",
-    "vite": "^3.0.9",
-    "vue-tsc": "^0.40.7"
+    "typescript": "^4.9.5",
+    "vite": "^4.1.4",
+    "vue-tsc": "^1.1.7"
   }
 }
