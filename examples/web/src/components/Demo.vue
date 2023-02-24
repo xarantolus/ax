@@ -125,7 +125,7 @@ export default defineComponent({
           binary: "hello_world_c_nostdlib.bin",
           source_name: "hello_world_c_nostdlib/hello_world_c_nostdlib.c",
           description: "Prints \"Hello World!\" to stdout",
-        },
+        }/*,
         {
           name: "Fibonacci (C, -nostdlib)",
           binary: "fib_c_nostdlib.bin",
@@ -146,7 +146,7 @@ export default defineComponent({
           name: "thread_local errno (C)",
           binary: "thread_local.bin",
           source_name: "thread_local_c/thread_local.c",
-        }
+        }*/
       ]
 
       await init();
