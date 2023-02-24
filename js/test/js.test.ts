@@ -335,3 +335,17 @@ describe('Native syscall handlers', () => {
 		expect(called).toBe(false);
 	});
 });
+
+describe('Respect max instructions to execute', () => {
+	it('should stop execution when max instructions are reached', async () => {
+		let axecutor = new Axecutor(exitX86Code, 0x1000n, 0x1000n);
+		axecutor.set_max_instructions(1n);
+
+		axecutor.reg_write_64(Register.RDI, 0n);
+
+		await expect(axecutor.execute()).rejects.toThrow();
+
+		// The mov rdi, ... instruction must not be executed
+		expect(axecutor.reg_read_64(Register.RDI)).toBe(0n);
+	});
+});
