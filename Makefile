@@ -21,6 +21,12 @@ else
   PY := py -3
 endif
 
+NPM_INSTALL_COMMAND := npm install
+ifneq ($(CI),)
+  NPM_INSTALL_COMMAND := npm ci
+endif
+
+
 RM_TARGETS := *.out Cargo.lock target
 
 all: ax build build-cjs
@@ -52,7 +58,7 @@ RM_TARGETS += ax$(EXE_SUFFIX)
 ### Web builds
 ######################
 build-web: copy-programs build
-	cd examples/web && npm install && npm run build
+	cd examples/web && $(NPM_INSTALL_COMMAND) && npm run build
 RM_TARGETS += examples/web/node_modules examples/web/dist .vite
 
 
@@ -70,7 +76,7 @@ stats:
 	@$(PY) stats.py
 
 docs: build
-	cd js/docs && npm install && npm run build && npm run generate
+	cd js/docs && $(NPM_INSTALL_COMMAND) && npm run build && npm run generate
 
 switch:
 	$(PY) generate.py switch
@@ -97,7 +103,7 @@ test-node:
 
 test-js: build-cjs
 	@echo "Testing JS API"
-	cd js/test && npm install && npm test
+	cd js/test && $(NPM_INSTALL_COMMAND) && npm test
 
 watch:
 	$(MAKE) -j3 web watch-debug watch-programs
@@ -113,7 +119,7 @@ watch-tests:
 RM_TARGETS += lcov.info
 
 web: copy-programs build
-	cd examples/web && npm install && npm run dev -- --host
+	cd examples/web && $(NPM_INSTALL_COMMAND) && npm run dev -- --host
 
 test-scripts: python-dependencies
 	$(PY) t.py --test
