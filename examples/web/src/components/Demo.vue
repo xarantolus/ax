@@ -31,8 +31,8 @@
       Some binaries, especially the ones that use libc, might not yet work.
     </p>
     <div class="mt-1">
-      <input type="file" ref="file">
-      <button @click="runFile">Run!</button>
+      <input :disabled="is_running" type="file" ref="file">
+      <button :disabled="is_running" @click="runFile">Run!</button>
     </div>
     <br />
     <div v-if="programs!.length > 0">
@@ -44,7 +44,10 @@
       </ul>
       These exact binaries can also be run on Linux. This shows that the emulator can run some real binaries without any modifications.
     </div>
-    <h3 class="mt-1">Console output</h3>
+    <div>
+      <h3 class="mt-1">Console output</h3>
+      <button class="reload-button" @click="reload" :disabled="!is_running">Cancel running binary</button>
+    </div>
     <Terminal ref="terminalRef" class="mt-1" />
   </div>
 </template>
@@ -161,6 +164,7 @@ export default defineComponent({
         commit: commit(),
         brk_start: 0n,
         brk_len: 0n,
+        is_running: ref(false)
       }
     } catch (e) {
       return {
@@ -236,6 +240,10 @@ export default defineComponent({
       }
     },
     async setBinary(name: string) {
+      if (this.is_running) {
+        alert("Cannot change binary while another program is running");
+        return;
+      }
       try {
         this.termReset!();
 
@@ -263,9 +271,15 @@ export default defineComponent({
       }
     },
     async runFile() {
+      if (this.is_running) {
+        alert("Cannot run program while another program is running");
+        return;
+      }
+
       this.termReset!();
 
       this.brk_start = 0n;
+      this.is_running = true;
 
       let ax;
       try {
@@ -273,11 +287,13 @@ export default defineComponent({
         console.log(files);
         if (files.length != 1) {
           this.termWrite!("Please select exactly one file\n");
+          this.is_running = false;
           return;
         }
         let content = await files.item(0)?.arrayBuffer().then(buf => new Uint8Array(buf));
         if (!content) {
           this.termWrite!("Failed to read file, please only use statically linked ELF binaries.\n");
+          this.is_running = false;
           return;
         }
         ax = Axecutor.from_binary(content);
@@ -286,6 +302,7 @@ export default defineComponent({
         let axstate = (ax ?? "no axecutor state available").toString();
         console.error(axstate);
         this.termWrite!("Error while decoding binary:\n" + e);
+        this.is_running = false;
         return;
       }
       try {
@@ -301,6 +318,7 @@ export default defineComponent({
         let axstate = (ax ?? "no axecutor state available").toString();
         console.error(axstate);
         this.termWrite!("Error during initialisation:\n" + e + "\n\n" + axstate);
+        this.is_running = false;
         return;
       }
       try {
@@ -313,7 +331,12 @@ export default defineComponent({
         console.error(axstate);
         this.termWrite!("\nError during execution:\n" + e + "\n\n" + axstate);
       }
-    }
+
+      this.is_running = false;
+    },
+    reload() {
+      window.location.reload();
+    },
   }
 })
 </script>
@@ -350,5 +373,21 @@ input {
   .width-2-3 {
     width: 100%;
   }
+}
+
+.reload-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: var(--vt-c-white);
+  background-color: var(--vt-c-black-soft);
+  border: none;
+  font-size: 1.25em;
+  cursor: pointer;
+}
+
+.reload-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 </style>
