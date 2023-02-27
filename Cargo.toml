@@ -33,19 +33,19 @@ console_error_panic_hook = { version = "0.1.6", optional = true }
 
 js-sys = "0.3.60"
 wasm-bindgen-futures = "0.4.33"
-lazy_static = "1.4.0"
+lazy_static = { version = "1.4.0", features = ["spin_no_std"] }
 rand = { version = "0.8.5" }
 getrandom = { version = "0.2.7", features = ["js"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0.144"
 serde-wasm-bindgen = "0.4"
 elf = "0.7.1"
-async-std = {version = "1.12.0", features = ["attributes"]}
+async-std = { version = "1.12.0" }
 
 [dependencies.iced-x86]
 version = "1.17.0"
 default-features = false
-features = ["std", "decoder", "nasm", "instr_info", "serde"]
+features = ["no_std", "decoder", "fast_fmt", "instr_info", "serde"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.13"

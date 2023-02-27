@@ -158,17 +158,17 @@ mod tests {
         debug_log!("Trace:\n{}", trace);
 
         assert_eq!(trace, r#"<emulation_start>: entrypoint => _start@0x401000
-  _start@0x401000: call 0000000000401015h => first_level@0x401015
-    first_level@0x401015: jmp short 000000000040101Eh => 0x40101e
-    0x40101e: call 0000000000401031h => second_level@0x401031
-      second_level@0x401031: call 000000000040103Ch => third_level@0x40103c
-        0x401052: jne short 000000000040104Ah => 0x40104a (9 times)
+  _start@0x401000: call 401015h => first_level@0x401015
+    first_level@0x401015: jmp 40101Eh => 0x40101e
+    0x40101e: call 401031h => second_level@0x401031
+      second_level@0x401031: call 40103Ch => third_level@0x40103c
+        0x401052: jne 40104Ah => 0x40104a (9 times)
         0x401054: ret => 0x401036
-      0x401036: call 000000000040103Ch => third_level@0x40103c
-        0x401052: jne short 000000000040104Ah => 0x40104a (9 times)
+      0x401036: call 40103Ch => third_level@0x40103c
+        0x401052: jne 40104Ah => 0x40104a (9 times)
         0x401054: ret => 0x40103b
       0x40103b: ret => 0x401023
-    0x401023: call 0000000000401029h => second_level_two@0x401029
+    0x401023: call 401029h => second_level_two@0x401029
       0x401030: ret => 0x401028
     0x401028: ret => 0x401005
 "#);
@@ -213,9 +213,9 @@ mod tests {
         debug_log!("Trace:\n{}", trace);
 
         assert_eq!(trace, format!(r#"<emulation_start>: entrypoint => _start@0x40101a
-  0x401034: jmp short 000000000040103Eh => 0x40103e
-  0x401042: jle short 0000000000401036h => 0x401036 ({} times)
-  0x401049: call 0000000000401000h => sys_exit@0x401000
+  0x401034: jmp 40103Eh => 0x40103e
+  0x401042: jle 401036h => 0x401036 ({} times)
+  0x401049: call 401000h => sys_exit@0x401000
 "#, unsafe { jle_count }));
     }];
 }

@@ -9,17 +9,18 @@ use ax_x86::{
     state::{hooks::HookResult, registers::SupportedRegister},
 };
 
-#[async_std::main]
-async fn main() {
-    match main_impl().await {
-        Ok(exit_code) => {
-            std::process::exit(exit_code);
+fn main() {
+    async_std::task::block_on(async {
+        match main_impl().await {
+            Ok(exit_code) => {
+                std::process::exit(exit_code);
+            }
+            Err(e) => {
+                eprintln!("Error: {e}");
+                std::process::exit(1);
+            }
         }
-        Err(e) => {
-            eprintln!("Error: {e}");
-            std::process::exit(1);
-        }
-    }
+    });
 }
 
 async fn main_impl() -> Result<i32, AxError> {
