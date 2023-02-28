@@ -75,7 +75,7 @@ generate: switch stats docs build-web test-js
 stats:
 	@$(PY) stats.py
 
-docs: build
+docs: node-dependencies build
 	typedoc pkg/ax_x86.d.ts --sort alphabetical --cleanOutputDir --categorizeByGroup --disableSources --includeVersion --excludeNotDocumented --out docs
 
 switch:
