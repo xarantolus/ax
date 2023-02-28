@@ -35,7 +35,7 @@ await init();
 console.log("ax version:", version());
 ```
 
-This readme contains two examples that show typical use cases, for a more detailed API reference, see [the documentation](api_doc.md).
+This readme contains two examples that show typical use cases, for a more detailed API reference, see [the documentation](https://ax.010.one/docs/).
 
 Two warnings/pitfalls when using this emulator:
 * Make sure that all numbers are passed as `bigint`, which can be done using an `n` suffix. `0x1000n` is a `bigint` literal (which is what we want), `0x1000` is a `number` (which will *not* work)
@@ -116,7 +116,7 @@ The emulator also has some convenience functions for handling Linux/ELF binaries
 
 
 One thing to note is that binaries usually exit via the `exit` syscall, which is not implemented by default (same as any other syscall).
-You can either implement your own syscall handler that handles the `exit` syscall, or you can use the [`handle_syscalls` method](https://github.com/xarantolus/ax/blob/develop/api_doc.md#syscalls) to register predefined handlers for a small set of syscalls.
+You can either implement your own syscall handler that handles the `exit` syscall, or you can use the [`handle_syscalls` method](https://ax.010.one/docs/classes/Axecutor.html#handle_syscalls) to register predefined handlers for a small set of syscalls.
 
 
 
@@ -190,7 +190,7 @@ ax.hook_after_mnemonic(Mnemonic.Call, function (ax: Axecutor) {
 await ax.execute();
 ```
 
-If your binaries need more system calls, you can look at the [example site implementation](examples/web/src/components/Demo.vue), see [the docs for pre-existing handler functions](api_doc.md#syscalls) or get more details for your own implementation [here](https://syscalls.w3challs.com/?arch=x86_64).
+If your binaries need more system calls, you can look at the [example site implementation](examples/web/src/components/Demo.vue), see [the docs for pre-existing handler functions](https://ax.010.one/docs/enums/Syscall.html) or get more details for your own implementation [here](https://syscalls.w3challs.com/?arch=x86_64).
 
 </details>
 
@@ -273,7 +273,7 @@ Here are some useful links for more information about x86-64/AMD64, the System V
 * [AMD64 Developer Guides](https://developer.amd.com/resources/developer-guides-manuals/)
 * [System V ABI](https://gitlab.com/x86-psABIs/x86-64-ABI) ([direct link](https://gitlab.com/x86-psABIs/x86-64-ABI/-/jobs/artifacts/master/raw/x86-64-ABI/abi.pdf?job=build))
 * [Linux ELF Specification](https://refspecs.linuxfoundation.org/elf/elf.pdf), [OSDev ELF with info on loading and relocations](https://wiki.osdev.org/ELF)
-* Man pages: `man 8 ld.so`, 
+* Man pages: `man 8 ld.so`
 
 ### Limitations
 Here are some limitations that could be inspiration for future features:
