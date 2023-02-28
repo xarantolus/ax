@@ -1,0 +1,12 @@
+// This file is here so typedoc works.
+{
+	"compilerOptions": {
+		"target": "es5",
+		"module": "commonjs",
+		"strict": true,
+		"outDir": "./pkg"
+	},
+	"files": [
+		"pkg/ax_x86.d.ts"
+	]
+}
