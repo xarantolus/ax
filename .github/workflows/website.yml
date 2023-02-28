@@ -42,8 +42,11 @@ jobs:
       - name: Run tests
         run: make precommit
 
-      - name: Build web
-        run: make build-web
+      - name: Build web and docs
+        run: make build-web docs
+
+      - name: Copy docs to web
+        run: cp -r docs examples/web/dist/
 
       - name: Setup Pages
         uses: actions/configure-pages@v2
