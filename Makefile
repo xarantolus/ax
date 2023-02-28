@@ -76,7 +76,7 @@ stats:
 	@$(PY) stats.py
 
 docs: node-dependencies build
-	typedoc pkg/ax_x86.d.ts --sort alphabetical --cleanOutputDir --categorizeByGroup --disableSources --includeVersion --excludeNotDocumented --out docs
+	npx typedoc pkg/ax_x86.d.ts --sort alphabetical --cleanOutputDir --categorizeByGroup --disableSources --includeVersion --excludeNotDocumented --out docs
 
 switch:
 	$(PY) generate.py switch
@@ -153,7 +153,7 @@ python-dependencies:
 	$(PY) -m pip install pyperclip tqdm
 
 node-dependencies:
-	npm install -g eslint typedoc
+	npm install -g eslint
 
 
 clean:
