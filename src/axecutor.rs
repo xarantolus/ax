@@ -76,6 +76,13 @@ pub(crate) struct MachineState {
 impl Axecutor {
     /// An empty Axecutor should be used with care -- you must at least initialize a memory area with code and set the initial RIP
     pub(crate) fn empty() -> Axecutor {
+        // In case of panics, we want more info in console.error
+        #[cfg(all(target_arch = "wasm32", not(test)))]
+        {
+            console_error_panic_hook::set_once();
+            debug_log!("Panic hook set");
+        }
+
         Self {
             stack_top: 0,
             hooks: HookProcessor::default(),
@@ -104,13 +111,6 @@ impl Axecutor {
     /// Creates a new Axecutor instance from the given x86-64 instruction bytes, writing the code to memory at `code_start_addr` and setting the initial RIP to `initial_rip`.
     pub fn new(code: &[u8], code_start_addr: u64, initial_rip: u64) -> Result<Axecutor, AxError> {
         debug_log!("Calling Axecutor::new");
-
-        // In case of panics, we want more info in console.error
-        #[cfg(all(target_arch = "wasm32", not(test)))]
-        {
-            console_error_panic_hook::set_once();
-            debug_log!("Panic hook set");
-        }
 
         debug_log!("Creating Axecutor");
         let mut ax = Axecutor::empty();
