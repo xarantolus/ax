@@ -11,6 +11,9 @@
     <p>
       To just see the source code, <a href="https://github.com/xarantolus/ax">visit the Git repository</a>.
     </p>
+    <p>
+      For more information about the emulator, see the <a href="https://ax.010.one/docs/">documentation</a>.
+    </p>
   </div>
   <div v-else class="middle width-2-3">
     <h1><a href="https://github.com/xarantolus/ax">AX Demo Site</a></h1>
@@ -24,6 +27,7 @@
       <pre>npm install ax-x86</pre>
     </div>
     </p>
+    <p>See the <a href="https://ax.010.one/docs/">documentation</a> for more information on how to use the package.</p>
     <br />
     <h2>Try it out</h2>
     <p>
@@ -128,7 +132,7 @@ export default defineComponent({
           binary: "hello_world_c_nostdlib.bin",
           source_name: "hello_world_c_nostdlib/hello_world_c_nostdlib.c",
           description: "Prints \"Hello World!\" to stdout",
-        }/*,
+        },
         {
           name: "Fibonacci (C, -nostdlib)",
           binary: "fib_c_nostdlib.bin",
@@ -149,7 +153,7 @@ export default defineComponent({
           name: "thread_local errno (C)",
           binary: "thread_local.bin",
           source_name: "thread_local_c/thread_local.c",
-        }*/
+        }
       ]
 
       await init();
@@ -164,7 +168,8 @@ export default defineComponent({
         commit: commit(),
         brk_start: 0n,
         brk_len: 0n,
-        is_running: ref(false)
+        is_running: ref(false),
+        error: ref<Error | null>(null),
       }
     } catch (e) {
       return {
@@ -315,6 +320,7 @@ export default defineComponent({
         ax.hook_before_mnemonic(Mnemonic.Syscall, this.syscallHandler);
       }
       catch (e) {
+        console.error(e);
         let axstate = (ax ?? "no axecutor state available").toString();
         console.error(axstate);
         this.termWrite!("Error during initialisation:\n" + e + "\n\n" + axstate);
