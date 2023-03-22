@@ -97,4 +97,43 @@ impl Axecutor {
     }
 }
 
-// TODO: Write tests that make sense, there are some in integration tests that use pop
+#[cfg(test)]
+mod tests {
+    use crate::axecutor::Axecutor;
+    use crate::helpers::tests::{assert_reg_value, ax_test, init_mem_value, write_reg_value};
+    use iced_x86::Register::*;
+
+    // pop bx
+    ax_test![pop_bx; 0x66, 0x5B;
+        |a: &mut Axecutor| {
+            // Setup stack
+            write_reg_value!(q; a; RSP; 0x1000-2);
+            init_mem_value!(w; a; 0x1000; 0x1234u16);
+
+            write_reg_value!(q; a; RBX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1234u64);
+
+            assert_reg_value!(q; a; RSP; 0x1000);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+
+    // pop rbx
+    ax_test![pop_rbx; 0x5B;
+        |a: &mut Axecutor| {
+            // Setup stack
+            write_reg_value!(q; a; RSP; 0x1000-8);
+            init_mem_value!(q; a; 0x1000; 0x1234567890ABCDEFu64);
+
+            write_reg_value!(q; a; RBX; 0x0);
+        };
+        |a: Axecutor| {
+            assert_reg_value!(q; a; RBX; 0x1234567890ABCDEFu64);
+
+            assert_reg_value!(q; a; RSP; 0x1000);
+        };
+        (0; FLAG_CF | FLAG_PF | FLAG_ZF | FLAG_SF | FLAG_OF)
+    ];
+}
