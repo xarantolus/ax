@@ -6,7 +6,7 @@ use crate::axecutor::Axecutor;
 use crate::helpers::errors::AxError;
 
 use crate::helpers::macros::calculate_r_rm;
-use crate::helpers::macros::calculate_rm_r;
+
 use crate::helpers::macros::fatal_error;
 use crate::state::flags::*;
 
@@ -30,8 +30,8 @@ impl Axecutor {
     fn instr_movzx_r16_rm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Movzx_r16_rm8);
 
-        calculate_rm_r![u16f; u8; self; i; |_, s| {
-            (s as u16, 0)
+        calculate_r_rm![u16; u8; self; i; |_, s| {
+            s as u16
         }; (set: FLAGS_UNAFFECTED; clear: 0)]
     }
 
@@ -41,8 +41,8 @@ impl Axecutor {
     fn instr_movzx_r32_rm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Movzx_r32_rm8);
 
-        calculate_rm_r![u32f; u8; self; i; |_, s| {
-            (s as u32, 0)
+        calculate_r_rm![u32; u8; self; i; |_, s| {
+            s as u32
         }; (set: FLAGS_UNAFFECTED; clear: 0)]
     }
 
@@ -52,8 +52,8 @@ impl Axecutor {
     fn instr_movzx_r64_rm8(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Movzx_r64_rm8);
 
-        calculate_rm_r![u64f; u8; self; i; |_, s| {
-            (s as u64, 0)
+        calculate_r_rm![u64; u8; self; i; |_, s| {
+            s as u64
         }; (set: FLAGS_UNAFFECTED; clear: 0)]
     }
 
