@@ -269,6 +269,11 @@ impl Axecutor {
     pub fn resolve_symbol(&self, addr: u64) -> Option<String> {
         self.symbol_table.get(&addr).map(|s| s.to_string())
     }
+
+    /// Returns the number of instructions that have been executed so far.
+    pub fn executed_instructions_count(&self) -> u64 {
+        self.state.executed_instructions_count
+    }
 }
 
 #[wasm_bindgen]

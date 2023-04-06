@@ -98,5 +98,9 @@ async fn main_impl() -> Result<i32, AxError> {
 
     let exit_code = ax.reg_read_64(SupportedRegister::RAX)?;
 
+    let num_instructions = ax.executed_instructions_count();
+
+    println!("Emulation finished after {num_instructions} instructions, exit code: {exit_code}");
+
     Ok(exit_code as i32)
 }

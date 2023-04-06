@@ -330,7 +330,7 @@ export default defineComponent({
       try {
         this.termWrite!("Starting emulation...\n");
         await ax.execute();
-        this.termWrite!(`Program exited with exit code ${ax.reg_read_64(Register.RDI)}.\n`);
+        this.termWrite!(`Program stopped after ${ax.executed_instructions_count()} instructions with exit code ${ax.reg_read_64(Register.RDI)}.\n`);
       }
       catch (e) {
         let axstate = (ax ?? "no axecutor state available").toString();
