@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use iced_x86::{Decoder, DecoderOptions, Instruction, Register};
+use iced_x86::{Decoder, DecoderOptions, Instruction};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::helpers::debug::debug_log;
@@ -36,7 +36,7 @@ impl Axecutor {
     }
 
     pub(crate) fn decode_next(&self) -> Result<Instruction, AxError> {
-        let rip = self.reg_read_64(Register::RIP.into())?;
+        let rip = self.reg_read_64(SupportedRegister::RIP)?;
         self.decode_at(rip)
     }
 
@@ -45,7 +45,7 @@ impl Axecutor {
         debug_log!(
             "Calling Axecutor::step, finished={}, rip={:#x}",
             self.state.finished,
-            self.reg_read_64(Register::RIP.into())?
+            self.reg_read_64(SupportedRegister::RIP)?
         );
 
         if self.state.finished {
@@ -138,7 +138,7 @@ impl Axecutor {
         self.state.executed_instructions_count += 1;
 
         // If we reached the last instruction (and no jump has been performed etc.), we're done
-        if self.reg_read_64(Register::RIP.into())? == self.code_end_addr {
+        if self.reg_read_64(SupportedRegister::RIP)? == self.code_end_addr {
             self.state.finished = true;
             debug_log!("Marked execution as finished due to reaching end of instruction sequence");
         }

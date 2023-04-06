@@ -2,7 +2,6 @@ use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Je;
 use iced_x86::OpKind;
-use iced_x86::Register::*;
 
 use crate::axecutor::Axecutor;
 use crate::helpers::errors::AxError;
@@ -11,6 +10,7 @@ use crate::state::flags::*;
 
 use crate::helpers::macros::fatal_error;
 use crate::helpers::macros::opcode_unimplemented;
+use crate::state::registers::SupportedRegister;
 
 impl Axecutor {
     pub(crate) fn mnemonic_je(&mut self, i: Instruction) -> Result<(), AxError> {
@@ -56,7 +56,7 @@ impl Axecutor {
                 OpKind::NearBranch64 => {
                     let offset = i.near_branch64() as i64 as u64;
                     self.trace_jump(i, offset)?;
-                    self.reg_write_64(RIP.into(), offset)?;
+                    self.reg_write_64(SupportedRegister::RIP, offset)?;
                 }
                 _ => fatal_error!("Invalid op0_kind {:?} for JE rel8_64", i.op0_kind()),
             }
@@ -94,7 +94,7 @@ impl Axecutor {
                 OpKind::NearBranch64 => {
                     let offset = i.near_branch64() as i64 as u64;
                     self.trace_jump(i, offset)?;
-                    self.reg_write_64(RIP.into(), offset)?;
+                    self.reg_write_64(SupportedRegister::RIP, offset)?;
                 }
                 _ => fatal_error!("Invalid op0_kind {:?} for JE rel32_64", i.op0_kind()),
             }

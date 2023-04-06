@@ -54,7 +54,7 @@ impl Axecutor {
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_16(dest_op.into(), result as u16 as u64)?;
+        self.reg_write_16(dest_op.try_into()?, result as u16 as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -88,7 +88,7 @@ impl Axecutor {
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_32(dest_op.into(), result as u32 as u64)?;
+        self.reg_write_32(dest_op.try_into()?, result as u32 as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -122,7 +122,7 @@ impl Axecutor {
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_64(dest_op.into(), result as u64)?;
+        self.reg_write_64(dest_op.try_into()?, result as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -156,7 +156,7 @@ impl Axecutor {
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_16(dest_op.into(), result as u16 as u64)?;
+        self.reg_write_16(dest_op.try_into()?, result as u16 as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -190,7 +190,7 @@ impl Axecutor {
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_32(dest_op.into(), result as u32 as u64)?;
+        self.reg_write_32(dest_op.try_into()?, result as u32 as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -224,7 +224,7 @@ impl Axecutor {
 
         let (result, overflow) = src_value.overflowing_mul(imm_value);
 
-        self.reg_write_64(dest_op.into(), result as u64)?;
+        self.reg_write_64(dest_op.try_into()?, result as u64)?;
 
         if overflow {
             self.set_flags_u8(FLAG_CF | FLAG_OF, 0, 0);
@@ -407,7 +407,7 @@ impl Axecutor {
 
         let result = (dst_val as i32).wrapping_mul(src_val as i32);
 
-        self.reg_write_16(dest_op.into(), result as u16 as u64)?;
+        self.reg_write_16(dest_op.try_into()?, result as u16 as u64)?;
 
         self.set_flags_u16(
             if result >> 15 != 0 && result >> 15 != -1 {
@@ -448,7 +448,7 @@ impl Axecutor {
 
         let result = (dst_val as i64).wrapping_mul(src_val as i64);
 
-        self.reg_write_32(dest_op.into(), result as u32 as u64)?;
+        self.reg_write_32(dest_op.try_into()?, result as u32 as u64)?;
 
         self.set_flags_u32(
             if result >> 31 != 0 && result >> 31 != -1 {
@@ -489,7 +489,7 @@ impl Axecutor {
 
         let result = (dst_val as i128).wrapping_mul(src_val as i128);
 
-        self.reg_write_64(dest_op.into(), result as u64)?;
+        self.reg_write_64(dest_op.try_into()?, result as u64)?;
 
         self.set_flags_u64(
             if result >> 63 != 0 && result >> 63 != -1 {

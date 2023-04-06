@@ -2,7 +2,6 @@ use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Jmp;
 use iced_x86::OpKind;
-use iced_x86::Register::*;
 
 use crate::axecutor::Axecutor;
 use crate::helpers::errors::AxError;
@@ -63,7 +62,7 @@ impl Axecutor {
             OpKind::NearBranch64 => {
                 let offset = i.near_branch64() as i64 as u64;
                 self.trace_jump(i, offset)?;
-                self.reg_write_64(RIP.into(), offset)?;
+                self.reg_write_64(SupportedRegister::RIP, offset)?;
                 Ok(())
             }
             _ => fatal_error!("Invalid op0_kind for JMP rel32: {:?}", i.op0_kind()),
@@ -96,9 +95,9 @@ impl Axecutor {
 
         // imm8 sign-extended
         let offset = i.immediate8() as i8 as u64;
-        let rip = self.reg_read_64(RIP.into())? as i64 as u64;
+        let rip = self.reg_read_64(SupportedRegister::RIP)? as i64 as u64;
         self.trace_jump(i, rip + offset)?;
-        self.reg_write_64(RIP.into(), rip + offset)?;
+        self.reg_write_64(SupportedRegister::RIP, rip + offset)?;
         Ok(())
     }
 
@@ -121,7 +120,7 @@ impl Axecutor {
             OpKind::NearBranch64 => {
                 let offset = i.near_branch64() as i64 as u64;
                 self.trace_jump(i, offset)?;
-                self.reg_write_64(RIP.into(), offset)?;
+                self.reg_write_64(SupportedRegister::RIP, offset)?;
                 Ok(())
             }
             _ => fatal_error!("Invalid op0_kind {:?} for JMP rel8", i.op0_kind()),

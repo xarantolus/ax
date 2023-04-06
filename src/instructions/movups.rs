@@ -33,7 +33,7 @@ impl Axecutor {
 
         let (dest, src) = self.instruction_operands_2(i)?;
 
-        let dest_reg: SupportedRegister = dest.into();
+        let dest_reg: SupportedRegister = dest.try_into()?;
 
         let src_value = match src {
             Operand::Memory(m) => self.internal_mem_read_128(self.mem_addr(m))?,
@@ -52,7 +52,7 @@ impl Axecutor {
 
         let (dest, src) = self.instruction_operands_2(i)?;
 
-        let src_reg: SupportedRegister = src.into();
+        let src_reg: SupportedRegister = src.try_into()?;
 
         let src_value = self.internal_reg_read_128(src_reg)?;
 

@@ -19,7 +19,7 @@ mod test {
             assert_reg_value!(q; a; RAX; 0);
             assert_reg_value!(q; a; RBX; 0x1234567890ABCDEFu64);
 
-            let rsp = a.reg_read_64(RSP.into()).unwrap();
+            let rsp = a.reg_read_64(crate::state::registers::SupportedRegister::RSP).unwrap();
             assert_eq!(rsp, 0x1000);
 
             assert_mem_value!(q; a; rsp; 0x1234567890ABCDEFu64);

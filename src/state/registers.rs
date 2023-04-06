@@ -89,23 +89,23 @@ lazy_static! {
             (R13, R13),
             (R14, R14),
             (R15, R15),
-    ].iter().map(|(a,b)| (SupportedRegister::from(*a), SupportedRegister::from(*b))).collect();
+    ].iter().map(|(a,b)| (SupportedRegister::try_from(*a).unwrap(), SupportedRegister::try_from(*b).unwrap())).collect();
 
     pub(crate) static ref XMM_REGISTERS : Vec<SupportedRegister> = [
         XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7, XMM8, XMM9, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15
-    ].iter().map(|a| SupportedRegister::from(*a)).collect();
+    ].iter().map(|a| SupportedRegister::try_from(*a).unwrap()).collect();
 
     pub(crate) static ref HIGHER_BYTE_REGISTERS: HashSet<SupportedRegister> = [
         AH, BH, CH, DH
-    ].iter().map(|a| SupportedRegister::from(*a)).collect();
+    ].iter().map(|a| SupportedRegister::try_from(*a).unwrap()).collect();
 
     pub(crate) static ref NATURAL_REGISTER_ORDER : Vec<SupportedRegister> = [
         RIP, RAX, RBX, RCX, RDX, RSI, RDI, RSP, RBP, R8, R9, R10, R11, R12, R13, R14, R15
-    ].iter().map(|a| SupportedRegister::from(*a)).collect();
+    ].iter().map(|a| SupportedRegister::try_from(*a).unwrap()).collect();
 
     pub(crate) static ref GENERAL_PURPOSE_REGISTERS: Vec<SupportedRegister> = [
         RAX, RBX, RCX, RDX, RSI, RDI, RSP, RBP, R8, R9, R10, R11, R12, R13, R14, R15
-    ].iter().map(|a| SupportedRegister::from(*a)).collect();
+    ].iter().map(|a| SupportedRegister::try_from(*a).unwrap()).collect();
 }
 
 pub(crate) fn randomized_register_set(rip_value: u64) -> HashMap<SupportedRegister, u64> {
@@ -235,9 +235,11 @@ pub enum SupportedRegister {
     XMM15,
 }
 
-impl From<Register> for SupportedRegister {
-    fn from(register: Register) -> Self {
-        match register {
+impl TryFrom<Register> for SupportedRegister {
+    type Error = AxError;
+
+    fn try_from(register: Register) -> Result<SupportedRegister, AxError> {
+        Ok(match register {
             Register::RIP => SupportedRegister::RIP,
             Register::RAX => SupportedRegister::RAX,
             Register::RBX => SupportedRegister::RBX,
@@ -329,8 +331,8 @@ impl From<Register> for SupportedRegister {
             Register::XMM14 => SupportedRegister::XMM14,
             Register::XMM15 => SupportedRegister::XMM15,
 
-            _ => panic!("Unsupported register"),
-        }
+            _ => return Err(AxError::from(format!("Unsupported register: {register:?}"))),
+        })
     }
 }
 

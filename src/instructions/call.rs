@@ -200,7 +200,7 @@ mod tests {
         let mut ax = Axecutor::new(code, rip, rip).expect("Failed to create axecutor");
 
         // Setup stack
-        ax.reg_write_64(RSP.into(), 0x1000 - 8).expect("Failed to write to register");
+        ax.reg_write_64(crate::state::registers::SupportedRegister::RSP, 0x1000 - 8).expect("Failed to write to register");
         ax.mem_init_zero(0x1000 - 8, 8)
             .expect("Failed to init memory");
 

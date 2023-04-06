@@ -15,7 +15,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_8(src.into())?;
+        let src_val = self.reg_read_8(src.try_into()?)?;
 
         match dest {
             Operand::Memory(m) => {
@@ -56,7 +56,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_16(src.into())?;
+        let src_val = self.reg_read_16(src.try_into()?)?;
 
         match dest {
             Operand::Memory(m) => {
@@ -97,7 +97,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_32(src.into())?;
+        let src_val = self.reg_read_32(src.try_into()?)?;
 
         match dest {
             Operand::Memory(m) => {
@@ -138,7 +138,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_64(src.into())?;
+        let src_val = self.reg_read_64(src.try_into()?)?;
 
         match dest {
             Operand::Memory(m) => {
@@ -179,7 +179,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_8(src.into())?;
+        let src_val = self.reg_read_8(src.try_into()?)?;
 
         match dest {
             Operand::Memory(m) => {
@@ -220,7 +220,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_8(src.into())?;
+        let src_val = self.reg_read_8(src.try_into()?)?;
 
         match dest {
             Operand::Memory(m) => {
@@ -261,7 +261,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_8(src.into())?;
+        let src_val = self.reg_read_8(src.try_into()?)?;
 
         match dest {
             Operand::Memory(m) => {
@@ -302,7 +302,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_8(src.into())?;
+        let src_val = self.reg_read_8(src.try_into()?)?;
 
         match dest {
             Operand::Memory(m) => {
@@ -341,7 +341,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_16(src.into())?;
+        let src_val = self.reg_read_16(src.try_into()?)?;
 
         match dest {
             Operand::Memory(m) => {
@@ -380,7 +380,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_32(src.into())?;
+        let src_val = self.reg_read_32(src.try_into()?)?;
 
         match dest {
             Operand::Memory(m) => {
@@ -419,7 +419,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let src_val = self.reg_read_64(src.into())?;
+        let src_val = self.reg_read_64(src.try_into()?)?;
 
         match dest {
             Operand::Memory(m) => {
@@ -511,7 +511,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let dest_reg: SupportedRegister = dest.into();
+        let dest_reg: SupportedRegister = dest.try_into()?;
         let dest_val = self.reg_read_8(dest_reg)?;
 
         match src {
@@ -551,7 +551,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let dest_reg: SupportedRegister = dest.into();
+        let dest_reg: SupportedRegister = dest.try_into()?;
         let dest_val = self.reg_read_16(dest_reg)?;
 
         match src {
@@ -591,7 +591,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let dest_reg: SupportedRegister = dest.into();
+        let dest_reg: SupportedRegister = dest.try_into()?;
         let dest_val = self.reg_read_32(dest_reg)?;
 
         match src {
@@ -631,7 +631,7 @@ impl Axecutor {
         flags_to_clear: u64,
     ) -> Result<(), AxError> {
         let (dest, src) = self.instruction_operands_2(i)?;
-        let dest_reg: SupportedRegister = dest.into();
+        let dest_reg: SupportedRegister = dest.try_into()?;
         let dest_val = self.reg_read_64(dest_reg)?;
 
         match src {
@@ -681,7 +681,7 @@ impl Axecutor {
             ),
         };
 
-        let dest = dest.into();
+        let dest = dest.try_into()?;
         let dest_val = self.reg_read_8(dest)?;
         let result = op(dest_val as u8, src_val as u8);
         self.set_flags_u8(flags_to_set, flags_to_clear, result);
@@ -709,7 +709,7 @@ impl Axecutor {
             ),
         };
 
-        let dest = dest.into();
+        let dest = dest.try_into()?;
         let dest_val = self.reg_read_16(dest)?;
         let result = op(dest_val as u16, src_val as u16);
         self.set_flags_u16(flags_to_set, flags_to_clear, result);
@@ -737,7 +737,7 @@ impl Axecutor {
             ),
         };
 
-        let dest = dest.into();
+        let dest = dest.try_into()?;
         let dest_val = self.reg_read_32(dest)?;
         let result = op(dest_val as u32, src_val as u32);
         self.set_flags_u32(flags_to_set, flags_to_clear, result);
@@ -765,7 +765,7 @@ impl Axecutor {
             ),
         };
 
-        let dest = dest.into();
+        let dest = dest.try_into()?;
         let dest_val = self.reg_read_64(dest)?;
         let result = op(dest_val, src_val);
         self.set_flags_u64(flags_to_set, flags_to_clear, result);
@@ -793,7 +793,7 @@ impl Axecutor {
             ),
         };
 
-        let dest = dest.into();
+        let dest = dest.try_into()?;
         let dest_val = self.reg_read_64(dest)?;
         let result = op(dest_val, src_val as u32);
         self.set_flags_u64(flags_to_set, flags_to_clear, result);
@@ -821,7 +821,7 @@ impl Axecutor {
             ),
         };
 
-        let dest = dest.into();
+        let dest = dest.try_into()?;
         let dest_val = self.reg_read_32(dest)?;
         let result = op(dest_val as u32, src_val as u16);
         self.set_flags_u32(flags_to_set, flags_to_clear, result);
@@ -849,7 +849,7 @@ impl Axecutor {
             ),
         };
 
-        let dest = dest.into();
+        let dest = dest.try_into()?;
         let dest_val = self.reg_read_64(dest)?;
         let result = op(dest_val, src_val as u16);
         self.set_flags_u64(flags_to_set, flags_to_clear, result);

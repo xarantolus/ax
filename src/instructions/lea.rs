@@ -34,7 +34,7 @@ impl Axecutor {
             _ => fatal_error!("Invalid source operand {:?} for LEA r16, m", src),
         };
 
-        let dest = dest.into();
+        let dest = dest.try_into()?;
 
         self.reg_write_16(dest, src_addr as u16 as u64)?;
         Ok(())
@@ -53,7 +53,7 @@ impl Axecutor {
             _ => fatal_error!("Invalid source operand {:?} for LEA r32, m", src),
         };
 
-        let dest = dest.into();
+        let dest = dest.try_into()?;
 
         self.reg_write_32(dest, src_addr as u32 as u64)?;
         Ok(())
@@ -72,7 +72,7 @@ impl Axecutor {
             _ => fatal_error!("Invalid source operand {:?} for LEA r64, m", src),
         };
 
-        let dest = dest.into();
+        let dest = dest.try_into()?;
 
         self.reg_write_64(dest, src_addr)?;
         Ok(())

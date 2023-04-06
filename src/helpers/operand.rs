@@ -48,71 +48,91 @@ pub enum Operand {
     Immediate { data: u64, size: i8 },
 }
 
-impl From<Operand> for SupportedRegister {
-    fn from(operand: Operand) -> Self {
-        match operand {
-            Operand::Register(register) => register,
-            _ => panic!("Cannot convert operand to register"),
+impl TryFrom<Operand> for SupportedRegister {
+    type Error = AxError;
+
+    fn try_from(value: Operand) -> Result<Self, Self::Error> {
+        match value {
+            Operand::Register(reg) => Ok(reg),
+            _ => Err(AxError::from(format!(
+                "Cannot convert operand to register: {value:?}"
+            ))),
         }
     }
 }
 
-impl From<Operand> for u8 {
-    fn from(operand: Operand) -> Self {
-        match operand {
+impl TryFrom<Operand> for u8 {
+    type Error = AxError;
+
+    fn try_from(value: Operand) -> Result<Self, Self::Error> {
+        match value {
             Operand::Immediate { data, size } => {
                 debug_assert_eq!(
                     size, 1,
                     "Expected immediate operand of size 1, got size {size}"
                 );
-                data as u8
+                Ok(data as u8)
             }
-            _ => panic!("Cannot convert operand to u8"),
+            _ => Err(AxError::from(format!(
+                "Cannot convert operand to u8: {value:?}"
+            ))),
         }
     }
 }
 
-impl From<Operand> for u16 {
-    fn from(operand: Operand) -> Self {
-        match operand {
+impl TryFrom<Operand> for u16 {
+    type Error = AxError;
+
+    fn try_from(value: Operand) -> Result<Self, Self::Error> {
+        match value {
             Operand::Immediate { data, size } => {
                 debug_assert_eq!(
                     size, 2,
                     "Expected immediate operand of size 2, got size {size}"
                 );
-                data as u16
+                Ok(data as u16)
             }
-            _ => panic!("Cannot convert operand to u16"),
+            _ => Err(AxError::from(format!(
+                "Cannot convert operand to u16: {value:?}"
+            ))),
         }
     }
 }
 
-impl From<Operand> for u32 {
-    fn from(operand: Operand) -> Self {
-        match operand {
+impl TryFrom<Operand> for u32 {
+    type Error = AxError;
+
+    fn try_from(value: Operand) -> Result<Self, Self::Error> {
+        match value {
             Operand::Immediate { data, size } => {
                 debug_assert_eq!(
                     size, 4,
                     "Expected immediate operand of size 4, got size {size}"
                 );
-                data as u32
+                Ok(data as u32)
             }
-            _ => panic!("Cannot convert operand to u32"),
+            _ => Err(AxError::from(format!(
+                "Cannot convert operand to u32: {value:?}"
+            ))),
         }
     }
 }
 
-impl From<Operand> for u64 {
-    fn from(operand: Operand) -> Self {
-        match operand {
+impl TryFrom<Operand> for u64 {
+    type Error = AxError;
+
+    fn try_from(value: Operand) -> Result<Self, Self::Error> {
+        match value {
             Operand::Immediate { data, size } => {
                 debug_assert_eq!(
                     size, 8,
                     "Expected immediate operand of size 8, got size {size}"
                 );
-                data
+                Ok(data)
             }
-            _ => panic!("Cannot convert operand to u64"),
+            _ => Err(AxError::from(format!(
+                "Cannot convert operand to u64: {value:?}"
+            ))),
         }
     }
 }
@@ -201,11 +221,11 @@ impl Axecutor {
                     iced_x86::Register::None => None,
                     // If base is RIP, we can use the displacement as-it. No need to add it to the memory address
                     iced_x86::Register::RIP => None,
-                    r => Some(SupportedRegister::from(r)),
+                    r => Some(SupportedRegister::try_from(r)?),
                 };
                 let index = match i.memory_index() {
                     iced_x86::Register::None => None,
-                    r => Some(SupportedRegister::from(r)),
+                    r => Some(SupportedRegister::try_from(r)?),
                 };
                 let scale = i.memory_index_scale();
                 let displacement = i.memory_displacement64();
@@ -224,9 +244,9 @@ impl Axecutor {
                     segment,
                 }))
             }
-            iced_x86::OpKind::Register => Ok(Operand::Register(SupportedRegister::from(
+            iced_x86::OpKind::Register => Ok(Operand::Register(SupportedRegister::try_from(
                 i.op_register(operand_idx),
-            ))),
+            )?)),
             iced_x86::OpKind::Immediate8 => Ok(Operand::Immediate {
                 data: i.immediate8() as u64,
                 size: 1,
@@ -274,10 +294,10 @@ impl Axecutor {
 
 #[cfg(test)]
 mod tests {
-    use iced_x86::Register;
 
     use crate::helpers::operand::{MemOperand, SupportedSegmentRegister};
     use crate::helpers::tests::{assert_reg_value, ax_test, write_reg_value};
+    use crate::state::registers::SupportedRegister;
     use iced_x86::Register::*;
 
     use super::{Axecutor, Operand, Operand::*};
@@ -348,7 +368,7 @@ mod tests {
         0xc6, 0x4, 0x24, 0x1;
         vec![
             (Memory (MemOperand{
-                base: Some(Register::RSP.into()),
+                base: Some(SupportedRegister::RSP),
                 index: Option::None,
                 scale: 1,
                 displacement: 0,
@@ -369,7 +389,7 @@ mod tests {
         0xc7, 0x4, 0x24, 0x1, 0x0, 0x0, 0x0;
         vec![
             Memory (MemOperand{
-                base: Some(Register::RSP.into()),
+                base: Some(SupportedRegister::RSP),
                 index: Option::None,
                 scale: 1,
                 displacement: 0,
@@ -390,13 +410,13 @@ mod tests {
         0x44, 0x89, 0x7c, 0x24, 0x1;
         vec![
             Memory(MemOperand {
-                base: Some(Register::RSP.into()),
+                base: Some(SupportedRegister::RSP),
                 index: Option::None,
                 scale: 1,
                 displacement: 1,
                 segment: Some(SupportedSegmentRegister::SS),
             }),
-            Register(Register::R15D.into()),
+            Register(SupportedRegister::R15D),
         ];
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RSP; 0x1000);
@@ -412,13 +432,13 @@ mod tests {
         0x44, 0x89, 0x7c, 0x24, 0xff;
         vec![
             Memory(MemOperand{
-                base: Some(Register::RSP.into()),
+                base: Some(SupportedRegister::RSP),
                 index: Option::None,
                 scale: 1,
                 displacement: u64::MAX,
                 segment: Some(SupportedSegmentRegister::SS),
             }),
-            Register(Register::R15D.into()),
+            Register(SupportedRegister::R15D),
         ];
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RSP; 0x1000);
@@ -433,8 +453,8 @@ mod tests {
         0x49, 0x83, 0x34, 0x8b, 0x1;
         vec![
             Memory (MemOperand{
-                base: Some(Register::R11.into()),
-                index: Some(Register::RCX.into()),
+                base: Some(SupportedRegister::R11),
+                index: Some(SupportedRegister::RCX),
                 scale: 4,
                 displacement: 0,
                 segment: Some(SupportedSegmentRegister::DS),
@@ -462,7 +482,7 @@ mod tests {
                 displacement: TEST_RIP_VALUE + 0x7 + 0x5,
                 segment: Some(SupportedSegmentRegister::DS),
             }),
-            Register(Register::RBX.into()),
+            Register(SupportedRegister::RBX),
         ];
         |_: &mut Axecutor| {
             // RIP has a default value defined above

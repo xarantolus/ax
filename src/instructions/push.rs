@@ -2,7 +2,6 @@ use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Push;
 use iced_x86::OpKind;
-use iced_x86::Register;
 
 use crate::axecutor::Axecutor;
 use crate::helpers::errors::AxError;
@@ -36,13 +35,13 @@ impl Axecutor {
     fn instr_push_r16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Push_r16);
 
-        let reg: SupportedRegister = i.op0_register().into();
+        let reg: SupportedRegister = i.op0_register().try_into()?;
 
         let value = self.reg_read_16(reg)?;
-        let rsp = self.reg_read_64(Register::RSP.into())?;
+        let rsp = self.reg_read_64(SupportedRegister::RSP)?;
 
         self.mem_write_16(rsp, value)?;
-        self.reg_write_64(Register::RSP.into(), rsp - 2)?;
+        self.reg_write_64(SupportedRegister::RSP, rsp - 2)?;
 
         Ok(())
     }
@@ -62,13 +61,13 @@ impl Axecutor {
     fn instr_push_r64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Push_r64);
 
-        let reg: SupportedRegister = i.op0_register().into();
+        let reg: SupportedRegister = i.op0_register().try_into()?;
 
         let value = self.reg_read_64(reg)?;
-        let rsp = self.reg_read_64(Register::RSP.into())?;
+        let rsp = self.reg_read_64(SupportedRegister::RSP)?;
 
         self.mem_write_64(rsp, value)?;
-        self.reg_write_64(Register::RSP.into(), rsp - 8)?;
+        self.reg_write_64(SupportedRegister::RSP, rsp - 8)?;
 
         Ok(())
     }
@@ -80,10 +79,10 @@ impl Axecutor {
         debug_assert_eq!(i.code(), Push_imm16);
 
         let value = i.immediate16() as u64;
-        let rsp = self.reg_read_64(Register::RSP.into())?;
+        let rsp = self.reg_read_64(SupportedRegister::RSP)?;
 
         self.mem_write_16(rsp, value)?;
-        self.reg_write_64(Register::RSP.into(), rsp - 2)?;
+        self.reg_write_64(SupportedRegister::RSP, rsp - 2)?;
 
         Ok(())
     }
@@ -100,10 +99,10 @@ impl Axecutor {
             _ => fatal_error!("Invalid operand {:?} for PUSH r/m16", i.op0_kind()),
         };
 
-        let rsp = self.reg_read_64(Register::RSP.into())?;
+        let rsp = self.reg_read_64(SupportedRegister::RSP)?;
 
         self.mem_write_16(rsp, src)?;
-        self.reg_write_64(Register::RSP.into(), rsp - 2)?;
+        self.reg_write_64(SupportedRegister::RSP, rsp - 2)?;
 
         Ok(())
     }
@@ -137,24 +136,24 @@ impl Axecutor {
             // TODO: not sure if 16 and 32-bit are required here, but AMD manual says so
             OpKind::Immediate8to16 => {
                 let value = i.immediate8to16();
-                let rsp = self.reg_read_64(Register::RSP.into())?;
+                let rsp = self.reg_read_64(SupportedRegister::RSP)?;
 
                 self.mem_write_16(rsp, value as u16 as u64)?;
-                self.reg_write_64(Register::RSP.into(), rsp - 2)?;
+                self.reg_write_64(SupportedRegister::RSP, rsp - 2)?;
             }
             OpKind::Immediate8to32 => {
                 let value = i.immediate8to32();
-                let rsp = self.reg_read_64(Register::RSP.into())?;
+                let rsp = self.reg_read_64(SupportedRegister::RSP)?;
 
                 self.mem_write_32(rsp, value as u32 as u64)?;
-                self.reg_write_64(Register::RSP.into(), rsp - 4)?;
+                self.reg_write_64(SupportedRegister::RSP, rsp - 4)?;
             }
             OpKind::Immediate8to64 => {
                 let value = i.immediate8to64();
-                let rsp = self.reg_read_64(Register::RSP.into())?;
+                let rsp = self.reg_read_64(SupportedRegister::RSP)?;
 
                 self.mem_write_64(rsp, value as u64)?;
-                self.reg_write_64(Register::RSP.into(), rsp - 8)?;
+                self.reg_write_64(SupportedRegister::RSP, rsp - 8)?;
             }
             _ => fatal_error!("Invalid operand {:?} for PUSH imm8", i.op0_kind()),
         }
@@ -173,10 +172,10 @@ impl Axecutor {
             OpKind::Immediate32to64 => {
                 // Sign-extend the 32-bit immediate to 64-bit
                 let value = i.immediate32to64() as u64;
-                let rsp = self.reg_read_64(Register::RSP.into())?;
+                let rsp = self.reg_read_64(SupportedRegister::RSP)?;
 
                 self.mem_write_64(rsp, value)?;
-                self.reg_write_64(Register::RSP.into(), rsp - 8)?;
+                self.reg_write_64(SupportedRegister::RSP, rsp - 8)?;
             }
             _ => fatal_error!("Invalid operand {:?} for PUSH imm64", i.op0_kind()),
         }

@@ -263,7 +263,7 @@ operand_test![{test_id};
     vec![
         // TODO: Adjust memory operands
         Operand(Memory {{
-            base: Some(Register::RSP.into()),
+            base: Some(SupportedRegister::RSP),
             index: None,
             scale: 1,
             displacement: 0,
@@ -278,7 +278,7 @@ operand_test![{test_id};
     vec![
         // TODO: Adjust memory operands
         Operand(Memory {{
-            base: Some(Register::RSP.into()),
+            base: Some(SupportedRegister::RSP),
             index: None,
             scale: 1,
             displacement: 0,
@@ -287,7 +287,7 @@ operand_test![{test_id};
     ];
     |a: &mut Axecutor| {{
         use iced_x86::Register::*;
-        a.reg_write_64(RSP.into(), 0x1000)
+        a.reg_write_64(SupportedRegister::RSP, 0x1000)
     }};
     vec![
         // TODO: Adjust memory addresses

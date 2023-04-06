@@ -2,8 +2,6 @@ use iced_x86::Code::*;
 use iced_x86::Instruction;
 use iced_x86::Mnemonic::Pop;
 
-use iced_x86::Register;
-
 use crate::axecutor::Axecutor;
 use crate::helpers::errors::AxError;
 
@@ -32,13 +30,13 @@ impl Axecutor {
     fn instr_pop_r16(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Pop_r16);
 
-        let reg: SupportedRegister = i.op0_register().into();
-        let rsp = self.reg_read_64(Register::RSP.into())? + 2;
+        let reg: SupportedRegister = i.op0_register().try_into()?;
+        let rsp = self.reg_read_64(SupportedRegister::RSP)? + 2;
 
         let value = self.mem_read_16(rsp)?;
         self.reg_write_16(reg, value)?;
 
-        self.reg_write_64(Register::RSP.into(), rsp)?;
+        self.reg_write_64(SupportedRegister::RSP, rsp)?;
 
         Ok(())
     }
@@ -58,13 +56,13 @@ impl Axecutor {
     fn instr_pop_r64(&mut self, i: Instruction) -> Result<(), AxError> {
         debug_assert_eq!(i.code(), Pop_r64);
 
-        let reg: SupportedRegister = i.op0_register().into();
-        let rsp = self.reg_read_64(Register::RSP.into())? + 8;
+        let reg: SupportedRegister = i.op0_register().try_into()?;
+        let rsp = self.reg_read_64(SupportedRegister::RSP)? + 8;
 
         let value = self.mem_read_64(rsp)?;
         self.reg_write_64(reg, value)?;
 
-        self.reg_write_64(Register::RSP.into(), rsp)?;
+        self.reg_write_64(SupportedRegister::RSP, rsp)?;
 
         Ok(())
     }

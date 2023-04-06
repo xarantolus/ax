@@ -251,6 +251,7 @@ mod tests {
     use crate::helpers::tests::{
         assert_mem_value, assert_reg_value, ax_test, init_mem_value, write_reg_value,
     };
+    use crate::state::registers::SupportedRegister;
     use iced_x86::Register::*;
 
     // xor al, al
@@ -614,14 +615,14 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(d; a; EDX; 0x10);
 
-            let rip = a.reg_read_64(RIP.into()).unwrap();
+            let rip = a.reg_read_64(SupportedRegister::RIP).unwrap();
             init_mem_value!(d; a; rip+0x35353 + 6; 0x12345678);
         };
         |a: Axecutor| {
             assert_reg_value!(d; a; EDX; 0x12345678^0x10);
 
             // Note that rip has advanced by instruction length 6
-            let rip = a.reg_read_64(RIP.into()).unwrap();
+            let rip = a.reg_read_64(SupportedRegister::RIP).unwrap();
             assert_mem_value!(d; a; rip+0x35353; 0x12345678);
         };
         (0; FLAG_PF | FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)
@@ -632,14 +633,14 @@ mod tests {
         |a: &mut Axecutor| {
             write_reg_value!(q; a; RAX; 0x10);
 
-            let rip = a.reg_read_64(RIP.into()).unwrap();
+            let rip = a.reg_read_64(SupportedRegister::RIP).unwrap();
             init_mem_value!(q; a; rip+0x35353 + 7; 0x12345678);
         };
         |a: Axecutor| {
             assert_reg_value!(q; a; RAX; 0x12345678^0x10);
 
             // Note that rip has advanced by instruction length 7
-            let rip = a.reg_read_64(RIP.into()).unwrap();
+            let rip = a.reg_read_64(SupportedRegister::RIP).unwrap();
             assert_mem_value!(q; a; rip+0x35353; 0x12345678);
         };
         (0; FLAG_PF | FLAG_SF | FLAG_OF | FLAG_CF | FLAG_ZF)

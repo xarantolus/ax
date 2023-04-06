@@ -129,7 +129,7 @@ pub(crate) use test_async;
 #[cfg(test)]
 macro_rules! assert_reg_value {
     [b; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        let wrap = $crate::state::registers::SupportedRegister::try_from($reg).unwrap();
         assert!(iced_x86::Register::from($reg).is_gpr8(), "Register must be 8 bit wide");
         let val = $axecutor.reg_read_8(wrap).expect("could not read 8-bit register") as u8;
         assert_eq!(
@@ -139,7 +139,7 @@ macro_rules! assert_reg_value {
         );
     };
     [w; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        let wrap = $crate::state::registers::SupportedRegister::try_from($reg).unwrap();
         assert!(iced_x86::Register::from($reg).is_gpr16(), "Register must be 16 bit wide");
         let val = $axecutor.reg_read_16(wrap).expect("could not read 16-bit register") as u16;
         assert_eq!(
@@ -149,7 +149,7 @@ macro_rules! assert_reg_value {
         );
     };
     [d; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        let wrap = $crate::state::registers::SupportedRegister::try_from($reg).unwrap();
         assert!(iced_x86::Register::from($reg).is_gpr32(), "Register must be 32 bit wide");
         let val = $axecutor.reg_read_32(wrap).expect("could not read 32-bit register") as u32;
         assert_eq!(
@@ -159,7 +159,7 @@ macro_rules! assert_reg_value {
         );
     };
     [q; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        let wrap = $crate::state::registers::SupportedRegister::try_from($reg).unwrap();
         assert!(iced_x86::Register::from($reg).is_gpr64() || iced_x86::Register::from($reg).is_ip(), "Register must be 64 bit wide");
         let val = $axecutor.reg_read_64(wrap).expect("could not read 64-bit register");
         assert_eq!(
@@ -169,7 +169,7 @@ macro_rules! assert_reg_value {
         );
     };
     [x; $axecutor:expr; $reg:expr; $value:expr] => {
-        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        let wrap = $crate::state::registers::SupportedRegister::try_from($reg).unwrap();
         assert!(iced_x86::Register::from($reg).is_xmm(), "Register must be 128 bit wide");
         let val = $axecutor.reg_read_128(wrap).expect("could not read 128-bit register");
         assert_eq!(
@@ -233,7 +233,7 @@ pub(crate) use assert_mem_value;
 #[cfg(test)]
 macro_rules! write_reg_value {
     (b; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        let wrap = $crate::state::registers::SupportedRegister::try_from($reg).unwrap();
         assert!(
             iced_x86::Register::from($reg).is_gpr8(),
             "Register must be 8 bit wide"
@@ -243,7 +243,7 @@ macro_rules! write_reg_value {
             .expect("could not write 8-bit register");
     };
     (w; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        let wrap = $crate::state::registers::SupportedRegister::try_from($reg).unwrap();
         assert!(
             iced_x86::Register::from($reg).is_gpr16(),
             "Register must be 16 bit wide"
@@ -253,7 +253,7 @@ macro_rules! write_reg_value {
             .expect("could not write 16-bit register");
     };
     (d; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        let wrap = $crate::state::registers::SupportedRegister::try_from($reg).unwrap();
         assert!(
             iced_x86::Register::from($reg).is_gpr32(),
             "Register must be 32 bit wide"
@@ -263,7 +263,7 @@ macro_rules! write_reg_value {
             .expect("could not write 32-bit register");
     };
     (q; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        let wrap = $crate::state::registers::SupportedRegister::try_from($reg).unwrap();
         assert!(
             iced_x86::Register::from($reg).is_gpr64(),
             "Register must be 64 bit wide"
@@ -273,7 +273,7 @@ macro_rules! write_reg_value {
             .expect("could not write 64-bit register");
     };
     (x; $axecutor:expr; $reg:expr; $value:expr) => {
-        let wrap = $crate::state::registers::SupportedRegister::from($reg);
+        let wrap = $crate::state::registers::SupportedRegister::try_from($reg).unwrap();
         assert!(
             iced_x86::Register::from($reg).is_xmm(),
             "Register must be 128 bit wide"
