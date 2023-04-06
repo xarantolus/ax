@@ -1,7 +1,7 @@
 PROGRAM_NAME=fib_c_nostdlib
 
 $(PROGRAM_NAME).bin: $(PROGRAM_NAME).c
-	gcc $^ -m64 -Os -o $@ -static -g -nostdlib -fno-pie
+	gcc $^ -m64 -O1 -o $@ -static -g -nostdlib -fno-pie
 
 run: $(PROGRAM_NAME).bin
 	./$(PROGRAM_NAME).bin

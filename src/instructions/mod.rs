@@ -6,6 +6,7 @@ pub mod cdq;
 pub mod cdqe;
 pub mod cld;
 pub mod cmovae;
+pub mod cmovbe;
 pub mod cmove;
 pub mod cmovne;
 pub mod cmp;
