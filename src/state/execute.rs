@@ -67,6 +67,7 @@ impl Axecutor {
                 "fetching next instruction".to_string(),
                 self.call_stack().unwrap_or_else(|e| e.to_string()),
                 self.trace().unwrap_or_else(|e| e.to_string()),
+                self.stack_dump().unwrap_or_else(|e| e.to_string()),
             )
         })?;
 
@@ -80,6 +81,7 @@ impl Axecutor {
                 "".to_string(),
                 self.call_stack().unwrap_or_else(|e| e.to_string()),
                 self.trace().unwrap_or_else(|e| e.to_string()),
+                self.stack_dump().unwrap_or_else(|e| e.to_string()),
             )
         })?;
 
@@ -94,6 +96,7 @@ impl Axecutor {
                     ),
                     self.call_stack().unwrap_or_else(|e| e.to_string()),
                     self.trace().unwrap_or_else(|e| e.to_string()),
+                    self.stack_dump().unwrap_or_else(|e| e.to_string()),
                 )
             })?;
             debug_log!("Finished running before hooks for mnemonic {:?}", mnem);
@@ -127,6 +130,7 @@ impl Axecutor {
                     ),
                     self.call_stack().unwrap_or_else(|e| e.to_string()),
                     self.trace().unwrap_or_else(|e| e.to_string()),
+                    self.stack_dump().unwrap_or_else(|e| e.to_string()),
                 );
 
                 debug_log!("Throwing error: {}", err_info);
@@ -153,6 +157,7 @@ impl Axecutor {
                     ),
                     self.call_stack().unwrap_or_else(|e| e.to_string()),
                     self.trace().unwrap_or_else(|e| e.to_string()),
+                    self.stack_dump().unwrap_or_else(|e| e.to_string()),
                 )
             })?;
             debug_log!("Finished running after hooks for mnemonic {:?}", mnem);

@@ -14,6 +14,7 @@ pub struct AxError {
     js: Option<JsValue>,
     call_stack: Option<String>,
     trace: Option<String>,
+    stack_dump: Option<String>,
 
     pub(crate) signals_normal_finish: bool,
 }
@@ -30,10 +31,17 @@ impl AxError {
             detail: self.detail.clone(),
             call_stack: self.call_stack.clone(),
             trace: self.trace.clone(),
+            stack_dump: self.stack_dump.clone(),
         }
     }
 
-    pub(crate) fn add_detail(&self, s: String, call_stack: String, trace: String) -> AxError {
+    pub(crate) fn add_detail(
+        &self,
+        s: String,
+        call_stack: String,
+        trace: String,
+        stack_dump: String,
+    ) -> AxError {
         AxError {
             detail: if !s.is_empty() {
                 Some(s)
@@ -53,6 +61,11 @@ impl AxError {
             } else {
                 self.trace.clone()
             },
+            stack_dump: if !stack_dump.is_empty() {
+                Some(stack_dump)
+            } else {
+                self.stack_dump.clone()
+            },
         }
     }
 }
@@ -69,6 +82,7 @@ impl From<&str> for AxError {
             signals_normal_finish: false,
             call_stack: None,
             trace: None,
+            stack_dump: None,
         }
     }
 }
@@ -81,6 +95,7 @@ impl From<String> for AxError {
             signals_normal_finish: false,
             call_stack: None,
             trace: None,
+            stack_dump: None,
         }
     }
 }
@@ -93,6 +108,7 @@ impl From<JsError> for AxError {
             signals_normal_finish: false,
             call_stack: None,
             trace: None,
+            stack_dump: None,
         }
     }
 }
@@ -105,6 +121,7 @@ impl From<JsValue> for AxError {
             signals_normal_finish: false,
             call_stack: None,
             trace: None,
+            stack_dump: None,
         }
     }
 }
@@ -117,6 +134,7 @@ impl From<Box<dyn std::error::Error>> for AxError {
             signals_normal_finish: false,
             call_stack: None,
             trace: None,
+            stack_dump: None,
         }
     }
 }
@@ -148,6 +166,7 @@ impl From<AxError> for String {
         let detail = err.detail;
         let call_stack = err.call_stack;
         let trace = err.trace;
+        let stack_dump = err.stack_dump;
 
         let mut s = String::new();
         if let Some(d) = detail {
@@ -165,9 +184,14 @@ impl From<AxError> for String {
             s.push('\n');
         }
 
-        if let Some(t) = call_stack {
+        if let Some(c) = call_stack {
             s.push_str("Call stack: \n");
-            s.push_str(&t);
+            s.push_str(&c);
+            s.push('\n');
+        }
+
+        if let Some(d) = stack_dump {
+            s.push_str(&d);
             s.push('\n');
         }
 

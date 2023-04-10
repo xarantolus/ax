@@ -10,6 +10,7 @@ use std::collections::{HashMap, HashSet};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::helpers::debug::debug_log;
+use crate::helpers::stack::LastRSP;
 use crate::helpers::{errors::AxError, macros::assert_fatal};
 
 use crate::axecutor::Axecutor;
@@ -562,6 +563,15 @@ impl Axecutor {
                 Option::None => "".to_string(),
             }
         );
+
+        if reg == SupportedRegister::RSP {
+            self.state.last_rsp = LastRSP {
+                value,
+                hook: self.hooks.running,
+                set_instr_ip: self.reg_read_64(SupportedRegister::RIP).unwrap_or_default(),
+                set_func_addr: self.state.call_stack.last().copied().unwrap_or_default(),
+            }
+        }
 
         Ok(())
     }

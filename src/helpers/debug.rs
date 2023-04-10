@@ -8,6 +8,7 @@ extern "C" {
 
 macro_rules! debug_log {
     ($str:expr) => {
+        #[allow(unused_variables)]
         let p = &*format!("{}:{}: ", file!(), line!());
         #[cfg(all(target_arch = "wasm32", debug_assertions, not(test)))]
         {
@@ -21,6 +22,7 @@ macro_rules! debug_log {
         }
     };
     ($fmt:expr, $($arg:tt)*) => {
+        #[allow(unused_variables)]
         let p = &*format!("{}:{}: ", file!(), line!());
         #[cfg(all(target_arch = "wasm32", debug_assertions, not(test)))]
         {

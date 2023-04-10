@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use crate::helpers::debug::debug_log;
+use crate::helpers::stack::LastRSP;
 use crate::helpers::syscalls::SyscallState;
 use crate::state::flags::FLAG_TO_NAMES;
 
@@ -70,6 +71,9 @@ pub(crate) struct MachineState {
 
     // trace holds a list of all executed calls, returns and jumps
     pub(crate) trace: Vec<TraceEntry>,
+
+    // last_rsp holds info on when (and where) RSP was last changed (this does *not* include changes to smaller parts like ESP!)
+    pub(crate) last_rsp: LastRSP,
 }
 
 #[wasm_bindgen]
@@ -103,6 +107,7 @@ impl Axecutor {
                 syscalls: SyscallState::default(),
                 call_stack: Vec::new(),
                 trace: Vec::new(),
+                last_rsp: LastRSP::default(),
             },
         }
     }
