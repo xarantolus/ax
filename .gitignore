@@ -13,7 +13,7 @@ __pycache__
 **.pyc
 *.out
 version
-ax
+ax*
 **.exe
 # ide dirs
 .vscode

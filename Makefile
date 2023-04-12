@@ -1,4 +1,4 @@
-.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax generate docs watch-programs watch-debug watch-tests precommit clean-programs node-dependencies
+.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax generate docs watch-programs watch-debug watch-tests precommit clean-programs node-dependencies ax-debug
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -52,6 +52,10 @@ bin: ax
 ax:
 	$(MOLD) cargo build --release && cp target/release/ax$(EXE_SUFFIX) .
 RM_TARGETS += ax$(EXE_SUFFIX)
+
+ax-debug:
+	$(MOLD) cargo build && cp target/debug/ax$(EXE_SUFFIX) axdbg$(EXE_SUFFIX)
+RM_TARGETS += axdbg$(EXE_SUFFIX)
 
 
 ######################
