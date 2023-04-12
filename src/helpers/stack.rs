@@ -1,4 +1,3 @@
-// TODO: Implement printing the current stack, see also how GDB does it in case that makes sense.
 use crate::{
     axecutor::Axecutor, helpers::debug::debug_log, state::registers::SupportedRegister::RSP,
 };
@@ -42,7 +41,12 @@ impl Axecutor {
         // Basically the address of the line in the middle of the dump
         let aligned_addr = address & !0xf;
 
-        let start_addr = aligned_addr - (range * 16);
+        // Make sure there are no underflows, otherwise this would panic
+        let start_addr = if aligned_addr > (range * 16) {
+            aligned_addr - (range * 16)
+        } else {
+            0
+        };
         for i in 0..(range * 2) {
             let line_addr = start_addr + (i * 16);
             buf.push_str(&format!("{:016x}  ", line_addr));
