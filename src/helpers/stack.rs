@@ -81,7 +81,14 @@ impl Axecutor {
 
             buf.push_str(" |");
             buf.push_str(&display_buf);
-            buf.push_str("|\n");
+            buf.push('|');
+            // If our address was in the middle of this line, highlight it
+            if address >= line_addr && address < line_addr + 16 {
+                buf.push_str(
+                    format!(" <-- {:#x} at index {}", address, address - line_addr).as_str(),
+                );
+            }
+            buf.push('\n');
         }
 
         if all_inaccessible {
