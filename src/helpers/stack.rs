@@ -47,9 +47,13 @@ impl Axecutor {
         } else {
             0
         };
+
+        let max_width = format!("{:#x}", start_addr + (range * 2) * 16).len();
+
         for i in 0..(range * 2) {
             let line_addr = start_addr + (i * 16);
-            buf.push_str(&format!("{:016x}  ", line_addr));
+            buf.push_str(&format!("{:#width$x}  ", line_addr, width = max_width));
+
 
             let mut display_buf = String::new();
 

@@ -29,7 +29,7 @@ endif
 
 RM_TARGETS := *.out Cargo.lock target
 
-all: ax build build-cjs
+all: ax build build-cjs ax-debug
 
 ######################
 ### WASM package builds
