@@ -770,26 +770,30 @@ impl Axecutor {
         // pop rdi, then rdi should contain the argc value
         stack_layout.push(argv.len() as u64);
 
-        // argv
-        for (i, arg) in argv.iter().enumerate() {
-            let mut arg_bytes = Vec::from(arg.as_bytes());
-            arg_bytes.push(0);
+        // How much memory do we need to store all strings
+        let total_string_space = argv.iter().map(|s| s.len() as u64 + 1).sum::<u64>()
+            + envp.iter().map(|s| s.len() as u64 + 1).sum::<u64>();
 
-            // Allocate space for the string
-            let str_addr = self.mem_init_anywhere(arg_bytes, Some(format!("arg{i}")))?;
-            stack_layout.push(str_addr);
+        // Allocate memory for all strings (+ round up to page size of 0x1000)
+        let mut str_area_pos =
+            self.mem_init_zero_anywhere((total_string_space + 0xfff) & !0xfff)?;
+
+        // argv
+        for arg in argv.iter() {
+            self.mem_write_bytes(str_area_pos, arg.as_bytes())?;
+            stack_layout.push(str_area_pos);
+            // No need to write null explicitly, it was already allocated as zeroed memory. Just skip it with + 1
+            str_area_pos += arg.len() as u64 + 1;
         }
         // argv[argc] = NULL
         stack_layout.push(0);
 
         // envp
-        for (i, env) in envp.iter().enumerate() {
-            let mut env_bytes = Vec::from(env.as_bytes());
-            env_bytes.push(0);
-
-            // Allocate space for the string
-            let str_addr = self.mem_init_anywhere(env_bytes, Some(format!("env{i}")))?;
-            stack_layout.push(str_addr);
+        for env in envp.iter() {
+            self.mem_write_bytes(str_area_pos, env.as_bytes())?;
+            stack_layout.push(str_area_pos);
+            // Same here
+            str_area_pos += env.len() as u64 + 1;
         }
 
         // envp[0] = NULL
