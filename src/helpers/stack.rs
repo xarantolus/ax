@@ -54,7 +54,6 @@ impl Axecutor {
             let line_addr = start_addr + (i * 16);
             buf.push_str(&format!("{:#width$x}  ", line_addr, width = max_width));
 
-
             let mut display_buf = String::new();
 
             for j in 0..16 {
