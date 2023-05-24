@@ -5,6 +5,7 @@ set output-radix 16
 python
 
 # Define all registers I currently care about
+xmm_registers = ["xmm" + str(i) for i in range(16)]
 qword_registers = ["rip", "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp",
                    "rsp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"]
 dword_registers = ["eax", "ebx", "ecx", "edx", "esi", "edi", "ebp",
@@ -14,7 +15,7 @@ word_registers = ["ax", "bx", "cx", "dx", "si", "di", "bp", "sp",
 byte_registers = ["al", "ah", "bl", "bh", "cl", "ch", "dl", "dh", "sil", "dil",
                   "bpl", "spl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b"]
 registers = (byte_registers + word_registers +
-             dword_registers + qword_registers)
+             dword_registers + qword_registers + xmm_registers)
 
 gdb.execute('set disassembly-flavor intel')
 
@@ -57,7 +58,7 @@ def print_register_info(instr: str):
     first_output = True
     for reg in registers:
         if (" " + reg in instr or "," + reg in instr) and "[" + reg not in instr or reg in REGISTERS_SEEN.keys():
-            reg_value = gdb.execute('p $' + reg, to_string=True).split(" = ")[1].strip()
+            reg_value = " = ".join(gdb.execute('p $' + reg, to_string=True).split(" = ")[1:]).strip()
             if first_output:
                 first_output = False
                 gdb.write("Registers:\n")
