@@ -219,7 +219,7 @@ If you want to develop in a Docker container, there's a [Dev Container](https://
 #### How to implement a new mnemonic
 The [`generate.py`](generate.py) script is used for generating instruction implementation stubs. You can e.g. run `python3 generate.py push` to generate a file for all instruction mnemonics that start with `push`; if you only want more exact matches use `push_` as argument. Note that you must have run a build for the WebAssembly package, as otherwise the script won't be able to find the files from the [`iced-x86` crate](https://crates.io/crates/iced-x86) that are used for generating the stubs.
 
-Afterwards, run `make switch` to regenerate the instruction mnemonic switch statement (in [`src/instructions/generated.rs`](src/instructions/generated.rs)). Now your new stub functions are reachable.
+Afterwards, run `make switch` to regenerate the instruction mnemonic switch statement (in [`src/auto/generated.rs`](src/auto/generated.rs)). Now your new stub functions are reachable.
 
 Afterwards, it is recommended to automatically generate test cases, then implement the instruction. You can also add new [integration tests](src/instructions/integration_tests.rs) that use the instruction, this is especially important for instructions that operate on flags.
 
