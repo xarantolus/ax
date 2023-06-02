@@ -22,7 +22,7 @@ extern crate console_error_panic_hook;
 ///
 /// It can be instantiated in JavaScript using one of the following methods:
 ///  - `let ax = new Axecutor(code: Uint8Array, code_start_addr: bigint, initial_rip: bigint)`
-///  - `let ax = Axecutor.fromBinary(elf_binary: Uint8Array)`.
+///  - `let ax = Axecutor.from_binary(elf_binary: Uint8Array)`.
 ///
 /// Afterwards, one can register hooks before/after instructions:
 ///  - `ax.hook_before_mnemonic(Mnemonic.Syscall, (axInstance: Axecutor) => {...});`
