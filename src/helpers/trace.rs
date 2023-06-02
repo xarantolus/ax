@@ -20,7 +20,15 @@ pub(crate) enum TraceVariant {
     Call,
     Return,
     Jump,
-    // TODO: Add syscall
+    Syscall {
+        rax: u64,
+        rdi: u64,
+        rsi: u64,
+        rdx: u64,
+        r10: u64,
+        r8: u64,
+        r9: u64,
+    },
 }
 
 // This is for the full tracing functionality, not to be confused with call_stack
@@ -51,6 +59,7 @@ impl Axecutor {
                         return Ok(());
                     }
                 }
+                TraceVariant::Syscall { .. } => {}
             }
         }
 
@@ -77,6 +86,22 @@ impl Axecutor {
         self.add_trace(i, target, TraceVariant::Jump {})
     }
 
+    pub(crate) fn trace_syscall(&mut self, i: Instruction) -> Result<(), AxError> {
+        self.add_trace(
+            i,
+            0,
+            TraceVariant::Syscall {
+                rax: self.reg_read_64(SupportedRegister::RAX)?,
+                rdi: self.reg_read_64(SupportedRegister::RDI)?,
+                rsi: self.reg_read_64(SupportedRegister::RSI)?,
+                rdx: self.reg_read_64(SupportedRegister::RDX)?,
+                r10: self.reg_read_64(SupportedRegister::R10)?,
+                r8: self.reg_read_64(SupportedRegister::R8)?,
+                r9: self.reg_read_64(SupportedRegister::R9)?,
+            },
+        )
+    }
+
     /// Generate a trace of the current execution state. This trace is a list of all executed jumps, calls and returns.
     /// Conditional jumps that were not taken are **not** included in the trace.
     /// This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
@@ -87,14 +112,6 @@ impl Axecutor {
         while i < self.state.trace.len() {
             let entry = &self.state.trace[i];
 
-            let instruction = if entry.instr_ip == 0 {
-                "entrypoint".to_string()
-            } else {
-                match self.decode_at(entry.instr_ip) {
-                    Ok(instr) => format!("{instr}"),
-                    Err(_) => "<decoding error>".to_string(),
-                }
-            };
             let instruction_symbol = if entry.instr_ip == 0 {
                 "<emulation_start>".to_string()
             } else {
@@ -103,30 +120,63 @@ impl Axecutor {
                     None => format!("{:#x}", entry.instr_ip),
                 }
             };
-
-            let target_symbol = match self.symbol_table.get(&entry.target) {
-                Some(sym) => format!("{}@{:#x}", sym, entry.target),
-                None => format!("{:#x}", entry.target),
+            let instruction = if entry.instr_ip == 0 {
+                "entrypoint".to_string()
+            } else {
+                match self.decode_at(entry.instr_ip) {
+                    Ok(instr) => format!("{instr}"),
+                    Err(_) => "<decoding error>".to_string(),
+                }
             };
 
-            // If we have a jump, we count how many of the next are equal and then write e.g. x10 instead of 10 times the same line
-            if entry.count > 1 {
+            if let TraceVariant::Syscall {
+                rax,
+                rdi,
+                rsi,
+                rdx,
+                r10,
+                r8,
+                r9,
+            } = entry.variant
+            {
                 trace.push_str(&format!(
-                    "{}{}: {} => {} ({} times)\n",
+                    "{}{}: {} => syscall(rax={:#x}, rdi={:#x}, rsi={:#x}, rdx={:#x}, r10={:#x}, r8={:#x}, r9={:#x})\n",
                     "  ".repeat(entry.level as usize),
                     instruction_symbol,
                     instruction,
-                    target_symbol,
-                    entry.count,
+                    rax,
+                    rdi,
+                    rsi,
+                    rdx,
+                    r10,
+                    r8,
+                    r9,
                 ));
             } else {
-                trace.push_str(&format!(
-                    "{}{}: {} => {}\n",
-                    "  ".repeat(entry.level as usize),
-                    instruction_symbol,
-                    instruction,
-                    target_symbol,
-                ));
+                let target_symbol = match self.symbol_table.get(&entry.target) {
+                    Some(sym) => format!("{}@{:#x}", sym, entry.target),
+                    None => format!("{:#x}", entry.target),
+                };
+
+                // If we have a jump, we count how many of the next are equal and then write e.g. x10 instead of 10 times the same line
+                if entry.count > 1 {
+                    trace.push_str(&format!(
+                        "{}{}: {} => {} ({} times)\n",
+                        "  ".repeat(entry.level as usize),
+                        instruction_symbol,
+                        instruction,
+                        target_symbol,
+                        entry.count,
+                    ));
+                } else {
+                    trace.push_str(&format!(
+                        "{}{}: {} => {}\n",
+                        "  ".repeat(entry.level as usize),
+                        instruction_symbol,
+                        instruction,
+                        target_symbol,
+                    ));
+                }
             }
             i += 1;
         }
@@ -157,7 +207,8 @@ mod tests {
 
         debug_log!("Trace:\n{}", trace);
 
-        assert_eq!(trace, r#"<emulation_start>: entrypoint => _start@0x401000
+        use crate::state::registers::SupportedRegister::*;
+        assert_eq!(trace, format!(r#"<emulation_start>: entrypoint => _start@0x401000
   _start@0x401000: call 401015h => first_level@0x401015
     first_level@0x401015: jmp 40101Eh => 0x40101e
     0x40101e: call 401031h => second_level@0x401031
@@ -171,7 +222,8 @@ mod tests {
     0x401023: call 401029h => second_level_two@0x401029
       0x401030: ret => 0x401028
     0x401028: ret => 0x401005
-"#);
+  0x401013: syscall => syscall(rax=0x3c, rdi=0x0, rsi={:#x}, rdx={:#x}, r10={:#x}, r8={:#x}, r9={:#x})
+"#, ax.reg_read_64(RSI).unwrap(), ax.reg_read_64(RDX).unwrap(), ax.reg_read_64(R10).unwrap(), ax.reg_read_64(R8).unwrap(), ax.reg_read_64(R9).unwrap()));
     }];
 
     test_async![c_loop; async {
@@ -212,11 +264,13 @@ mod tests {
 
         debug_log!("Trace:\n{}", trace);
 
+        use crate::state::registers::SupportedRegister::*;
         assert_eq!(trace, format!(r#"<emulation_start>: entrypoint => _start@0x40101a
   0x401034: jmp 40103Eh => 0x40103e
   0x401042: jle 401036h => 0x401036 ({} times)
   0x401049: call 401000h => sys_exit@0x401000
-"#, unsafe { jle_count }));
+    0x401015: syscall => syscall(rax=0x3c, rdi=0x9, rsi={:#x}, rdx={:#x}, r10={:#x}, r8={:#x}, r9={:#x})
+"#, unsafe { jle_count }, ax.reg_read_64(RSI).unwrap(), ax.reg_read_64(RDX).unwrap(), ax.reg_read_64(R10).unwrap(), ax.reg_read_64(R8).unwrap(), ax.reg_read_64(R9).unwrap()));
     }];
 }
 

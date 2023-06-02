@@ -85,6 +85,12 @@ impl Axecutor {
             )
         })?;
 
+        // For syscalls, we have to trace here - otherwise hooks might change registers
+        // and we won't get the true input values in our trace
+        if mnem == SupportedMnemonic::Syscall {
+            self.trace_syscall(instr)?;
+        }
+
         let hooks = self.mnemonic_hooks(mnem);
         if let Some(ref h) = hooks {
             debug_log!("Calling before hooks for mnemonic {:?}", mnem);
