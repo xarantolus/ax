@@ -1,4 +1,4 @@
-.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax generate docs watch-programs watch-debug watch-tests precommit clean-programs node-dependencies ax-debug
+.PHONY: build build-cjs debug watch test test-local test-node test-js test-scripts clean switch coverage fmt example-programs example copy-programs dependencies web build-web stats fmt python-dependencies ax generate docs watch-programs watch-debug watch-tests precommit clean-programs ax-debug
 
 MOLD_INSTALLED := $(shell which mold 2> /dev/null)
 ifneq ($(MOLD_INSTALLED),)
@@ -79,7 +79,7 @@ generate: switch stats docs build-web test-js
 stats:
 	@$(PY) stats.py
 
-docs: node-dependencies build
+docs: build
 	npx typedoc pkg/ax_x86.d.ts --sort alphabetical --cleanOutputDir --categorizeByGroup --disableSources --includeVersion --excludeNotDocumented --out docs
 
 switch:
@@ -150,14 +150,11 @@ watch-programs:
 ######################
 ### Utilities
 ######################
-dependencies: python-dependencies node-dependencies
+dependencies: python-dependencies
 	cargo install cargo-tarpaulin cargo-watch python-launcher
 
 python-dependencies:
 	$(PY) -m pip install pyperclip tqdm
-
-node-dependencies:
-	npm install -g eslint
 
 
 clean:
