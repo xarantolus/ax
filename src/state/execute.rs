@@ -116,7 +116,7 @@ impl Axecutor {
         );
         if let Err(e) = self.switch_instruction_mnemonic(instr) {
             // This is so e.g. the ret instruction can end execution
-            if e.signals_normal_finish {
+            if e.normal_finish() {
                 self.state.finished = true;
                 debug_log!("Marked execution as finished due to instruction indicating so");
             } else {

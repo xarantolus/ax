@@ -9,6 +9,11 @@ use wasm_bindgen::{JsError, JsValue};
 
 #[derive(Clone, PartialEq)]
 pub struct AxError {
+    inner: Box<AxErrorInner>,
+}
+
+#[derive(Clone, PartialEq)]
+struct AxErrorInner {
     detail: Option<String>,
     message: Option<String>,
     js: Option<JsValue>,
@@ -25,14 +30,20 @@ impl Error for AxError {}
 impl AxError {
     pub(crate) fn end_execution(&self) -> Self {
         Self {
-            message: self.message.clone(),
-            js: self.js.clone(),
-            signals_normal_finish: true,
-            detail: self.detail.clone(),
-            call_stack: self.call_stack.clone(),
-            trace: self.trace.clone(),
-            stack_dump: self.stack_dump.clone(),
+            inner: Box::new(AxErrorInner {
+                detail: self.inner.detail.clone(),
+                message: self.inner.message.clone(),
+                js: self.inner.js.clone(),
+                signals_normal_finish: true,
+                call_stack: self.inner.call_stack.clone(),
+                trace: self.inner.trace.clone(),
+                stack_dump: self.inner.stack_dump.clone(),
+            }),
         }
+    }
+
+    pub(crate) fn normal_finish(&self) -> bool {
+        self.inner.signals_normal_finish
     }
 
     pub(crate) fn add_detail(
@@ -43,29 +54,31 @@ impl AxError {
         stack_dump: String,
     ) -> AxError {
         AxError {
-            detail: if !s.is_empty() {
-                Some(s)
-            } else {
-                self.detail.clone()
-            },
-            message: self.message.clone(),
-            js: self.js.clone(),
-            signals_normal_finish: self.signals_normal_finish,
-            call_stack: if !call_stack.is_empty() {
-                Some(call_stack)
-            } else {
-                self.call_stack.clone()
-            },
-            trace: if !trace.is_empty() {
-                Some(trace)
-            } else {
-                self.trace.clone()
-            },
-            stack_dump: if !stack_dump.is_empty() {
-                Some(stack_dump)
-            } else {
-                self.stack_dump.clone()
-            },
+            inner: Box::new(AxErrorInner {
+                detail: if !s.is_empty() {
+                    Some(s)
+                } else {
+                    self.inner.detail.clone()
+                },
+                message: self.inner.message.clone(),
+                js: self.inner.js.clone(),
+                signals_normal_finish: self.inner.signals_normal_finish,
+                call_stack: if !call_stack.is_empty() {
+                    Some(call_stack)
+                } else {
+                    self.inner.call_stack.clone()
+                },
+                trace: if !trace.is_empty() {
+                    Some(trace)
+                } else {
+                    self.inner.trace.clone()
+                },
+                stack_dump: if !stack_dump.is_empty() {
+                    Some(stack_dump)
+                } else {
+                    self.inner.stack_dump.clone()
+                },
+            }),
         }
     }
 }
@@ -76,65 +89,75 @@ impl AxError {
 impl From<&str> for AxError {
     fn from(message: &str) -> Self {
         Self {
-            detail: None,
-            message: Some(message.to_string()),
-            js: None,
-            signals_normal_finish: false,
-            call_stack: None,
-            trace: None,
-            stack_dump: None,
+            inner: Box::new(AxErrorInner {
+                detail: None,
+                message: Some(message.to_string()),
+                js: None,
+                signals_normal_finish: false,
+                call_stack: None,
+                trace: None,
+                stack_dump: None,
+            }),
         }
     }
 }
 impl From<String> for AxError {
     fn from(message: String) -> Self {
         Self {
-            detail: None,
-            message: Some(message),
-            js: None,
-            signals_normal_finish: false,
-            call_stack: None,
-            trace: None,
-            stack_dump: None,
+            inner: Box::new(AxErrorInner {
+                detail: None,
+                message: Some(message),
+                js: None,
+                signals_normal_finish: false,
+                call_stack: None,
+                trace: None,
+                stack_dump: None,
+            }),
         }
     }
 }
 impl From<JsError> for AxError {
     fn from(err: JsError) -> Self {
         Self {
-            detail: None,
-            message: None,
-            js: Some(JsValue::from(err)),
-            signals_normal_finish: false,
-            call_stack: None,
-            trace: None,
-            stack_dump: None,
+            inner: Box::new(AxErrorInner {
+                detail: None,
+                message: None,
+                js: Some(JsValue::from(err)),
+                signals_normal_finish: false,
+                call_stack: None,
+                trace: None,
+                stack_dump: None,
+            }),
         }
     }
 }
 impl From<JsValue> for AxError {
     fn from(err: JsValue) -> Self {
         Self {
-            detail: None,
-            message: None,
-            js: Some(err),
-            signals_normal_finish: false,
-            call_stack: None,
-            trace: None,
-            stack_dump: None,
+            inner: Box::new(AxErrorInner {
+                detail: None,
+                message: None,
+                js: Some(err),
+                signals_normal_finish: false,
+                call_stack: None,
+                trace: None,
+                stack_dump: None,
+            }),
         }
     }
 }
 impl From<Box<dyn std::error::Error>> for AxError {
     fn from(err: Box<dyn std::error::Error>) -> Self {
         Self {
-            detail: None,
-            message: Some(err.to_string()),
-            js: None,
-            signals_normal_finish: false,
-            call_stack: None,
-            trace: None,
-            stack_dump: None,
+            inner: Box::new(AxErrorInner {
+                detail: None,
+                message: Some(err.to_string()),
+                js: None,
+                signals_normal_finish: false,
+                call_stack: None,
+                trace: None,
+                stack_dump: None,
+            }),
         }
     }
 }
@@ -161,12 +184,12 @@ fn stringify_js_value(js: JsValue) -> String {
 
 impl From<AxError> for String {
     fn from(err: AxError) -> Self {
-        let js = err.js.map(stringify_js_value);
-        let msg = err.message;
-        let detail = err.detail;
-        let call_stack = err.call_stack;
-        let trace = err.trace;
-        let stack_dump = err.stack_dump;
+        let js = err.inner.js.map(stringify_js_value);
+        let msg = err.inner.message;
+        let detail = err.inner.detail;
+        let call_stack = err.inner.call_stack;
+        let trace = err.inner.trace;
+        let stack_dump = err.inner.stack_dump;
 
         let mut s = String::new();
         if let Some(d) = detail {
