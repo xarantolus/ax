@@ -19,7 +19,7 @@
       <template v-if="version && commit"> (v{{ version }}, <a :href="'https://github.com/xarantolus/ax/commit/' + commit">commit</a>)</template>.
     </p>
     <p>
-      To use it in your own projects, install the <a href="https://www.npmjs.com/package/ax-x86"><code>ax-x86</code> npm package</a>:
+      To use it in your own projects, install the <a href="https://www.npmjs.com/package/ax-x86"><code>ax-x86</code> npm package</a> and see  <a href="/docs/classes/Axecutor.html">take a look at the documentation</a>.
     <div class="install">
       <pre>npm install ax-x86</pre>
     </div>
