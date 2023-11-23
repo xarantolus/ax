@@ -352,7 +352,14 @@ export default defineComponent({
   padding: 16px;
   border-radius: 16px;
   overflow: auto;
-  background-color: var(--vt-c-black-soft);
+  background-color: #ccc;
+}
+
+@media (prefers-color-scheme: dark) {
+  .install {
+      color: #ccc;
+      background-color: var(--vt-c-black-soft);
+  }
 }
 
 .install>pre::before {
