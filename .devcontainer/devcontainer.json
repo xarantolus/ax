@@ -3,16 +3,11 @@
 {
 	"name": "Dev Container",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/rust:0-1-bullseye",
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	"features": {
-		"ghcr.io/devcontainers/features/rust:1": {},
-		"ghcr.io/devcontainers/features/python:1": {},
-		"ghcr.io/devcontainers/features/node:1": {},
-		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
-			"packages": "make,gcc"
-		}
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": ".."
 	},
+	// Features to add to the dev container. More info: https://containers.dev/features.
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
 		5173
