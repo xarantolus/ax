@@ -150,12 +150,9 @@ watch-programs:
 ######################
 ### Utilities
 ######################
-dependencies: python-dependencies
+dependencies:
 	cargo install cargo-tarpaulin cargo-watch python-launcher
-
-python-dependencies:
-	$(PY) -m pip install pyperclip tqdm
-
+	py -3 -m pip install pyperclip tqdm
 
 clean:
 	rm -rf $(RM_TARGETS)
