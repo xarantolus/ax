@@ -13,8 +13,8 @@
 		5173
 	],
 	"runArgs": [
-		// Increase size of temporary in-memory filesystem for auto-generated binaries by test scripts
-		"--shm-size=1G"
+		// Create an in-memory filesystem for auto-generated binaries by test scripts
+		"--tmpfs", "/docker/memfs:rw,exec,size=2g"
 	],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "rustc --version",
@@ -27,6 +27,4 @@
 			]
 		}
 	}
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
 }

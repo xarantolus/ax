@@ -51,18 +51,20 @@ class ParseError(Exception):
 
 
 def check_temp_dir():
-    # test if /dev/shm is available by writing a file
-    temp_dir_filesystem = "/dev/shm"
-    delete_at_exit = False
-    try:
-        with open(os.path.join(temp_dir_filesystem, "test"), "w") as f:
-            f.write("test")
-        os.remove(os.path.join(temp_dir_filesystem, "test"))
-    except:
-        temp_dir_filesystem = tempfile.gettempdir()
-        delete_at_exit = True
-        print("WARNING: /dev/shm not available, using non-RAM " + temp_dir_filesystem)
-    return temp_dir_filesystem, delete_at_exit
+    PATHS = ["/docker/memfs", "/dev/shm"]
+
+    for path in PATHS:
+        try:
+            testfile = os.path.join(path, "test")
+            with open(testfile, "w") as f:
+                f.write("test")
+            os.remove(testfile)
+
+            return path, True
+        except FileNotFoundError:
+            pass
+
+    return tempfile.gettempdir(), True
 
 
 temp_dir_filesystem, delete_at_exit = check_temp_dir()
@@ -562,7 +564,7 @@ class Tests(unittest.TestCase):
 
 def assemble(instruction: Instruction | str) -> list[str]:
     # create temporary directory
-    with tempfile.TemporaryDirectory(prefix="ax_assemble", dir="/dev/shm") as tmpdir:
+    with tempfile.TemporaryDirectory(prefix="ax_assemble", dir=temp_dir_filesystem) as tmpdir:
         # write assembly code to file
         assembly_path = os.path.join(tmpdir, "a.asm")
         with open(assembly_path, "w", encoding='utf8') as f:
@@ -994,7 +996,7 @@ Exception:
                     return False
             return True
 
-        with tempfile.TemporaryDirectory(prefix="ax_flag_learner", dir="/dev/shm") as tmpdir:
+        with tempfile.TemporaryDirectory(prefix="ax_flag_learner", dir=temp_dir_filesystem) as tmpdir:
             def imap_func(input: tuple[int, Input]):
                 return TestCase.learn_single_flags(input[0], assembled, instruction, input[1], tmpdir)
 
@@ -1223,10 +1225,10 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
+    # try:
         main()
-    except Exception as e:
-        raise e
-    finally:
-        if delete_at_exit:
-            shutil.rmtree(temp_dir_filesystem)
+    # except Exception as e:
+    #     raise e
+    # finally:
+    #     if delete_at_exit:
+    #         shutil.rmtree(temp_dir_filesystem)
