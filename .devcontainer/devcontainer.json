@@ -14,7 +14,8 @@
 	],
 	"runArgs": [
 		// Create an in-memory filesystem for auto-generated binaries by test scripts
-		"--tmpfs", "/docker/memfs:rw,exec,size=2g"
+		"--tmpfs", "/docker/memfs:rw,exec,size=2g",
+		"--tmpfs", "/workspaces/ax/target:rw,exec,size=12g"
 	],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "rustc --version",
@@ -23,7 +24,9 @@
 		"vscode": {
 			"extensions": [
 				"ryanluker.vscode-coverage-gutters",
-				"Vue.volar"
+				"Vue.volar",
+				"rust-lang.rust-analyzer",
+				"ms-python.python"
 			]
 		}
 	}
