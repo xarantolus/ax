@@ -52,6 +52,7 @@ pub mod mul;
 pub mod neg;
 pub mod nop;
 pub mod not;
+pub mod or;
 pub mod pop;
 pub mod push;
 pub mod ret;
