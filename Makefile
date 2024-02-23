@@ -5,6 +5,11 @@ ifneq ($(MOLD_INSTALLED),)
   MOLD := mold -run
 endif
 
+# if no -j option is given, add it
+ifeq (,$(findstring -j,$(MAKEFLAGS)))
+  MAKEFLAGS += -j
+endif
+
 EXE_SUFFIX:=
 ifeq ($(OS),Windows_NT)
   EXE_SUFFIX:=.exe
