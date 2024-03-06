@@ -33,12 +33,14 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+
       - name: Install wasm-pack
         run: |
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
           rustup target add wasm32-unknown-unknown
-        - name: Check out repository
-          uses: actions/checkout@v3
+
+      - name: Check out repository
+        uses: actions/checkout@v3
 
       # Only release if the tests pass
       - name: Run tests
