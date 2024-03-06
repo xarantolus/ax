@@ -392,6 +392,7 @@ macro_rules! jmp_test {
                 let bytes = code_with_nops!($($bytes_start),*; $count; $($bytes_end),*);
 
                 let mut ax = Axecutor::new(&bytes, $initial_rip, $initial_rip).expect("Failed to create axecutor");
+                #[allow(clippy::redundant_closure_call)]
                 $setup(&mut ax);
 
                 assert_reg_value!(q; ax; RIP; $initial_rip);
@@ -404,6 +405,7 @@ macro_rules! jmp_test {
 
                 let flags = ax.state.rflags;
 
+                #[allow(clippy::redundant_closure_call)]
                 $asserts(ax);
 
                 // Check flags
@@ -442,6 +444,7 @@ macro_rules! jmp_test {
                 let bytes = code_with_nops!($($bytes_start),*; $count; $($bytes_end),*);
 
                 let mut ax = Axecutor::new(&bytes, $initial_rip, $initial_rip).expect("Failed to create axecutor");
+                #[allow(clippy::redundant_closure_call)]
                 $setup(&mut ax);
 
                 assert_reg_value!(q; ax; RIP; $initial_rip);
@@ -453,7 +456,7 @@ macro_rules! jmp_test {
                 assert_reg_value!(q; ax; RIP; $final_rip);
 
                 let flags = ax.state.rflags;
-
+                #[allow(clippy::redundant_closure_call)]
                 $asserts(ax);
 
                 // Check flags

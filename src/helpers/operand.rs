@@ -330,6 +330,7 @@ mod tests {
 
 				assert_eq!(instruction.op_count(), expected.len() as u32, "Expected {} operands, got {}", expected.len(), instruction.op_count());
 
+                #[allow(clippy::redundant_closure_call)]
 				$setup(&mut axecutor);
 
 				for i in 0..expected.len() {
