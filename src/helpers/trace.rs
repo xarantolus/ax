@@ -185,6 +185,47 @@ impl Axecutor {
     }
 }
 
+// This is only the call stack, which uses different data than the full tracing functionality
+#[wasm_bindgen]
+impl Axecutor {
+    /// Give an overview of the current call stack.
+    /// This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
+    pub fn call_stack(&self) -> Result<String, AxError> {
+        let mut trace = String::new();
+
+        for (i, addr) in self.state.call_stack.iter().enumerate() {
+            let formatted = match self.symbol_table.get(addr) {
+                Some(sym) => format!("{sym}@{addr:#x}"),
+                None => format!("{addr:#x}"),
+            };
+
+            if i == self.state.call_stack.len() - 1 {
+                trace.push_str(&format!(
+                    "{}=> {}            <------------ in this function\n",
+                    "  ".repeat(i),
+                    formatted
+                ));
+            } else {
+                trace.push_str(&format!("{}-> {}\n", "  ".repeat(i), formatted));
+            }
+        }
+
+        let rip = self.reg_read_64(SupportedRegister::RIP)?;
+        if let Ok(instr) = self.decode_at(rip) {
+            trace.push_str(&format!(
+                "{}  rip@{:#x}            <------------ at or before this instruction pointer\n{}  {} ({:#?})            <------------ at this or the previous instruction",
+                "  ".repeat(self.state.call_stack.len()),
+                rip,
+                "  ".repeat(self.state.call_stack.len()),
+                instr,
+                instr.code()
+            ));
+        }
+
+        Ok(trace)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::auto::generated::SupportedMnemonic;
@@ -272,45 +313,4 @@ mod tests {
     0x401015: syscall => syscall(rax=0x3c, rdi=0x9, rsi={:#x}, rdx={:#x}, r10={:#x}, r8={:#x}, r9={:#x})
 "#, unsafe { jle_count }, ax.reg_read_64(RSI).unwrap(), ax.reg_read_64(RDX).unwrap(), ax.reg_read_64(R10).unwrap(), ax.reg_read_64(R8).unwrap(), ax.reg_read_64(R9).unwrap()));
     }];
-}
-
-// This is only the call stack, which uses different data than the full tracing functionality
-#[wasm_bindgen]
-impl Axecutor {
-    /// Give an overview of the current call stack.
-    /// This works best when a symbol table has been provided, which is currently only the case for ELF binaries.
-    pub fn call_stack(&self) -> Result<String, AxError> {
-        let mut trace = String::new();
-
-        for (i, addr) in self.state.call_stack.iter().enumerate() {
-            let formatted = match self.symbol_table.get(addr) {
-                Some(sym) => format!("{sym}@{addr:#x}"),
-                None => format!("{addr:#x}"),
-            };
-
-            if i == self.state.call_stack.len() - 1 {
-                trace.push_str(&format!(
-                    "{}=> {}            <------------ in this function\n",
-                    "  ".repeat(i),
-                    formatted
-                ));
-            } else {
-                trace.push_str(&format!("{}-> {}\n", "  ".repeat(i), formatted));
-            }
-        }
-
-        let rip = self.reg_read_64(SupportedRegister::RIP)?;
-        if let Ok(instr) = self.decode_at(rip) {
-            trace.push_str(&format!(
-                "{}  rip@{:#x}            <------------ at or before this instruction pointer\n{}  {} ({:#?})            <------------ at this or the previous instruction",
-                "  ".repeat(self.state.call_stack.len()),
-                rip,
-                "  ".repeat(self.state.call_stack.len()),
-                instr,
-                instr.code()
-            ));
-        }
-
-        Ok(trace)
-    }
 }
