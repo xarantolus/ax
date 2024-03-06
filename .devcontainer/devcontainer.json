@@ -14,8 +14,7 @@
 	],
 	"runArgs": [
 		// Create an in-memory filesystem for auto-generated binaries by test scripts
-		"--tmpfs", "/docker/memfs:rw,exec,size=2g",
-		"--tmpfs", "/workspaces/ax/target:rw,exec,size=12g"
+		"--tmpfs", "/docker/memfs:rw,exec,size=2g"
 	],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "rustc --version",
