@@ -75,7 +75,7 @@ impl Hook {
             }
         }
 
-        #[cfg(all(target_arch = "wasm32", not(test)))]
+        #[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
         {
             for fnt in if before {
                 &self.js_before
@@ -105,13 +105,13 @@ impl Hook {
         ax: &mut Axecutor,
         mnemonic: SupportedMnemonic,
     ) -> Result<(), AxError> {
-        #[cfg(all(target_arch = "wasm32", not(test)))]
+        #[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
         debug_log!(
             "Calling Hook::run_before with {} native and {} JS hook function(s)",
             self.native_before.len(),
             self.js_before.len()
         );
-        #[cfg(not(all(target_arch = "wasm32", not(test))))]
+        #[cfg(not(all(target_arch = "wasm32", not(wasi), not(test))))]
         debug_log!(
             "Calling Hook::run_before with {} native hook function(s)",
             self.native_before.len()
@@ -128,13 +128,13 @@ impl Hook {
         ax: &mut Axecutor,
         mnemonic: SupportedMnemonic,
     ) -> Result<(), AxError> {
-        #[cfg(all(target_arch = "wasm32", not(test)))]
+        #[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
         debug_log!(
             "Calling Hook::run_after with {} native and {} JS hook function(s)",
             self.native_after.len(),
             self.js_after.len()
         );
-        #[cfg(not(all(target_arch = "wasm32", not(test))))]
+        #[cfg(not(all(target_arch = "wasm32", not(wasi), not(test))))]
         debug_log!(
             "Calling Hook::run_after with {} native hook function(s)",
             self.native_after.len()
@@ -149,7 +149,7 @@ impl Hook {
 
 impl Debug for Hook {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        #[cfg(all(target_arch = "wasm32", not(test)))]
+        #[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
         {
             f.debug_struct("Hook")
                 .field("js_before", &self.js_before.len())
@@ -158,7 +158,7 @@ impl Debug for Hook {
                 .field("native_after", &self.native_after.len())
                 .finish()
         }
-        #[cfg(not(all(target_arch = "wasm32", not(test))))]
+        #[cfg(not(all(target_arch = "wasm32", not(wasi), not(test))))]
         f.debug_struct("Hook")
             .field("native_before", &self.native_before.len())
             .field("native_after", &self.native_after.len())
@@ -186,7 +186,7 @@ impl Display for HookProcessor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{{")?;
         for (mnem, hook) in self.mnemonic_hooks.iter() {
-            #[cfg(all(target_arch = "wasm32", not(test)))]
+            #[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
             {
                 write!(
                     f,
@@ -199,7 +199,7 @@ impl Display for HookProcessor {
                 )?;
             }
 
-            #[cfg(not(all(target_arch = "wasm32", not(test))))]
+            #[cfg(not(all(target_arch = "wasm32", not(wasi), not(test))))]
             {
                 write!(
                     f,
@@ -222,7 +222,7 @@ impl Axecutor {
 }
 
 // WASM implementation
-#[cfg(all(target_arch = "wasm32", not(test)))]
+#[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
 #[wasm_bindgen]
 impl Axecutor {
     /// Register a function to be called before a mnemonic is executed.

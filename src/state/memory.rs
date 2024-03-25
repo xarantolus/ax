@@ -741,7 +741,7 @@ fn from_js_vec(vec: Vec<JsValue>) -> Result<Vec<String>, AxError> {
 impl Axecutor {
     /// Initializes the stack with the given length, command-line arguments and environment variables according to the System V ABI.
     /// This is useful for emulating ELF binaries.
-    #[cfg(not(all(target_arch = "wasm32", not(test))))]
+    #[cfg(not(all(target_arch = "wasm32", not(wasi), not(test))))]
     pub fn init_stack_program_start(
         &mut self,
         length: u64,
@@ -850,7 +850,7 @@ impl Axecutor {
 
 // 128 bit reads/writes
 #[wasm_bindgen]
-#[cfg(all(target_arch = "wasm32", not(test)))]
+#[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
 impl Axecutor {
     /// Writes an 128-bit value to memory at `address`
     pub fn mem_write_128(&mut self, address: u64, data: js_sys::BigInt) -> Result<(), AxError> {
@@ -887,7 +887,7 @@ impl Axecutor {
     }
 }
 
-#[cfg(not(all(target_arch = "wasm32", not(test))))]
+#[cfg(not(all(target_arch = "wasm32", not(wasi), not(test))))]
 impl Axecutor {
     /// Writes an 128-bit value to memory at `address`
     pub fn mem_write_128(&mut self, address: u64, data: u128) -> Result<(), AxError> {

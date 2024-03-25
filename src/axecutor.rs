@@ -106,7 +106,7 @@ impl Axecutor {
         debug_log!("Calling Axecutor::new");
 
         // In case of panics, we want more info in console.error
-        #[cfg(all(target_arch = "wasm32", not(test)))]
+        #[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
         {
             console_error_panic_hook::set_once();
             debug_log!("Panic hook set");
@@ -174,7 +174,7 @@ impl Axecutor {
     }
 
     /// This function should be returned from a hook to indicate the state should be kept and execution should continue.
-    #[cfg(all(target_arch = "wasm32", not(test)))]
+    #[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
     pub fn commit(&self) -> Result<JsValue, AxError> {
         debug_log!(
             "Calling Axecutor::commit, finished: {}, hooks_running: {}",
@@ -196,7 +196,7 @@ impl Axecutor {
 
     /// This function should be returned from a hook to indicate the state should be kept and execution should stop.
     /// You can also call this function from ouside of a hook, it will however not stop any running hooks.
-    #[cfg(all(target_arch = "wasm32", not(test)))]
+    #[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
     pub fn stop(&mut self) -> Result<JsValue, AxError> {
         debug_log!(
             "Calling Axecutor::stop, finished: {}, hooks_running: {}",
@@ -213,7 +213,7 @@ impl Axecutor {
     }
 
     /// This function can be called from a hook to indicate the state should be kept and execution should stop.
-    #[cfg(not(all(target_arch = "wasm32", not(test))))]
+    #[cfg(not(all(target_arch = "wasm32", not(wasi), not(test))))]
     pub fn stop(&mut self) {
         debug_log!(
             "Calling Axecutor::stop, finished: {}, hooks_running: {}",
@@ -225,7 +225,7 @@ impl Axecutor {
     }
 
     /// This function should be returned from a hook to indicate the state should *not* be kept, but execution should continue.
-    #[cfg(all(target_arch = "wasm32", not(test)))]
+    #[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
     pub fn unchanged(&self) -> JsValue {
         debug_log!(
             "Calling Axecutor::unchanged, finished: {}, hooks_running: {}",
@@ -235,7 +235,7 @@ impl Axecutor {
         JsValue::NULL
     }
 
-    #[cfg(all(target_arch = "wasm32", not(test)))]
+    #[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
     pub(crate) fn state_from_committed(&mut self, value: JsValue) -> Result<(), AxError> {
         debug_log!(
             "Calling Axecutor::state_from_committed, finished: {}, hooks_running: {}",
