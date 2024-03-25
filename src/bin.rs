@@ -1,6 +1,6 @@
 #![cfg(not(any(test, target_arch = "wasm32")))]
 
-use std::println;
+use std::{println, sync::Arc};
 
 use ax_x86::{
     auto::generated::SupportedMnemonic::Syscall,
@@ -45,7 +45,7 @@ async fn main_impl() -> Result<i32, AxError> {
 
     ax.init_stack_program_start(0x2000, Vec::from(argv), envp)?;
 
-    ax.hook_before_mnemonic_native(Syscall, &|ax: &mut Axecutor, _| {
+    ax.hook_before_mnemonic_native(Syscall, Arc::new(|ax: &mut Axecutor, _| {
         let syscall_num = ax.reg_read_64(SupportedRegister::RAX)?;
         let rdi = ax.reg_read_64(SupportedRegister::RDI)?;
         let rsi = ax.reg_read_64(SupportedRegister::RSI)?;
@@ -89,7 +89,7 @@ async fn main_impl() -> Result<i32, AxError> {
         }
 
         Ok(HookResult::Handled)
-    })?;
+    }))?;
 
     // add axecutor string to error message
     ax.execute()

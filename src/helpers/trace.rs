@@ -185,15 +185,15 @@ mod tests {
         static mut jle_count: u64 = 0;
         #[allow(non_upper_case_globals)]
         static mut jle_rip: u64 = 0;
-        ax.hook_before_mnemonic_native(SupportedMnemonic::Jle, &move |ax: &mut Axecutor, _| {
+        ax.hook_before_mnemonic_native(SupportedMnemonic::Jle, std::sync::Arc::new(move |ax: &mut Axecutor, _| {
             unsafe {
                 jle_rip = ax.reg_read_64(crate::state::registers::SupportedRegister::RIP)?;
             };
 
             Ok(crate::state::hooks::HookResult::Handled)
-        }).expect("Failed to add hook");
+        })).expect("Failed to add hook");
 
-        ax.hook_after_mnemonic_native(SupportedMnemonic::Jle, &move |ax: &mut Axecutor, _| {
+        ax.hook_after_mnemonic_native(SupportedMnemonic::Jle,std::sync::Arc::new(move |ax: &mut Axecutor, _| {
             unsafe {
                 // Did we jump somewhere else?
                 if jle_rip != ax.reg_read_64(crate::state::registers::SupportedRegister::RIP)? {
@@ -202,7 +202,7 @@ mod tests {
             };
 
             Ok(crate::state::hooks::HookResult::Handled)
-        }).expect("Failed to add hook");
+        })).expect("Failed to add hook");
 
         ax.init_stack(0x1000).expect("Failed to setup stack");
 

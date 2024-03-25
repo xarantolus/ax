@@ -287,7 +287,7 @@ mod tests {
                 #[allow(non_upper_case_globals)]
                 static mut output: String = String::new();
 
-                let cb = &move |ax: &mut Axecutor, _: SupportedMnemonic| {
+                let cb = std::sync::Arc::new(move |ax: &mut Axecutor, _: SupportedMnemonic| {
                     let syscall_num = ax.reg_read_64(SupportedRegister::RAX)?;
                     let rdi = ax.reg_read_64(SupportedRegister::RDI)?;
                     let rsi = ax.reg_read_64(SupportedRegister::RSI)?;
@@ -321,7 +321,7 @@ mod tests {
                     }
 
                     Ok(HookResult::Handled)
-                };
+                });
 
                 ax.handle_syscalls(vec![Syscall::Exit, Syscall::Brk, Syscall::Pipe, Syscall::ArchPrctl]).expect("Failed to add syscall handlers");
 

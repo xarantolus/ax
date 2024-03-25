@@ -1,4 +1,4 @@
-use std::{collections::HashMap, convert::TryFrom};
+use std::{collections::HashMap, convert::TryFrom, sync::Arc};
 
 use rand::Rng;
 use serde::{Deserialize, Serialize};
@@ -123,7 +123,7 @@ impl Axecutor {
     }
 
     fn register_exit(&mut self) -> Result<(), AxError> {
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
+        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, Arc::new(|ax: &mut Axecutor, _| {
             if ax.reg_read_64(RAX)? != Syscall::Exit as u64 {
                 return Ok(HookResult::Unhandled);
             }
@@ -136,11 +136,11 @@ impl Axecutor {
             ax.state.finished = true;
 
             Ok(HookResult::Handled)
-        })
+        }))
     }
 
     fn register_pipe(&mut self) -> Result<(), AxError> {
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
+        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, Arc::new(|ax: &mut Axecutor, _| {
             if ax.reg_read_64(RAX)? != Syscall::Pipe as u64 {
                 return Ok(HookResult::Unhandled);
             }
@@ -190,10 +190,10 @@ impl Axecutor {
             );
 
             Ok(HookResult::Handled)
-        })?;
+        }))?;
 
         // Read system call for pipes
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
+        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, Arc::new(|ax: &mut Axecutor, _| {
             if ax.reg_read_64(RAX)? != 0u64 {
                 return Ok(HookResult::Unhandled);
             }
@@ -226,10 +226,10 @@ impl Axecutor {
 
             // Skip the rest -- that way users that register read syscalls won't ever see this
             Ok(HookResult::Handled)
-        })?;
+        }))?;
 
         // Write system call for pipes
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
+        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, Arc::new(|ax: &mut Axecutor, _| {
             if ax.reg_read_64(RAX)? != 1u64 {
                 return Ok(HookResult::Unhandled);
             }
@@ -264,13 +264,13 @@ impl Axecutor {
 
             // Skip the rest -- that way users that register write syscalls won't ever see this
             Ok(HookResult::Handled)
-        })?;
+        }))?;
 
         Ok(())
     }
 
     fn register_brk(&mut self) -> Result<(), AxError> {
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
+        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, Arc::new(|ax: &mut Axecutor, _| {
             if ax.reg_read_64(RAX)? != Syscall::Brk as u64 {
                 return Ok(HookResult::Unhandled);
             }
@@ -310,11 +310,11 @@ impl Axecutor {
             ax.reg_write_64(RAX, ax.state.syscalls.brk_start + new_length)?;
 
             Ok(HookResult::Handled)
-        })
+        }))
     }
 
     fn register_arch_prctl(&mut self) -> Result<(), AxError> {
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
+        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, Arc::new(|ax: &mut Axecutor, _| {
             if ax.reg_read_64(RAX)? != Syscall::ArchPrctl as u64 {
                 return Ok(HookResult::Unhandled);
             }
@@ -360,7 +360,7 @@ impl Axecutor {
             }
 
             Ok(HookResult::Handled)
-        })
+        }))
     }
 }
 
