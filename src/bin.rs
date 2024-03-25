@@ -45,51 +45,54 @@ async fn main_impl() -> Result<i32, AxError> {
 
     ax.init_stack_program_start(0x2000, Vec::from(argv), envp)?;
 
-    ax.hook_before_mnemonic_native(Syscall, Arc::new(|ax: &mut Axecutor, _| {
-        let syscall_num = ax.reg_read_64(SupportedRegister::RAX)?;
-        let rdi = ax.reg_read_64(SupportedRegister::RDI)?;
-        let rsi = ax.reg_read_64(SupportedRegister::RSI)?;
-        let rdx = ax.reg_read_64(SupportedRegister::RDX)?;
+    ax.hook_before_mnemonic_native(
+        Syscall,
+        Arc::new(|ax: &mut Axecutor, _| {
+            let syscall_num = ax.reg_read_64(SupportedRegister::RAX)?;
+            let rdi = ax.reg_read_64(SupportedRegister::RDI)?;
+            let rsi = ax.reg_read_64(SupportedRegister::RSI)?;
+            let rdx = ax.reg_read_64(SupportedRegister::RDX)?;
 
-        match syscall_num {
-            // Write
-            1 => {
-                // rdi must be 0-2 (stdin, stdout, stderr) -- yes, we allow writing to stdin
-                if rdi > 2 {
-                    return Err(AxError::from("write: invalid file descriptor").into());
+            match syscall_num {
+                // Write
+                1 => {
+                    // rdi must be 0-2 (stdin, stdout, stderr) -- yes, we allow writing to stdin
+                    if rdi > 2 {
+                        return Err(AxError::from("write: invalid file descriptor").into());
+                    }
+
+                    let result_buf = ax.mem_read_bytes(rsi, rdx).map_err(|e| {
+                        AxError::from(format!("write: failed to read memory at {rsi}: {e}"))
+                    })?;
+                    let output_text = String::from_utf8(result_buf).map_err(|e| {
+                        AxError::from(format!(
+                            "write: failed to convert memory at {rsi} to utf8: {e}"
+                        ))
+                    })?;
+
+                    if rdi == 2 {
+                        eprint!("{output_text}");
+                    } else {
+                        print!("{output_text}");
+                    }
+
+                    // Return number of bytes written
+                    ax.reg_write_64(SupportedRegister::RAX, rdx).map_err(|e| {
+                        AxError::from(format!("write: failed to write return value to RAX: {e}"))
+                    })?;
                 }
-
-                let result_buf = ax.mem_read_bytes(rsi, rdx).map_err(|e| {
-                    AxError::from(format!("write: failed to read memory at {rsi}: {e}"))
-                })?;
-                let output_text = String::from_utf8(result_buf).map_err(|e| {
-                    AxError::from(format!(
-                        "write: failed to convert memory at {rsi} to utf8: {e}"
-                    ))
-                })?;
-
-                if rdi == 2 {
-                    eprint!("{output_text}");
-                } else {
-                    print!("{output_text}");
+                // Exit
+                60 => {
+                    ax.stop();
                 }
+                _ => {
+                    return Err(AxError::from(format!("Unsupported syscall: {syscall_num}")).into());
+                }
+            }
 
-                // Return number of bytes written
-                ax.reg_write_64(SupportedRegister::RAX, rdx).map_err(|e| {
-                    AxError::from(format!("write: failed to write return value to RAX: {e}"))
-                })?;
-            }
-            // Exit
-            60 => {
-                ax.stop();
-            }
-            _ => {
-                return Err(AxError::from(format!("Unsupported syscall: {syscall_num}")).into());
-            }
-        }
-
-        Ok(HookResult::Handled)
-    }))?;
+            Ok(HookResult::Handled)
+        }),
+    )?;
 
     // add axecutor string to error message
     ax.execute()
