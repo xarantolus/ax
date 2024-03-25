@@ -8,25 +8,25 @@ extern "C" {
 
 macro_rules! debug_log {
     ($str:expr) => {
-        #[cfg(all(target_arch = "wasm32", debug_assertions, not(test)))]
+        #[cfg(all(target_arch = "wasm32",not(wasi), debug_assertions, not(test)))]
         {
             use $crate::helpers::debug::js_debug_log;
             js_debug_log(&*format!("{}:{}: {}", file!(), line!(), $str));
         }
 
-        #[cfg(all(not(target_arch = "wasm32"), debug_assertions))]
+        #[cfg(all(not(all(target_arch = "wasm32",not(wasi))), debug_assertions))]
         {
             println!("{}:{}: {}", file!(), line!(), $str);
         }
     };
     ($fmt:expr, $($arg:tt)*) => {
-        #[cfg(all(target_arch = "wasm32", debug_assertions, not(test)))]
+        #[cfg(all(target_arch = "wasm32",not(wasi), debug_assertions, not(test)))]
         {
             use $crate::helpers::debug::js_debug_log;
             js_debug_log(&*format!("{}:{}: {}", file!(), line!(), format!($fmt, $($arg)*)));
         }
 
-        #[cfg(all(not(target_arch = "wasm32"), debug_assertions))]
+        #[cfg(all(not(all(target_arch = "wasm32",not(wasi))), debug_assertions))]
         {
             println!("{}:{}: {}", file!(), line!(), format!($fmt, $($arg)*));
         }

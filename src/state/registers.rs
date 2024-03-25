@@ -671,7 +671,7 @@ impl Axecutor {
 }
 
 #[wasm_bindgen]
-#[cfg(all(target_arch = "wasm32", not(test)))]
+#[cfg(all(target_arch = "wasm32", not(wasi), not(test)))]
 impl Axecutor {
     /// Writes an 128-bit value to an 128-bit wide register. Out-of-range values or invalid registers lead to exceptions.
     pub fn reg_write_128(
@@ -695,7 +695,7 @@ impl Axecutor {
     }
 }
 
-#[cfg(not(all(target_arch = "wasm32", not(test))))]
+#[cfg(not(all(target_arch = "wasm32", not(wasi), not(test))))]
 impl Axecutor {
     /// Writes an 128-bit value to an 128-bit wide register. Out-of-range values or invalid registers lead to exceptions.
     pub fn reg_write_128(&mut self, reg: SupportedRegister, value: u128) -> Result<(), AxError> {

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, convert::TryFrom};
+use std::{collections::HashMap, convert::TryFrom, sync::Arc};
 
 use rand::Rng;
 use serde::{Deserialize, Serialize};
@@ -123,154 +123,166 @@ impl Axecutor {
     }
 
     fn register_exit(&mut self) -> Result<(), AxError> {
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
-            if ax.reg_read_64(RAX)? != Syscall::Exit as u64 {
-                return Ok(HookResult::Unhandled);
-            }
+        self.hook_before_mnemonic_native(
+            SupportedMnemonic::Syscall,
+            Arc::new(|ax: &mut Axecutor, _| {
+                if ax.reg_read_64(RAX)? != Syscall::Exit as u64 {
+                    return Ok(HookResult::Unhandled);
+                }
 
-            debug_log!(
-                "Running native exit syscall with code {}",
-                ax.reg_read_64(RDI)?
-            );
+                debug_log!(
+                    "Running native exit syscall with code {}",
+                    ax.reg_read_64(RDI)?
+                );
 
-            ax.state.finished = true;
+                ax.state.finished = true;
 
-            Ok(HookResult::Handled)
-        })
+                Ok(HookResult::Handled)
+            }),
+        )
     }
 
     fn register_pipe(&mut self) -> Result<(), AxError> {
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
-            if ax.reg_read_64(RAX)? != Syscall::Pipe as u64 {
-                return Ok(HookResult::Unhandled);
-            }
+        self.hook_before_mnemonic_native(
+            SupportedMnemonic::Syscall,
+            Arc::new(|ax: &mut Axecutor, _| {
+                if ax.reg_read_64(RAX)? != Syscall::Pipe as u64 {
+                    return Ok(HookResult::Unhandled);
+                }
 
-            debug_log!("Running native pipe syscall");
+                debug_log!("Running native pipe syscall");
 
-            let read_end = rand::thread_rng().gen::<u16>() as u64 + 1024;
-            let write_end = rand::thread_rng().gen::<u16>() as u64 + 1024;
-            assert_fatal!(
-                !ax.state.syscalls.pipes_read_ends.contains_key(&read_end),
-                "Duplicate read end for pipe"
-            );
-            assert_fatal!(
-                !ax.state.syscalls.pipes_write_ends.contains_key(&read_end),
-                "Duplicate read end for pipe"
-            );
-            assert_fatal!(
-                !ax.state.syscalls.pipes_read_ends.contains_key(&write_end),
-                "Duplicate write end for pipe"
-            );
-            assert_fatal!(
-                !ax.state.syscalls.pipes_write_ends.contains_key(&write_end),
-                "Duplicate write end for pipe"
-            );
+                let read_end = rand::thread_rng().gen::<u16>() as u64 + 1024;
+                let write_end = rand::thread_rng().gen::<u16>() as u64 + 1024;
+                assert_fatal!(
+                    !ax.state.syscalls.pipes_read_ends.contains_key(&read_end),
+                    "Duplicate read end for pipe"
+                );
+                assert_fatal!(
+                    !ax.state.syscalls.pipes_write_ends.contains_key(&read_end),
+                    "Duplicate read end for pipe"
+                );
+                assert_fatal!(
+                    !ax.state.syscalls.pipes_read_ends.contains_key(&write_end),
+                    "Duplicate write end for pipe"
+                );
+                assert_fatal!(
+                    !ax.state.syscalls.pipes_write_ends.contains_key(&write_end),
+                    "Duplicate write end for pipe"
+                );
 
-            ax.state
-                .syscalls
-                .pipes_read_ends
-                .insert(read_end, write_end);
-            ax.state
-                .syscalls
-                .pipes_write_ends
-                .insert(write_end, read_end);
-            ax.state.syscalls.pipe_contents.insert(read_end, Vec::new());
+                ax.state
+                    .syscalls
+                    .pipes_read_ends
+                    .insert(read_end, write_end);
+                ax.state
+                    .syscalls
+                    .pipes_write_ends
+                    .insert(write_end, read_end);
+                ax.state.syscalls.pipe_contents.insert(read_end, Vec::new());
 
-            let fd_ptr = ax.reg_read_64(RDI)?;
+                let fd_ptr = ax.reg_read_64(RDI)?;
 
-            ax.mem_write_64(fd_ptr, read_end)?;
-            ax.mem_write_64(fd_ptr + 8, write_end)?;
+                ax.mem_write_64(fd_ptr, read_end)?;
+                ax.mem_write_64(fd_ptr + 8, write_end)?;
 
-            ax.reg_write_64(RAX, 0)?;
+                ax.reg_write_64(RAX, 0)?;
 
-            debug_log!(
-                "pipe syscall created read end {} and write end {}",
-                read_end,
-                write_end
-            );
+                debug_log!(
+                    "pipe syscall created read end {} and write end {}",
+                    read_end,
+                    write_end
+                );
 
-            Ok(HookResult::Handled)
-        })?;
+                Ok(HookResult::Handled)
+            }),
+        )?;
 
         // Read system call for pipes
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
-            if ax.reg_read_64(RAX)? != 0u64 {
-                return Ok(HookResult::Unhandled);
-            }
+        self.hook_before_mnemonic_native(
+            SupportedMnemonic::Syscall,
+            Arc::new(|ax: &mut Axecutor, _| {
+                if ax.reg_read_64(RAX)? != 0u64 {
+                    return Ok(HookResult::Unhandled);
+                }
 
-            let fd = ax.reg_read_64(RDI)?;
-            let buf = ax.reg_read_64(RSI)?;
-            let count = ax.reg_read_64(RDX)?;
+                let fd = ax.reg_read_64(RDI)?;
+                let buf = ax.reg_read_64(RSI)?;
+                let count = ax.reg_read_64(RDX)?;
 
-            let available_content = match ax.state.syscalls.pipe_contents.get(&fd) {
-                Some(bytes) => bytes.clone(),
-                // Maybe another hook will handle this fd
-                None => return Ok(HookResult::Unhandled),
-            };
+                let available_content = match ax.state.syscalls.pipe_contents.get(&fd) {
+                    Some(bytes) => bytes.clone(),
+                    // Maybe another hook will handle this fd
+                    None => return Ok(HookResult::Unhandled),
+                };
 
-            debug_log!(
-                "Running native read syscall for pipe with fd {}, buf {:#x}, count {}",
-                fd,
-                buf,
-                count
-            );
+                debug_log!(
+                    "Running native read syscall for pipe with fd {}, buf {:#x}, count {}",
+                    fd,
+                    buf,
+                    count
+                );
 
-            let max_bytes = std::cmp::min(count, available_content.len() as u64);
-            ax.mem_write_bytes(buf, &available_content[..max_bytes as usize])?;
-            ax.reg_write_64(RAX, max_bytes)?;
+                let max_bytes = std::cmp::min(count, available_content.len() as u64);
+                ax.mem_write_bytes(buf, &available_content[..max_bytes as usize])?;
+                ax.reg_write_64(RAX, max_bytes)?;
 
-            ax.state
-                .syscalls
-                .pipe_contents
-                .insert(fd, available_content[max_bytes as usize..].to_vec());
+                ax.state
+                    .syscalls
+                    .pipe_contents
+                    .insert(fd, available_content[max_bytes as usize..].to_vec());
 
-            // Skip the rest -- that way users that register read syscalls won't ever see this
-            Ok(HookResult::Handled)
-        })?;
+                // Skip the rest -- that way users that register read syscalls won't ever see this
+                Ok(HookResult::Handled)
+            }),
+        )?;
 
         // Write system call for pipes
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
-            if ax.reg_read_64(RAX)? != 1u64 {
-                return Ok(HookResult::Unhandled);
-            }
+        self.hook_before_mnemonic_native(
+            SupportedMnemonic::Syscall,
+            Arc::new(|ax: &mut Axecutor, _| {
+                if ax.reg_read_64(RAX)? != 1u64 {
+                    return Ok(HookResult::Unhandled);
+                }
 
-            let fd = ax.reg_read_64(RDI)?;
-            let buf = ax.reg_read_64(RSI)?;
-            let count = ax.reg_read_64(RDX)?;
+                let fd = ax.reg_read_64(RDI)?;
+                let buf = ax.reg_read_64(RSI)?;
+                let count = ax.reg_read_64(RDX)?;
 
-            let write_end = match ax.state.syscalls.pipes_write_ends.get(&fd) {
-                Some(write_end) => *write_end,
-                // Maybe another hook will handle this fd
-                None => return Ok(HookResult::Unhandled),
-            };
+                let write_end = match ax.state.syscalls.pipes_write_ends.get(&fd) {
+                    Some(write_end) => *write_end,
+                    // Maybe another hook will handle this fd
+                    None => return Ok(HookResult::Unhandled),
+                };
 
-            debug_log!(
-                "Running native write syscall for pipe with fd {}, buf {:#x}, count {}",
-                fd,
-                buf,
-                count
-            );
+                debug_log!(
+                    "Running native write syscall for pipe with fd {}, buf {:#x}, count {}",
+                    fd,
+                    buf,
+                    count
+                );
 
-            let bytes = ax.mem_read_bytes(buf, count)?;
+                let bytes = ax.mem_read_bytes(buf, count)?;
 
-            ax.state
-                .syscalls
-                .pipe_contents
-                .entry(write_end)
-                .and_modify(|content| content.extend_from_slice(&bytes))
-                .or_insert(bytes);
+                ax.state
+                    .syscalls
+                    .pipe_contents
+                    .entry(write_end)
+                    .and_modify(|content| content.extend_from_slice(&bytes))
+                    .or_insert(bytes);
 
-            ax.reg_write_64(RAX, count)?;
+                ax.reg_write_64(RAX, count)?;
 
-            // Skip the rest -- that way users that register write syscalls won't ever see this
-            Ok(HookResult::Handled)
-        })?;
+                // Skip the rest -- that way users that register write syscalls won't ever see this
+                Ok(HookResult::Handled)
+            }),
+        )?;
 
         Ok(())
     }
 
     fn register_brk(&mut self) -> Result<(), AxError> {
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
+        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, Arc::new(|ax: &mut Axecutor, _| {
             if ax.reg_read_64(RAX)? != Syscall::Brk as u64 {
                 return Ok(HookResult::Unhandled);
             }
@@ -310,57 +322,60 @@ impl Axecutor {
             ax.reg_write_64(RAX, ax.state.syscalls.brk_start + new_length)?;
 
             Ok(HookResult::Handled)
-        })
+        }))
     }
 
     fn register_arch_prctl(&mut self) -> Result<(), AxError> {
-        self.hook_before_mnemonic_native(SupportedMnemonic::Syscall, &|ax: &mut Axecutor, _| {
-            if ax.reg_read_64(RAX)? != Syscall::ArchPrctl as u64 {
-                return Ok(HookResult::Unhandled);
-            }
-
-            // TODO: Make sure this implements the syscall to spec when the memory implementation has been overhauled
-
-            let code = ax.reg_read_64(RDI)?;
-            let addr = ax.reg_read_64(RSI)?;
-
-            debug_log!(
-                "Running native arch_prctl syscall with code {:#x} and addr {:#x}",
-                code,
-                addr
-            );
-
-            if ax.mem_read_8(addr).is_err() {
-                // return EFAULT -- invalid address
-                ax.reg_write_64(RAX, 14)?;
-                return Ok(HookResult::Handled);
-            }
-
-            match code {
-                0x1002 => {
-                    // ARCH_SET_FS
-                    ax.write_fs(addr);
+        self.hook_before_mnemonic_native(
+            SupportedMnemonic::Syscall,
+            Arc::new(|ax: &mut Axecutor, _| {
+                if ax.reg_read_64(RAX)? != Syscall::ArchPrctl as u64 {
+                    return Ok(HookResult::Unhandled);
                 }
-                0x1003 => {
-                    // ARCH_SET_GS
-                    ax.write_gs(addr);
-                }
-                0x1001 => {
-                    // ARCH_GET_FS
-                    ax.reg_write_64(RAX, ax.read_fs())?;
-                }
-                0x1004 => {
-                    // ARCH_GET_GS
-                    ax.reg_write_64(RAX, ax.read_gs())?;
-                }
-                _ => {
-                    // return EINVAL -- invalid code
-                    ax.reg_write_64(RAX, 22)?;
-                }
-            }
 
-            Ok(HookResult::Handled)
-        })
+                // TODO: Make sure this implements the syscall to spec when the memory implementation has been overhauled
+
+                let code = ax.reg_read_64(RDI)?;
+                let addr = ax.reg_read_64(RSI)?;
+
+                debug_log!(
+                    "Running native arch_prctl syscall with code {:#x} and addr {:#x}",
+                    code,
+                    addr
+                );
+
+                if ax.mem_read_8(addr).is_err() {
+                    // return EFAULT -- invalid address
+                    ax.reg_write_64(RAX, 14)?;
+                    return Ok(HookResult::Handled);
+                }
+
+                match code {
+                    0x1002 => {
+                        // ARCH_SET_FS
+                        ax.write_fs(addr);
+                    }
+                    0x1003 => {
+                        // ARCH_SET_GS
+                        ax.write_gs(addr);
+                    }
+                    0x1001 => {
+                        // ARCH_GET_FS
+                        ax.reg_write_64(RAX, ax.read_fs())?;
+                    }
+                    0x1004 => {
+                        // ARCH_GET_GS
+                        ax.reg_write_64(RAX, ax.read_gs())?;
+                    }
+                    _ => {
+                        // return EINVAL -- invalid code
+                        ax.reg_write_64(RAX, 22)?;
+                    }
+                }
+
+                Ok(HookResult::Handled)
+            }),
+        )
     }
 }
 
